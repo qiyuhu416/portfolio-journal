@@ -1,0 +1,109 @@
+---
+slug: thinking-outside-the-box
+num: "01"
+quality: Creativity
+title: Thinking outside the box
+dek: What exactly does that mean?
+date: Apr 2026
+readtime: 6
+tint: "#C96A2E"
+surface: "#F3E4D4"
+sections:
+  - { id: see,      label: "See the box" }
+  - { id: question, label: "Question the box" }
+  - { id: break,    label: "Break the box" }
+---
+
+import { Figure } from '@/components/Figure'
+import { PullQuote } from '@/components/PullQuote'
+import { Aside } from '@/components/Aside'
+import { YouTube } from '@/components/YouTube'
+import { Collage } from '@/components/Collage'
+import { InlineLink } from '@/components/InlineLink'
+
+// Drop image files into ./images/ and uncomment these as you go.
+// The collage will automatically pick them up in item order.
+// import orangePrototype  from './images/orange-prototype.jpg'
+// import meterFace        from './images/meter-face.jpg'
+// import catJelly         from './images/cat-jelly.jpg'
+// import arduinoPlushie   from './images/arduino-plushie.jpg'
+// import smileySand       from './images/smiley-sand.jpg'
+
+I always thought I had a kind of quirky mind.
+
+<Collage
+  fig="01"
+  caption="Things I made before I had the word for it."
+  items={[
+    // Swap `alt` for `src` once the image is imported above.
+    // The alt text stays as a fallback label while the file is missing.
+    { alt: "Orange, prototype",          aspectRatio: "3 / 4", caption: "Orange, prototype" },
+    { alt: "Street meter with a face",   aspectRatio: "1 / 1", caption: "Faces in meters" },
+    { alt: "Jelly-cat drawing on a cat", aspectRatio: "4 / 3", caption: "Cat, with a jelly cat" },
+    { alt: "Arduino + sun plushie",      aspectRatio: "4 / 3", caption: "Sun, animated" },
+    { alt: "Smiley drawn in sand",       aspectRatio: "1 / 1", caption: "Smiley, in sand" },
+  ]}
+/>
+
+But then I realized thinking outside the box is actually hard. Everyone has the ability to come up with creative ideas — I've seen super creative ideas in <InlineLink to="friends-of-friends-at-work">brainstorming sessions</InlineLink> from engineers, PMs, anyone.
+
+The hard part is building a system that helps you *consistently* think outside the box. Here are my takeaways so far:
+
+- First, see the box.
+- Second, know where to question the box.
+- Third, have the courage to break the box — and invite others to break it with you.
+
+<h2 id="see">§1 · See the box</h2>
+
+A box is usually an assumption. The first thing that comes to mind when we hear a word. The association we didn't notice we made.
+
+- Designers → Figma
+- Engineers → coding
+- AI → chatbot
+- Portfolio → "hello, I am xxx" and a gallery of case studies
+- Work → sitting at an office
+
+Trace any one of these to its root and the answer is usually evolutionary or social — not a law of nature. It's a shape that happened to hold, and then everyone kept holding it.
+
+<YouTube
+  id="cUdWs5kfGss"
+  fig="02"
+  title="Thinking outside the box — a video essay"
+  caption="A video I made a while ago, analyzing this from a different angle. Rough, unpolished — but it's where I first tried to say out loud what a 'box' actually is."
+/>
+
+<h2 id="question">§2 · Question the box</h2>
+
+Once you can see the box, the next move is to press on it.
+
+Designers doing coding and having access to the codebase — that's already a workflow redefinition we accept as normal. But if we ran it the other way: *starting from scratch*, how would we arrive at that shape? What would have to be true? What else would fall out for free?
+
+<PullQuote attribution="me, to myself, often">
+  "What has my education actually given me?"
+</PullQuote>
+
+For now, the answer I keep landing on: it taught me *how to think*. Knowing how to think is the kind of thing you don't realize you're missing until you have it.
+
+<Figure fig="03" placeholder alt="Analysis-Synthesis Bridge sketches" caption="Examples of the Analysis-Synthesis Bridge model I drew while working through problems for an early-stage startup." />
+
+<h2 id="break">§3 · Break the box</h2>
+
+This is the hardest part.
+
+I often get asked *why?* — if something has been working the way it is, then at least it works. So what's the motivation to do things differently, especially when trying takes time and effort?
+
+My takeaway: **start small, and make it fun.**
+
+<Aside>
+  "What if we made the survey impossible to ignore?" — Facing a recruitment challenge in a UX design project for The Mentoring Partnership, I asked my teammate to make it fun. It worked: a 10%+ increase in user responses.
+</Aside>
+
+<Figure fig="04" placeholder alt="the fun survey" caption="The survey redesign that turned compliance into curiosity." />
+
+A few things any of us can try to break the box:
+
+- Do paper prototyping with engineers.
+- Let designers share the same repositories with PMs and engineers — and brainstorm together.
+- Don't stay in the office. Try brainstorming at a cafeteria, a bubble tea shop, or during a walk *(inspired by Today Was Fun, which Mia lent me)*.
+
+Small moves. The box bends before it breaks.

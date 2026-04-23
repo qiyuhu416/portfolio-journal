@@ -1,0 +1,110 @@
+[
+  {
+    "id": "mirror",
+    "label": "The mirror",
+    "sub": "what I see when it’s just me",
+    "axis": "Qiyu · think",
+    "pos": "TL",
+    "tint": "var(--warm)",
+    "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet — where first drafts go to be held up to the light.",
+    "layout": "list",
+    "items": [
+      {
+        "tag": "Critical thinking",
+        "title": "Thinking outside the box",
+        "dek": "What exactly does that mean?",
+        "meta": "01 · 6 min",
+        "href": "#article:thinking-outside-the-box",
+        "companies": [{ "name": "Apple" }, { "name": "IDEO" }, { "name": "Figma" }]
+      },
+      {
+        "tag": "Visual skills",
+        "title": "UI needs to serve a goal",
+        "dek": "Good visuals aren't about perfection. They're about clarity.",
+        "meta": "02 · 3 min",
+        "href": "#article:ui-needs-to-serve-a-goal",
+        "companies": [{ "name": "Meetfood" }, { "name": "Apple" }]
+      },
+      {
+        "tag": "AI collaboration",
+        "title": "Making AI feel human",
+        "dek": "Humanity, in interfaces, is not about imitation.",
+        "meta": "03 · 9 min",
+        "href": "#article:making-ai-feel-human",
+        "companies": [{ "name": "Anthropic" }, { "name": "OpenAI" }, { "name": "Notion" }]
+      },
+      {
+        "tag": "Self-awareness",
+        "title": "What I’m good at. What I’m not.",
+        "dek": "And who I want to work with.",
+        "meta": "self-audit",
+        "href": "#loops",
+        "companies": [{ "name": "Apple" }, { "name": "Google" }]
+      }
+    ]
+  },
+  {
+    "id": "practice",
+    "label": "The practice",
+    "sub": "things I’ve initiated",
+    "axis": "Qiyu · do",
+    "pos": "TR",
+    "tint": "var(--warm-ink)",
+    "framing": "What I kick off when nobody asked. Meetups, experiments, rituals I run on myself — the stuff that wouldn’t exist if I waited for permission.",
+    "layout": "gallery",
+    "items": [
+      {
+        "tag": "Community",
+        "title": "Vibe-coding meetup at Apple Park",
+        "dek": "An informal lunch for people curious about the new tools.",
+        "meta": "04 · 3 min",
+        "href": "#article:vibe-coding-meetup-at-apple-park"
+      },
+      {
+        "tag": "Hosting",
+        "title": "Friends of friends at work",
+        "dek": "I want my friends to be friends with each other.",
+        "meta": "05 · 2 min",
+        "href": "#article:friends-of-friends-at-work"
+      },
+      {
+        "tag": "Play",
+        "title": "Making design fun",
+        "dek": "Caltrain, After Effects, and a stubborn suspicion that everything could be easier.",
+        "meta": "06 · 5 min",
+        "href": "#article:making-design-fun"
+      },
+      {
+        "tag": "Listening",
+        "title": "Meet the stranger challenge",
+        "dek": "Twenty minutes with someone I’ve never met — this is what made me start paying attention →",
+        "meta": "book a chat · ongoing",
+        "href": "mailto:hello@qiyuhu.com?subject=Meet%20the%20stranger"
+      }
+    ]
+  },
+  {
+    "id": "attention",
+    "label": "Paying attention",
+    "sub": "paying attention to what I notice in other people",
+    "axis": "others · think",
+    "pos": "BL",
+    "tint": "var(--cool)",
+    "framing": "Watching, listening, not-yet-acting. Most of what I’ve learned about design I’ve learned by watching people describe their work out loud.",
+    "layout": "quotes",
+    "items": []
+  },
+  {
+    "id": "work",
+    "label": "The work",
+    "sub": "what I do with others",
+    "axis": "others · do",
+    "pos": "BR",
+    "tint": "#3A6A52",
+    "framing": "The finished, shipped, collaborative stuff. Where thinking has to become a decision and other people have to live with it.",
+    "items": [
+      { "tag": "Teamwork", "title": "Collaboration: the good side and the annoying side", "dek": "Forthcoming.", "meta": "draft",                 "href": "#" },
+      { "tag": "Shipping", "title": "All the things we’ve shipped together",              "dek": "Forthcoming.", "meta": "gallery · forthcoming", "href": "#" }
+    ]
+  }
+]

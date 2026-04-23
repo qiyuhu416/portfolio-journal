@@ -1,0 +1,127 @@
+---
+slug: thinking-outside-the-box
+num: "01"
+quality: Creativity
+title: Thinking outside the box
+dek: What exactly does that mean?
+date: Apr 2026
+readtime: 6
+tint: "#C96A2E"
+surface: "#F3E4D4"
+sections:
+  - { id: see,   label: "See the box" }
+  - { id: know,  label: "Know the box" }
+  - { id: break, label: "Break the box" }
+---
+
+import { Figure } from '@/components/Figure'
+import { PullQuote } from '@/components/PullQuote'
+import { Aside } from '@/components/Aside'
+import { YouTube } from '@/components/YouTube'
+import { Collage } from '@/components/Collage'
+import { InlineLink } from '@/components/InlineLink'
+
+// Drop image files into ./images/ and uncomment these as you go.
+// The collage will automatically pick them up in item order.
+// import orangePrototype  from './images/orange-prototype.jpg'
+// import meterFace        from './images/meter-face.jpg'
+// import catJelly         from './images/cat-jelly.jpg'
+// import arduinoPlushie   from './images/arduino-plushie.jpg'
+// import smileySand       from './images/smiley-sand.jpg'
+
+I always thought I had a kind of quirky mind.
+
+<Collage
+  fig="01"
+  caption="Things I made before I had the word for it."
+  items={[
+    { alt: "Orange, prototype",          aspectRatio: "3 / 4", caption: "Orange, prototype" },
+    { alt: "Street meter with a face",   aspectRatio: "1 / 1", caption: "Faces in meters" },
+    { alt: "Jelly-cat drawing on a cat", aspectRatio: "4 / 3", caption: "Cat, with a jelly cat" },
+    { alt: "Arduino + sun plushie",      aspectRatio: "4 / 3", caption: "Sun, animated" },
+    { alt: "Smiley drawn in sand",       aspectRatio: "1 / 1", caption: "Smiley, in sand" },
+  ]}
+/>
+
+But then I realized thinking outside the box is actually hard. Everyone has the ability to come up with creative ideas — I've seen super creative ideas in <InlineLink to="friends-of-friends-at-work">brainstorming sessions</InlineLink> from engineers, PMs, anyone.
+
+The hard part is building a system that helps you *consistently* think outside the box. Here are my takeaways so far:
+
+- First, see the box.
+- Second, know the box — where it'll give, and where it won't.
+- Third, have the courage to break it — small, and together.
+
+<h2 id="see">§1 · See the box</h2>
+
+A box is usually an assumption. The first thing that comes to mind when we hear a word. The association we didn't notice we made.
+
+- Designers → Figma
+- Engineers → coding
+- AI → chatbot
+- Portfolio → "hello, I am xxx" and a gallery of case studies
+- Work → sitting at an office
+
+Trace any one of these to its root and the answer is usually evolutionary or social — not a law of nature. It's a shape that happened to hold, and then everyone kept holding it.
+
+But seeing shouldn't be luck. The method I keep reaching for is the **Analysis-Synthesis Bridge** — start from something concrete (a tool, a default behavior), walk up to the pattern underneath, then come back down and ask: *is this shape still serving me?*
+
+<Figure fig="02" placeholder alt="Analysis-Synthesis Bridge sketches" caption="A version of the bridge I drew while untangling a problem at an early-stage startup. Not a diagram to look at — a loop to walk through." />
+
+It sounds formal; in practice it's just the same loop, repeated. Name the concrete thing. Name the shape it's part of. Ask whether you still need that shape. The box becomes visible at the top of the loop — not the bottom.
+
+<h2 id="know">§2 · Know the box</h2>
+
+At a startup I worked at, designers pushed to staging and merged to main every week. Mistakes were cheap.
+
+At Apple, the same move would cross six teams downstream. Both are real; neither is wrong.
+
+Once you see the box, it's tempting to assume every wall is there by accident — and that the job is to punch through. Most of the time it's the opposite. The wall is load-bearing. Someone chose it for a reason you don't know yet.
+
+<PullQuote attribution="me, after learning this the slow way">
+  Sometimes the safest solution is the right one. That's okay.
+</PullQuote>
+
+But that doesn't mean you stop looking. The courage isn't in breaking everything — it's in knowing *where* to look for the places that'll give.
+
+So I draw this, sometimes on paper, sometimes just in my head:
+
+<Figure fig="03" placeholder alt="A 2×2 of impact vs. risk" caption="Impact on one axis, risk on the other. I'm looking for the top-left: high impact, low risk. That's where most small wins hide." />
+
+A dot I'd put on that map: sharing a repo with my PM, so we can brainstorm inside the same artifact instead of around it. Low risk, real lift. Another one: paper prototyping with my engineers role-playing as an LLM — a strange-sounding thing I wrote about on [LinkedIn](#). It worked.
+
+The box is still a box. But now I know which corner I'm allowed to push on.
+
+<h2 id="break">§3 · Break the box</h2>
+
+This is the hardest part.
+
+I often get asked *why?* — if something has been working the way it is, then at least it works. So what's the motivation to do things differently, especially when trying takes time and effort?
+
+My takeaway: **start small, and make it fun.**
+
+<Aside>
+  "What if we made the survey impossible to ignore?" — Facing a recruitment challenge in a UX design project for The Mentoring Partnership, I asked my teammate to make it fun. It worked: a 10%+ increase in user responses.
+</Aside>
+
+<Collage
+  fig="04"
+  caption="Strange, but effective. The survey, placed where it couldn't be ignored."
+  items={[
+    { alt: "Placed on the ground",       aspectRatio: "1 / 1", caption: "Placed on the ground" },
+    { alt: "Horizontally on the wall",   aspectRatio: "1 / 1", caption: "Horizontally on the wall" },
+    { alt: "Intentionally falling off",  aspectRatio: "1 / 1", caption: "Intentionally falling off the board" },
+    { alt: "Held by a cute robot",       aspectRatio: "1 / 1", caption: "Held by a cute robot 🤖" },
+    { alt: "Facing the toilet",          aspectRatio: "1 / 1", caption: "Facing the toilet" },
+  ]}
+/>
+
+A few more small moves I've tried: brainstorming somewhere that isn't the office — a cafeteria, a bubble tea shop, on a walk *(inspired by Today Was Fun, which Mia lent me)*. Leaving rough things online on purpose — including the video below.
+
+Small moves. The box bends before it breaks.
+
+<YouTube
+  id="cUdWs5kfGss"
+  fig="05"
+  title="Thinking outside the box — a video essay"
+  caption="A video version of the argument, made earlier. It's not polished. I'm leaving it that way on purpose."
+/>

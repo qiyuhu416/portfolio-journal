@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Qiyu Hu — Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAF8F3;
+      --ink: #1F1E1B;
+      --ink-2: #3A3833;
+      --ink-3: #6B665C;
+      --ink-4: #9A9387;
+      --line: #E9E3D6;
+      --surface: #F3EEE2;
+      --warm: #C96A2E;
+      --warm-ink: #7A3B14;
+      --cool: #5660A3;
+      --serif: 'Source Serif 4', Charter, 'Georgia', serif;
+      --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; }
+    ::selection { background: #F3B98C; color: var(--ink); }
+    * { box-sizing: border-box; }
+    @keyframes livePulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(1.5); } }
+    @keyframes drift { 0% { transform: translateY(0) rotate(var(--r,0deg)); } 50% { transform: translateY(-4px) rotate(var(--r,0deg)); } 100% { transform: translateY(0) rotate(var(--r,0deg)); } }
+    @keyframes fadeSwap { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scrollHint { 0% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(6px); opacity: 1; } 100% { transform: translateY(0); opacity: .4; } }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    // =======================================================================
+    // Journal — 4-card overview (no scroll) + article view.
+    // =======================================================================
+
+    const JOURNAL_ENTRIES = [
+      {
+        slug: 'values-i-design-by',
+        num: '01',
+        quality: 'Thinking',
+        title: 'The values I design by',
+        dek: 'Thinking is the flexibility I\u2019d protect if I were a leader. So I protect it in myself first.',
+        date: 'Apr 2026',
+        readtime: '5 min',
+        tint: '#C96A2E',
+        surface: '#F9E4CF',
+      },
+      {
+        slug: 'ui-needs-to-serve-a-goal',
+        num: '02',
+        quality: 'Purpose',
+        title: 'UI needs to serve a goal',
+        dek: 'The interface is never the product. The goal is the product. The interface is a promise.',
+        date: 'Apr 2026',
+        readtime: '7 min',
+        tint: '#5660A3',
+        surface: '#DFE2EE',
+      },
+      {
+        slug: 'making-ai-feel-human',
+        num: '03',
+        quality: 'Restraint',
+        title: 'Making AI feel human',
+        dek: 'The difference between a machine that answers and one that listens is often a small pause.',
+        date: 'Apr 2026',
+        readtime: '9 min',
+        tint: '#7A3B14',
+        surface: '#F3E0CC',
+      },
+      {
+        slug: 'research-as-design',
+        num: '04',
+        quality: 'Curiosity',
+        title: 'Research as a design tool',
+        dek: 'Why I stopped separating the two, and what happened when I let them mix.',
+        date: 'Oct 2025',
+        readtime: '8 min',
+        tint: '#3A6A52',
+        surface: '#DDE8DF',
+      },
+    ];
+
+    function QualityNav({ selected, onSelect, variant = 'large' }) {
+      const offsets = variant === 'large' ? [0, 56, 24, 72] : [0, 28, 10, 36];
+      const cardW = variant === 'large' ? 132 : 96;
+      const cardH = variant === 'large' ? 96 : 72;
+      const gap   = variant === 'large' ? 28 : 16;
+
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', gap, alignItems: 'flex-start', paddingTop: variant === 'large' ? 10 : 6, paddingBottom: variant === 'large' ? 90 : 50 }}>
+          {JOURNAL_ENTRIES.map((e, i) => {
+            const active = selected === e.slug;
+            return (
+              <button key={e.slug}
+                onClick={() => onSelect(e.slug)}
+                style={{
+                  border: 'none', background: 'transparent', padding: 0, cursor: 'pointer',
+                  textAlign: 'left', transform: `translateY(${offsets[i]}px)`,
+                  transition: 'transform .25s ease, opacity .2s',
+                  opacity: active ? 1 : 0.55,
+                }}
+                onMouseEnter={(ev) => { ev.currentTarget.style.opacity = 1; }}
+                onMouseLeave={(ev) => { ev.currentTarget.style.opacity = active ? 1 : 0.55; }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: variant === 'large' ? 11 : 10, color: 'var(--ink-3)', letterSpacing: 0.6, marginBottom: 8 }}>
+                  ({e.num})
+                </div>
+                <div style={{
+                  width: cardW, height: cardH, background: e.surface,
+                  border: `1px solid ${active ? e.tint : 'var(--line)'}`,
+                  borderRadius: 3,
+                  position: 'relative', overflow: 'hidden',
+                  boxShadow: active ? '0 8px 24px rgba(31,30,27,0.08)' : 'none',
+                  transition: 'box-shadow .25s, border-color .2s',
+                }}>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: variant === 'large' ? 44 : 32, color: e.tint, lineHeight: 1 }}>
+                    {e.quality[0]}
+                  </div>
+                  <div style={{ position: 'absolute', top: 6, left: 8, fontFamily: 'var(--mono)', fontSize: 8, color: e.tint, letterSpacing: 0.6, opacity: 0.7 }}>
+                    {e.num}
+                  </div>
+                </div>
+                <div style={{ marginTop: 10, fontSize: variant === 'large' ? 12 : 11, lineHeight: 1.35, color: 'var(--ink-2)', width: cardW }}>
+                  <div style={{ fontWeight: 500, color: 'var(--ink)' }}>{e.quality}</div>
+                  <div style={{ color: 'var(--ink-3)', fontSize: variant === 'large' ? 11 : 10 }}>
+                    {e.title}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    function QualityFeature({ entry, onOpen, variant = 'large' }) {
+      const imgH = variant === 'large' ? 380 : 260;
+
+      return (
+        <div style={{ position: 'relative', textAlign: 'center' }}>
+          <h2
+            onClick={onOpen}
+            style={{
+              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontSize: variant === 'large' ? 'clamp(40px, 5.6vw, 82px)' : 'clamp(28px, 3.4vw, 46px)',
+              lineHeight: 1.02, letterSpacing: -1.8,
+              margin: 0, color: 'var(--ink)', cursor: 'pointer',
+              maxWidth: 1100, marginLeft: 'auto', marginRight: 'auto',
+            }}>
+            {entry.title.split(' ').map((w, i, a) =>
+              i === a.length - 1 ? <span key={i} style={{ fontStyle: 'italic', color: entry.tint }}>{w}</span> : w + ' '
+            )}
+          </h2>
+
+          <div style={{ position: 'relative', marginTop: variant === 'large' ? 40 : 24, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', left: variant === 'large' ? '10%' : '6%', top: variant === 'large' ? 110 : 70, fontFamily: 'var(--serif)', fontWeight: 400, fontSize: variant === 'large' ? 72 : 48, color: 'var(--ink)', lineHeight: 1, userSelect: 'none' }}>
+              ✳
+            </div>
+            <div style={{ position: 'absolute', left: variant === 'large' ? '19%' : '14%', top: variant === 'large' ? 80 : 50, fontFamily: 'var(--serif)', fontSize: variant === 'large' ? 140 : 90, color: 'var(--ink)', lineHeight: 1, userSelect: 'none' }}>
+              (
+            </div>
+            <div style={{ position: 'absolute', right: variant === 'large' ? '19%' : '14%', top: variant === 'large' ? 80 : 50, fontFamily: 'var(--serif)', fontSize: variant === 'large' ? 140 : 90, color: 'var(--ink)', lineHeight: 1, userSelect: 'none' }}>
+              )
+            </div>
+
+            <figure
+              onClick={onOpen}
+              style={{
+                margin: 0,
+                width: variant === 'large' ? 'min(880px, 60vw)' : 'min(560px, 44vw)',
+                height: imgH,
+                background: entry.surface,
+                position: 'relative', overflow: 'hidden',
+                cursor: 'pointer',
+              }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0 20px, rgba(255,255,255,0.15) 20px 21px)' }} />
+              <div style={{ position: 'absolute', top: 14, left: 16, fontFamily: 'var(--mono)', fontSize: 10, color: entry.tint, letterSpacing: 0.6, opacity: 0.8 }}>
+                {entry.num} · {entry.quality.toUpperCase()}
+              </div>
+              <div style={{ position: 'absolute', bottom: 14, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: variant === 'large' ? 120 : 72, color: entry.tint, opacity: 0.22, lineHeight: 0.8 }}>
+                  {entry.quality[0].toLowerCase()}
+                </div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: entry.tint, letterSpacing: 0.6, opacity: 0.8, textAlign: 'right' }}>
+                  {entry.date} · {entry.readtime}
+                </div>
+              </div>
+            </figure>
+          </div>
+
+          {variant === 'large' && (
+            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 20, lineHeight: 1.5, color: 'var(--ink-2)', maxWidth: 640, margin: '32px auto 0' }}>
+              {entry.dek}
+            </p>
+          )}
+          <button onClick={onOpen} style={{ marginTop: variant === 'large' ? 20 : 14, border: 'none', background: 'transparent', fontSize: 13, color: 'var(--ink-2)', cursor: 'pointer', borderBottom: '1px solid var(--ink-3)', paddingBottom: 2 }}>
+            Read the essay →
+          </button>
+        </div>
+      );
+    }
+
+    function JournalIndex({ onNav }) {
+      const [selected, setSelected] = React.useState(JOURNAL_ENTRIES[0].slug);
+      const entry = JOURNAL_ENTRIES.find(e => e.slug === selected) || JOURNAL_ENTRIES[0];
+
+      React.useEffect(() => {
+        const h = (ev) => {
+          if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+          const i = JOURNAL_ENTRIES.findIndex(e => e.slug === selected);
+          const n = ev.key === 'ArrowRight' ? (i + 1) % JOURNAL_ENTRIES.length : (i - 1 + JOURNAL_ENTRIES.length) % JOURNAL_ENTRIES.length;
+          setSelected(JOURNAL_ENTRIES[n].slug);
+        };
+        window.addEventListener('keydown', h);
+        return () => window.removeEventListener('keydown', h);
+      }, [selected]);
+
+      return (
+        <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)', display: 'flex', flexDirection: 'column' }}>
+          <TopBar onNav={onNav} current="journal" />
+
+          <div style={{ padding: '90px 32px 0', maxWidth: 1400, margin: '0 auto', width: '100%', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 1.4, textTransform: 'uppercase' }}>
+            <span>Drafts — four qualities I return to</span>
+            <span>←/→ to cycle</span>
+          </div>
+
+          <div style={{ padding: '32px 32px 0', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+            <QualityNav selected={selected} onSelect={setSelected} variant="large" />
+          </div>
+
+          <div style={{ flex: 1, padding: '0 32px 60px', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+            <QualityFeature entry={entry} onOpen={() => onNav('article:' + entry.slug)} variant="large" />
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--line)', padding: '18px 32px', display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-4)', letterSpacing: 0.4 }}>
+            <span>© {new Date().getFullYear()} — QIYU HU</span>
+            <span>Made slowly, on purpose.</span>
+          </div>
+        </div>
+      );
+    }
+
+    function JournalArticle({ slug, onNav }) {
+      const entry = JOURNAL_ENTRIES.find(e => e.slug === slug) || JOURNAL_ENTRIES[0];
+      const [progress, setProgress] = React.useState(0);
+      const [activeSection, setActiveSection] = React.useState(0);
+      const scrollRef = React.useRef(null);
+      const sectionRefs = React.useRef([]);
+
+      const SECTIONS = [
+        { id: 's1', label: 'The pauses' },
+        { id: 's2', label: 'Looking for seams' },
+        { id: 's3', label: 'Restraint, not performance' },
+      ];
+
+      React.useEffect(() => {
+        const el = scrollRef.current;
+        const onScroll = () => {
+          if (!el) return;
+          const max = el.scrollHeight - el.clientHeight;
+          setProgress(max > 0 ? el.scrollTop / max : 0);
+
+          const line = el.scrollTop + el.clientHeight * 0.35;
+          let idx = 0;
+          sectionRefs.current.forEach((sec, i) => {
+            if (sec && sec.offsetTop <= line) idx = i;
+          });
+          setActiveSection(idx);
+        };
+        el?.addEventListener('scroll', onScroll);
+        onScroll();
+        return () => el?.removeEventListener('scroll', onScroll);
+      }, [slug]);
+
+      const jumpTo = (i) => {
+        const sec = sectionRefs.current[i];
+        const el = scrollRef.current;
+        if (!sec || !el) return;
+        el.scrollTo({ top: sec.offsetTop - 80, behavior: 'smooth' });
+      };
+
+      return (
+        <div ref={scrollRef} style={{ height: '100vh', overflowY: 'auto', background: 'var(--bg)', color: 'var(--ink)' }}>
+          <TopBar onNav={onNav} current="journal" />
+
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 2, zIndex: 100 }}>
+            <div style={{ height: '100%', background: entry.tint, width: `${progress * 100}%`, transition: 'width .1s linear' }} />
+          </div>
+
+          <button onClick={() => onNav('home')}
+            style={{
+              position: 'fixed', top: 80, left: 32, zIndex: 38,
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 14px', borderRadius: 999,
+              background: 'rgba(250,248,243,0.85)', backdropFilter: 'blur(10px)',
+              border: '1px solid var(--line)',
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase',
+              color: 'var(--ink-2)', cursor: 'pointer',
+            }}>
+            <span style={{ fontSize: 14, lineHeight: 1 }}>←</span>
+            <span>Back home</span>
+          </button>
+
+          <nav style={{
+            position: 'fixed', top: '50%', right: 32, transform: 'translateY(-50%)', zIndex: 38,
+            display: 'flex', flexDirection: 'column', gap: 4,
+            maxWidth: 220,
+          }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 12, paddingLeft: 14 }}>
+              In this piece
+            </div>
+            {SECTIONS.map((s, i) => {
+              const isActive = i === activeSection;
+              const isPast = i < activeSection;
+              return (
+                <button key={s.id} onClick={() => jumpTo(i)}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '8px 0 8px 14px', background: 'transparent', border: 'none', cursor: 'pointer',
+                    textAlign: 'left', position: 'relative',
+                  }}>
+                  <div style={{
+                    position: 'absolute', left: 0, top: 10, bottom: 10,
+                    width: 2,
+                    background: isActive ? entry.tint : isPast ? entry.tint : 'var(--line)',
+                    opacity: isActive ? 1 : isPast ? 0.4 : 1,
+                    transition: 'all .25s',
+                  }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+                    <div style={{
+                      fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
+                      color: isActive ? entry.tint : 'var(--ink-4)',
+                      transition: 'color .25s',
+                    }}>
+                      §{String(i + 1).padStart(2, '0')}
+                    </div>
+                    <div style={{
+                      fontFamily: 'var(--serif)', fontSize: 14, lineHeight: 1.3,
+                      color: isActive ? 'var(--ink)' : isPast ? 'var(--ink-3)' : 'var(--ink-3)',
+                      fontStyle: isActive ? 'italic' : 'normal',
+                      transition: 'color .25s',
+                    }}>
+                      {s.label}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+
+          <article style={{ maxWidth: 680, margin: '0 auto', padding: '140px 32px 120px' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: entry.tint, marginBottom: 16 }}>
+              {entry.num} · {entry.quality} · {entry.date} · {entry.readtime}
+            </div>
+            <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(44px, 6vw, 68px)', lineHeight: 1.04, letterSpacing: -1.8, margin: 0 }}>
+              {entry.title}
+            </h1>
+            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 22, lineHeight: 1.45, color: 'var(--ink-2)', marginTop: 18 }}>
+              {entry.dek}
+            </p>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 32, paddingTop: 20, borderTop: '1px solid var(--line)', fontSize: 13, color: 'var(--ink-3)' }}>
+              <div style={{ width: 30, height: 30, borderRadius: 15, background: entry.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15 }}>q</div>
+              <div>By <b style={{ color: 'var(--ink)' }}>Qiyu Hu</b></div>
+            </div>
+          </article>
+
+          <figure style={{ margin: '0 auto 80px', maxWidth: 1040, padding: '0 32px' }}>
+            <div style={{ height: 380, background: entry.surface, position: 'relative', overflow: 'hidden', borderRadius: 8 }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px)' }} />
+              <div style={{ position: 'absolute', top: 18, left: 22, fontFamily: 'var(--mono)', fontSize: 10, color: entry.tint, letterSpacing: 0.5, opacity: 0.8 }}>
+                PLACEHOLDER · HERO
+              </div>
+              <div style={{ position: 'absolute', bottom: 20, right: 22, fontFamily: 'var(--mono)', fontSize: 10, color: entry.tint, letterSpacing: 0.6, opacity: 0.7 }}>FIG. 01</div>
+            </div>
+            <figcaption style={{ maxWidth: 680, margin: '14px auto 0', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3 }}>
+              Fig. 01 · A photograph goes here when the piece is finished.
+            </figcaption>
+          </figure>
+
+          <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 32px', fontFamily: 'var(--serif)', fontSize: 19, lineHeight: 1.7, color: 'var(--ink)' }}>
+            <section ref={(el) => (sectionRefs.current[0] = el)}>
+              <h2 style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: entry.tint, margin: '0 0 18px', fontWeight: 500 }}>
+                §1 · The pauses
+              </h2>
+              <p style={{ margin: '0 0 1.4em' }}>
+                <span style={{ fontSize: 62, float: 'left', lineHeight: 0.9, marginRight: 10, marginTop: 4, color: entry.tint, fontStyle: 'italic' }}>T</span>he first time a person told me my agent felt "human," I was disappointed. I had built
+                it to be honest about being a machine. I had written the word <em>assistant</em> with care.
+                And yet here was a user, smiling, saying the thing I had tried not to engineer.
+              </p>
+              <p style={{ margin: '0 0 1.4em' }}>
+                What made it feel human wasn't the voice. It was the pauses — the little moments where
+                the system waited instead of rushing. It was the asymmetry. The places where it admitted
+                it hadn't heard, or asked a small clarifying question that was slightly off-topic but
+                genuinely curious.
+              </p>
+
+              <blockquote style={{ margin: '40px 0', padding: '24px 0', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400, fontSize: 32, lineHeight: 1.2, letterSpacing: -0.6, color: 'var(--ink)' }}>
+                  "Humanity, in interfaces, is <span style={{ color: entry.tint }}>not about imitation</span>.
+                  It's about restraint."
+                </div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.4, marginTop: 14 }}>
+                  — NOTE TO SELF, MARCH 14
+                </div>
+              </blockquote>
+            </section>
+
+            <section ref={(el) => (sectionRefs.current[1] = el)} style={{ paddingTop: 40 }}>
+              <h2 style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: entry.tint, margin: '0 0 18px', fontWeight: 500 }}>
+                §2 · Looking for seams
+              </h2>
+              <p style={{ margin: '0 0 1.4em' }}>
+                So I started looking for the seams. I printed out every transcript and highlighted the
+                moments users said "oh" — little surprises of warmth. I started a spreadsheet of those
+                moments, color-coded by which design choice had caused them.
+              </p>
+              <p style={{ margin: '0 0 1.4em' }}>
+                Three months later the same pattern kept showing up. Users felt warmer toward systems
+                that didn't pretend to know everything — systems that would stop, think (visibly), and
+                come back with a smaller, more careful reply. Restraint, not performance.
+              </p>
+            </section>
+
+            <section ref={(el) => (sectionRefs.current[2] = el)} style={{ paddingTop: 40 }}>
+              <h2 style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', color: entry.tint, margin: '0 0 18px', fontWeight: 500 }}>
+                §3 · Restraint, not performance
+              </h2>
+              <p style={{ margin: '0 0 1.4em', padding: '18px 22px', background: entry.surface, borderLeft: `3px solid ${entry.tint}`, fontStyle: 'italic', fontSize: 20 }}>
+                A good interface doesn't try to feel human. It tries not to feel like a machine pretending
+                to be one. Those are different designs.
+              </p>
+
+              <p style={{ margin: '0 0 1.4em' }}>
+                I don't know yet how to make this a principle. I know the teams I admire don't ship
+                confident assistants — they ship curious ones. That's the draft.
+              </p>
+            </section>
+          </div>
+
+          <div style={{ maxWidth: 1040, margin: '100px auto 0', padding: '40px 32px 80px', borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 40, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 1.2, textTransform: 'uppercase' }}>Next</div>
+              <button onClick={() => {
+                  const i = JOURNAL_ENTRIES.findIndex(e => e.slug === slug);
+                  const next = JOURNAL_ENTRIES[(i + 1) % JOURNAL_ENTRIES.length];
+                  onNav('article:' + next.slug);
+                }}
+                style={{ fontFamily: 'var(--serif)', fontSize: 32, lineHeight: 1.1, letterSpacing: -0.8, marginTop: 8, color: 'var(--ink)', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, textAlign: 'left' }}>
+                {JOURNAL_ENTRIES[(JOURNAL_ENTRIES.findIndex(e => e.slug === slug) + 1) % JOURNAL_ENTRIES.length].title} →
+              </button>
+            </div>
+            <button onClick={() => onNav('journal')}
+              style={{ padding: '12px 18px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line)', borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+              ← All entries
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function TopBar({ onNav, current }) {
+      const items = [
+        { key: 'signals', label: 'Signals', sub: 'input' },
+        { key: 'loops', label: 'Loops', sub: 'process' },
+        { key: 'drafts', label: 'Drafts', sub: 'output' },
+      ];
+      return (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '18px 32px', zIndex: 40,
+          background: 'rgba(250,248,243,0.85)', backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(233,227,214,0.7)',
+        }}>
+          <button onClick={() => onNav('home')}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
+            <div style={{ width: 24, height: 24, borderRadius: 12, background: 'var(--warm)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14 }}>q</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', letterSpacing: -0.1 }}>Qiyu Hu</div>
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {items.map((it, i) => {
+              const isActive = current === it.key || (it.key === 'drafts' && current === 'journal');
+              return (
+                <React.Fragment key={it.key}>
+                  <button onClick={() => onNav(it.key)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      padding: '4px 14px', border: 'none', background: 'transparent', cursor: 'pointer',
+                    }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: isActive ? 'var(--warm)' : 'var(--ink-2)', letterSpacing: -0.1 }}>{it.label}</span>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 0.8, textTransform: 'uppercase', color: isActive ? 'var(--warm)' : 'var(--ink-4)', opacity: 0.8 }}>{it.sub}</span>
+                  </button>
+                  {i < items.length - 1 && <span style={{ color: 'var(--ink-4)', fontSize: 10 }}>·</span>}
+                </React.Fragment>
+              );
+            })}
+            <span style={{ width: 1, height: 18, background: 'var(--line)', margin: '0 12px' }} />
+            <a href="mailto:hello@qiyuhu.com" style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink-2)' }}>Contact</a>
+          </div>
+        </div>
+      );
+    }
+
+    // =======================================================================
+    // Signals — conversations page.
+    // =======================================================================
+
+    function Signals({ onNav }) {
+      const QUOTES = [
+        {
+          n: 7,
+          text: "You keep saying 'I think' — but that's the whole point, isn't it?",
+          who: 'a designer at a coffee shop',
+          when: 'Nov 2023',
+          changed: "Made me stop apologizing for hedging. Hedging is honesty when you're still figuring it out.",
+          tint: 'var(--warm)',
+        },
+        {
+          n: 22,
+          text: "The best research is just listening with slightly better manners.",
+          who: 'a UX lead at a dinner',
+          when: 'Jan 2024',
+          changed: "Reframed my whole intake ritual. Research isn't extraction — it's attention, done well.",
+          tint: 'var(--cool)',
+        },
+        {
+          n: 41,
+          text: "You're describing a feedback loop but you're acting like it's a process.",
+          who: 'a PM over zoom',
+          when: 'Feb 2024',
+          changed: "Why 'Loops' is now a category on this site. Loops aren't process — they're what you live inside.",
+          tint: 'var(--warm)',
+        },
+      ];
+
+      return (
+        <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)' }}>
+          <TopBar onNav={onNav} current="signals" />
+
+          <section style={{ maxWidth: 1200, margin: '0 auto', padding: '140px 32px 80px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 40 }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--warm)' }}>
+                § · Signals · Input
+              </div>
+              <div style={{ height: 1, background: 'var(--line)', flex: 1 }} />
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)' }}>
+                N = 72 · as of Mar 2024
+              </div>
+            </div>
+
+            <h1 style={{
+              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontSize: 'clamp(52px, 7vw, 96px)', lineHeight: 1.02, letterSpacing: -2.2,
+              margin: 0, textWrap: 'balance', maxWidth: 920,
+            }}>
+              What I've heard. And <span style={{ fontStyle: 'italic', color: 'var(--warm)' }}>how it changed me</span>.
+            </h1>
+
+            <p style={{
+              fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 22, lineHeight: 1.5,
+              color: 'var(--ink-2)', marginTop: 28, maxWidth: 680,
+            }}>
+              Being a UX designer has made me curious about the diversity in how we think, act, and
+              interact. So I've been meeting more people — counting them, paying attention to what
+              surprises me. This is what I've collected.
+            </p>
+          </section>
+
+          <section style={{ maxWidth: 1040, margin: '0 auto', padding: '0 32px 80px' }}>
+            {QUOTES.map((q, i) => (
+              <article key={q.n} style={{
+                padding: '56px 0', borderTop: '1px solid var(--line)',
+                display: 'grid', gridTemplateColumns: '80px 1fr', gap: 32,
+              }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 0.8, color: q.tint }}>
+                  #{String(q.n).padStart(2, '0')}
+                </div>
+                <div>
+                  <blockquote style={{ margin: 0 }}>
+                    <div style={{
+                      fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 'clamp(24px, 2.6vw, 34px)',
+                      lineHeight: 1.3, letterSpacing: -0.6, color: 'var(--ink)', textWrap: 'balance',
+                    }}>
+                      "{q.text}"
+                    </div>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.4, marginTop: 14 }}>
+                      — {q.who.toUpperCase()} · {q.when.toUpperCase()}
+                    </div>
+                  </blockquote>
+                  <div style={{
+                    marginTop: 22, paddingTop: 18, borderTop: '1px dashed var(--line)',
+                    display: 'flex', gap: 14, alignItems: 'baseline',
+                  }}>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: q.tint, flexShrink: 0, paddingTop: 4 }}>
+                      What it changed
+                    </div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: 17, lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 620 }}>
+                      {q.changed}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <section style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 140px', borderTop: '1px solid var(--line)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+              <div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
+                  Still counting
+                </div>
+                <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(32px, 4vw, 48px)', lineHeight: 1.1, letterSpacing: -1.2, margin: 0, textWrap: 'balance' }}>
+                  The experiment is <span style={{ fontStyle: 'italic', color: 'var(--warm)' }}>ongoing</span>.
+                </h2>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: 18, lineHeight: 1.6, color: 'var(--ink-2)', marginTop: 20, maxWidth: 460 }}>
+                  If you have twenty minutes and something to say, I'd like to meet you. No agenda.
+                  Coffee, walk, or a call — your pick.
+                </p>
+              </div>
+              <div style={{ paddingLeft: 32, borderLeft: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)' }}>N =</div>
+                  <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 'clamp(72px, 9vw, 120px)', lineHeight: 0.9, letterSpacing: -3, color: 'var(--warm)' }}>72</div>
+                </div>
+                <a href="mailto:hello@qiyuhu.com?subject=Number%2073" style={{
+                  display: 'inline-flex', alignItems: 'baseline', gap: 10, marginTop: 28,
+                  fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink)',
+                  borderBottom: '1px solid var(--ink)', paddingBottom: 2,
+                }}>
+                  <span style={{ fontStyle: 'italic' }}>Book a chat.</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--warm)', letterSpacing: 0.4 }}>
+                    You'd be #73.
+                  </span>
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    // =======================================================================
+    // Loops — self-reflection page.
+    // =======================================================================
+
+    function Loops({ onNav }) {
+      return (
+        <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)' }}>
+          <TopBar onNav={onNav} current="loops" />
+
+          <section style={{ maxWidth: 1200, margin: '0 auto', padding: '140px 32px 60px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 40 }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--cool)' }}>
+                § · Loops · Process
+              </div>
+              <div style={{ height: 1, background: 'var(--line)', flex: 1 }} />
+            </div>
+
+            <h1 style={{
+              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontSize: 'clamp(52px, 7vw, 96px)', lineHeight: 1.02, letterSpacing: -2.2,
+              margin: 0, textWrap: 'balance', maxWidth: 920,
+            }}>
+              The patterns I <span style={{ fontStyle: 'italic', color: 'var(--cool)' }}>run on myself</span>.
+            </h1>
+
+            <p style={{
+              fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 22, lineHeight: 1.5,
+              color: 'var(--ink-2)', marginTop: 28, maxWidth: 680,
+            }}>
+              A loop isn't a process — it's something you live inside. These are mine,
+              as honestly as I can draw them.
+            </p>
+          </section>
+
+          <section style={{ maxWidth: 1040, margin: '0 auto', padding: '40px 32px 80px' }}>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
+              Fig. 01 · Where things sit, on a spectrum
+            </div>
+
+            <div style={{ position: 'relative', height: 280, border: '1px solid var(--line)', borderRadius: 8, background: 'var(--surface)', padding: '40px 60px' }}>
+              <div style={{ position: 'absolute', left: 60, right: 60, top: '50%', height: 1, background: 'var(--ink-3)' }} />
+              <div style={{ position: 'absolute', left: 60, top: '50%', marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
+                ← makes me uncomfortable
+              </div>
+              <div style={{ position: 'absolute', right: 60, top: '50%', marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
+                comes naturally →
+              </div>
+
+              {[
+                { x: 12, label: 'pixel perfection', tone: 'cool' },
+                { x: 22, label: 'saying "yes" to bad UX', tone: 'cool' },
+                { x: 38, label: 'ignoring data', tone: 'cool' },
+                { x: 58, label: 'comfort zones', tone: 'warm' },
+                { x: 72, label: 'inviting challenge', tone: 'warm' },
+                { x: 82, label: 'finding patterns', tone: 'warm' },
+                { x: 90, label: 'systems thinking', tone: 'warm' },
+              ].map((d, i) => {
+                const offsetY = i % 2 === 0 ? -44 : 28;
+                const c = d.tone === 'warm' ? 'var(--warm)' : 'var(--cool)';
+                return (
+                  <div key={d.label} style={{ position: 'absolute', left: `${d.x}%`, top: '50%' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 4, background: c, transform: 'translate(-50%, -50%)' }} />
+                    <div style={{
+                      position: 'absolute', left: 0, top: offsetY,
+                      transform: 'translateX(-50%)',
+                      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.4,
+                      color: 'var(--ink-2)', whiteSpace: 'nowrap',
+                    }}>
+                      {d.label}
+                      <div style={{
+                        position: 'absolute', left: '50%', top: offsetY < 0 ? '100%' : -10,
+                        width: 1, height: Math.abs(offsetY) - 6, background: 'var(--line)',
+                      }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3, marginTop: 14, maxWidth: 680 }}>
+              Placeholder · The real version will be annotated, interactive, and probably revised
+              every few months as I learn new things about myself.
+            </p>
+          </section>
+
+          <section style={{ maxWidth: 680, margin: '0 auto', padding: '60px 32px 140px' }}>
+            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 'clamp(22px, 2.4vw, 28px)', lineHeight: 1.45, color: 'var(--ink)', margin: 0, textWrap: 'balance' }}>
+              The tension between the left and right side of this chart is <span style={{ color: 'var(--warm)' }}>where the work happens</span>.
+              Both help me. Both sometimes make me uncomfortable.
+            </p>
+          </section>
+        </div>
+      );
+    }
+
+    // =======================================================================
+    // Home v2 — hero wordmark → zoom out to 2x2 → scroll-driven tour.
+    // =======================================================================
+
+    const QUADRANTS = [
+      {
+        id: 'mirror',
+        label: 'The mirror',
+        sub: 'what I see when it\u2019s just me',
+        axis: 'self \u00b7 think',
+        pos: 'TL',
+        tint: 'var(--warm)',
+        framing: 'Where I argue with myself. This is the quadrant I write in when I don\u2019t know what I believe yet \u2014 the one where first drafts go to be held up to the light.',
+        items: [
+          { kind: 'draft', title: 'The values I design by', dek: 'Thinking is the flexibility I\u2019d protect if I were a leader.', meta: '01 \u00b7 5 min', href: '#article:values-i-design-by' },
+          { kind: 'loop', title: 'What I\u2019m good at. What I\u2019m not.', dek: 'An honest inventory. Revised every few months.', meta: 'self-audit \u00b7 Mar 2024', href: '#loops' },
+          { kind: 'signal', title: '\u201CYou keep saying \u2018I think\u2019 \u2014 but that\u2019s the whole point.\u201D', dek: 'Made me stop apologizing for hedging.', meta: '#07 \u00b7 a designer, Nov 2023', href: '#signals' },
+        ],
+      },
+      {
+        id: 'attention',
+        label: 'Paying attention',
+        sub: 'what I notice in other people',
+        axis: 'others \u00b7 think',
+        pos: 'TR',
+        tint: 'var(--cool)',
+        framing: 'Watching, listening, not-yet-acting. Most of what I\u2019ve learned about design I\u2019ve learned by watching people describe their work out loud.',
+        items: [
+          { kind: 'signal', title: '\u201CResearch is just listening with slightly better manners.\u201D', dek: 'Reframed my whole intake ritual.', meta: '#22 \u00b7 a UX lead, Jan 2024', href: '#signals' },
+          { kind: 'signal', title: '\u201CYou\u2019re describing a feedback loop but acting like it\u2019s a process.\u201D', dek: 'Why \u2018Loops\u2019 is now a category.', meta: '#41 \u00b7 a PM, Feb 2024', href: '#signals' },
+          { kind: 'draft', title: 'Research as a design tool', dek: 'Why I stopped separating the two.', meta: '04 \u00b7 8 min', href: '#article:research-as-design' },
+          { kind: 'note', title: 'N=72, still counting', dek: 'The book-a-chat experiment on myself.', meta: 'ongoing', href: '#signals' },
+        ],
+      },
+      {
+        id: 'practice',
+        label: 'The practice',
+        sub: 'what I do to myself',
+        axis: 'self \u00b7 do',
+        pos: 'BL',
+        tint: 'var(--warm-ink)',
+        framing: 'The stuff I do to stay in shape. Small habits, personal rituals, ways I hold myself to my own standards when no one\u2019s watching.',
+        items: [
+          { kind: 'draft', title: 'Making AI feel human', dek: 'The difference between answering and listening is often a small pause.', meta: '03 \u00b7 9 min', href: '#article:making-ai-feel-human' },
+          { kind: 'loop', title: 'Thinking in public, on first drafts', dek: 'A ritual I run on myself.', meta: 'ritual', href: '#loops' },
+          { kind: 'note', title: 'Drafts folder: 14 unpublished', dek: 'Not every thought wants to be finished.', meta: 'updated weekly', href: '#' },
+        ],
+      },
+      {
+        id: 'work',
+        label: 'The work',
+        sub: 'what I do with others',
+        axis: 'others \u00b7 do',
+        pos: 'BR',
+        tint: '#3A6A52',
+        framing: 'The finished, shipped, collaborative stuff. Where thinking has to become a decision and other people have to live with it.',
+        items: [
+          { kind: 'draft', title: 'UI needs to serve a goal', dek: 'The interface is never the product. The goal is.', meta: '02 \u00b7 7 min', href: '#article:ui-needs-to-serve-a-goal' },
+          { kind: 'note', title: 'A case study lives here', dek: 'Forthcoming \u2014 a long one about a redesign.', meta: 'forthcoming', href: '#' },
+          { kind: 'note', title: 'Another case study lives here', dek: 'Forthcoming \u2014 a short one about a crit.', meta: 'forthcoming', href: '#' },
+        ],
+      },
+    ];
+
+    function HomeV2({ onNav }) {
+      const [scrollY, setScrollY] = React.useState(0);
+      const [viewportH, setViewportH] = React.useState(() => typeof window !== 'undefined' ? window.innerHeight : 800);
+      const [viewportW, setViewportW] = React.useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+      React.useEffect(() => {
+        const onScroll = () => setScrollY(window.scrollY);
+        const onResize = () => { setViewportH(window.innerHeight); setViewportW(window.innerWidth); };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onResize);
+        return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize); };
+      }, []);
+
+      const vh = viewportH;
+      const ch2 = vh * 1.6;
+      const chLen = vh * 1.0;
+
+      const zoom = clamp((scrollY) / ch2, 0, 1);
+      const zoomEase = smoothstep(zoom);
+
+      let tourProgress = (scrollY - ch2) / chLen;
+      const inTour = scrollY >= ch2 - vh * 0.3;
+      const activeIdx = inTour ? clamp(Math.floor(Math.max(0, tourProgress)), 0, 3) : -1;
+      const tourFrac = inTour ? clamp((tourProgress) - Math.floor(Math.max(0, tourProgress)), 0, 1) : 0;
+
+      const splitProgress = clamp((scrollY - (ch2 - vh * 0.3)) / (vh * 0.6), 0, 1);
+      const splitEase = smoothstep(splitProgress);
+
+      const bigPx = Math.min(220, viewportW * 0.13);
+      const smallPx = 18;
+      const fontPx = bigPx + (smallPx - bigPx) * zoomEase;
+      const letter = -6 + (-0.3 - -6) * zoomEase;
+
+      const jumpTo = (i) => window.scrollTo({ top: ch2 + chLen * i + 10, behavior: 'smooth' });
+
+      return (
+        <div style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '18px 32px',
+            background: `rgba(250,248,243,${0.3 + zoomEase * 0.6})`,
+            backdropFilter: zoomEase > 0.3 ? 'blur(10px)' : 'none',
+            borderBottom: `1px solid rgba(233,227,214,${zoomEase * 0.9})`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: 'var(--warm)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13 }}>q</div>
+              <div style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.1 }}>Qiyu Hu</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)', marginLeft: 6, opacity: zoomEase }}>
+                / a map of how I think
+              </div>
+            </div>
+            <a href="mailto:hello@qiyuhu.com" style={{ fontSize: 13, color: 'var(--ink-2)' }}>Contact</a>
+          </div>
+
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '100vh', zIndex: 10, overflow: 'hidden' }}>
+
+            <div style={{
+              position: 'absolute', inset: 0,
+              opacity: 1 - splitEase,
+              pointerEvents: splitEase > 0.5 ? 'none' : 'auto',
+            }}>
+              <svg viewBox={`0 0 ${viewportW} ${viewportH}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: Math.max(0, (zoomEase - 0.4) / 0.6), pointerEvents: 'none' }}>
+                <line x1={viewportW * 0.08} y1={viewportH * 0.5} x2={viewportW * 0.92} y2={viewportH * 0.5} stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
+                <line x1={viewportW * 0.5} y1={viewportH * 0.16} x2={viewportW * 0.5} y2={viewportH * 0.88} stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
+              </svg>
+              <div style={{ position: 'absolute', top: viewportH * 0.12, left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', opacity: Math.max(0, (zoomEase - 0.5) / 0.5) }}>think</div>
+              <div style={{ position: 'absolute', top: viewportH * 0.88, left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', opacity: Math.max(0, (zoomEase - 0.5) / 0.5) }}>do</div>
+              <div style={{ position: 'absolute', top: '50%', left: viewportW * 0.04, transform: 'translateY(-50%)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', opacity: Math.max(0, (zoomEase - 0.5) / 0.5), writingMode: 'vertical-rl' }}>self</div>
+              <div style={{ position: 'absolute', top: '50%', right: viewportW * 0.04, transform: 'translateY(-50%)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', opacity: Math.max(0, (zoomEase - 0.5) / 0.5), writingMode: 'vertical-rl' }}>others</div>
+
+              {QUADRANTS.map((q, i) => (
+                <QuadrantTeaser key={q.id} q={q} idx={i}
+                                viewportW={viewportW} viewportH={viewportH}
+                                mapOpacity={Math.max(0, (zoomEase - 0.35) / 0.65)}
+                                onClick={() => jumpTo(i)} />
+              ))}
+
+              <h1 style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                fontFamily: 'var(--serif)', fontWeight: 400,
+                fontSize: fontPx, letterSpacing: letter, lineHeight: 0.88,
+                margin: 0, color: 'var(--ink)', whiteSpace: 'nowrap', pointerEvents: 'none',
+              }}>
+                Thinking, <span style={{ fontStyle: 'italic', color: 'var(--warm)' }}>out loud</span>.
+              </h1>
+            </div>
+
+            {splitEase > 0.01 && activeIdx >= 0 && (
+              <QuadrantPanel q={QUADRANTS[activeIdx]}
+                             activeIdx={activeIdx}
+                             opacity={splitEase}
+                             fade={tourFrac}
+                             onJump={jumpTo}
+                             onNav={onNav} />
+            )}
+
+            <div style={{
+              position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)',
+              opacity: Math.max(0, 1 - zoomEase * 2),
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)',
+              pointerEvents: 'none',
+            }}>
+              <span>scroll to zoom out</span>
+              <span style={{ width: 1, height: 20, background: 'var(--ink-4)', animation: 'scrollHint 1.8s ease-in-out infinite' }} />
+            </div>
+          </div>
+
+          <div style={{ height: `${vh * 6.2}px` }} />
+
+          <div style={{ position: 'relative', zIndex: 5, background: 'var(--bg)', borderTop: '1px solid var(--line)', padding: '80px 32px 60px' }}>
+            <div style={{ maxWidth: 1040, margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 40 }}>
+              <div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 8 }}>That’s the map</div>
+                <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 24, lineHeight: 1.3, color: 'var(--ink)', maxWidth: 520 }}>Still being drawn. Most of it still in pencil.</div>
+              </div>
+              <div style={{ display: 'flex', gap: 28, fontSize: 13, color: 'var(--ink-2)' }}>
+                <a href="mailto:hello@qiyuhu.com">hello@qiyuhu.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function QuadrantTeaser({ q, idx, viewportW, viewportH, mapOpacity, onClick }) {
+      const cornerPad = 64;
+      const style = { position: 'absolute', maxWidth: Math.min(340, viewportW * 0.3), opacity: mapOpacity };
+      if (q.pos === 'TL') Object.assign(style, { top: viewportH * 0.2, left: cornerPad });
+      if (q.pos === 'TR') Object.assign(style, { top: viewportH * 0.2, right: cornerPad, textAlign: 'right' });
+      if (q.pos === 'BL') Object.assign(style, { bottom: viewportH * 0.18, left: cornerPad });
+      if (q.pos === 'BR') Object.assign(style, { bottom: viewportH * 0.18, right: cornerPad, textAlign: 'right' });
+      return (
+        <button onClick={onClick}
+          style={{ ...style, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', color: 'inherit' }}>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: q.tint, marginBottom: 10 }}>{q.axis}</div>
+          <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 28, letterSpacing: -0.8, color: 'var(--ink)', lineHeight: 1.1 }}>{q.label}</div>
+          <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-3)', marginTop: 4 }}>{q.sub}</div>
+          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.6, color: 'var(--ink-4)', marginTop: 14, textTransform: 'uppercase' }}>{q.items.length} items</div>
+        </button>
+      );
+    }
+
+    function QuadrantPanel({ q, activeIdx, opacity, fade, onJump, onNav }) {
+      const itemsOpacity = clamp((fade - 0.05) * 2, 0, 1);
+      return (
+        <div style={{
+          position: 'absolute', top: 80, left: 0, right: 0, height: 'calc(100vh - 80px)',
+          padding: '20px 32px',
+          opacity,
+          overflowY: 'auto',
+          pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+        }}>
+          <div style={{ maxWidth: 780, margin: '0 auto', paddingTop: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <InlineMapIcon activeIdx={activeIdx} onJump={onJump} />
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: q.tint }}>
+                {q.axis}
+              </div>
+            </div>
+            <h2 style={{
+              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontSize: 'clamp(44px, 5.5vw, 72px)', lineHeight: 1.02, letterSpacing: -2,
+              margin: 0, color: 'var(--ink)', textWrap: 'balance',
+            }}>
+              {q.label}.
+            </h2>
+            <p style={{
+              fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 20, lineHeight: 1.5,
+              color: 'var(--ink-2)', margin: '16px 0 0', maxWidth: 620,
+            }}>
+              {q.sub}.
+            </p>
+            <p style={{
+              fontFamily: 'var(--serif)', fontSize: 17, lineHeight: 1.65,
+              color: 'var(--ink-2)', margin: '28px 0 36px', maxWidth: 620, textWrap: 'pretty',
+            }}>
+              {q.framing}
+            </p>
+            <div style={{ borderTop: '1px solid var(--line)', opacity: itemsOpacity, transition: 'opacity .3s' }}>
+              {q.items.map((it, i) => (
+                <a key={i} href={it.href}
+                   onClick={(e) => {
+                     if (it.href.startsWith('#article:')) { e.preventDefault(); onNav('article:' + it.href.slice(9)); }
+                     else if (it.href === '#signals' || it.href === '#loops') { e.preventDefault(); onNav(it.href.slice(1)); }
+                   }}
+                   style={{
+                     display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: 20, alignItems: 'baseline',
+                     padding: '22px 0', borderBottom: '1px solid var(--line)',
+                     textDecoration: 'none', color: 'var(--ink)', cursor: 'pointer',
+                   }}
+                   onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(31,30,27,0.02)'; }}
+                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: q.tint }}>{it.kind}</div>
+                  <div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: 20, lineHeight: 1.3, letterSpacing: -0.3, color: 'var(--ink)', textWrap: 'balance' }}>{it.title}</div>
+                    <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-3)', marginTop: 2 }}>{it.dek}</div>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4, color: 'var(--ink-4)', marginTop: 6, textTransform: 'uppercase' }}>{it.meta}</div>
+                  </div>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 14, color: 'var(--ink-3)' }}>{"\u2192"}</div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function InlineMapIcon({ activeIdx, onJump }) {
+      const [hover, setHover] = React.useState(false);
+      const size = hover ? 160 : 28;
+      const pad = hover ? 14 : 4;
+      const cellW = (size - pad * 2) / 2;
+      const cellH = (size - pad * 2) / 2;
+      return (
+        <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+          style={{
+            position: 'relative', width: size, height: size,
+            background: hover ? 'rgba(250,248,243,0.98)' : 'transparent',
+            border: hover ? '1px solid var(--line)' : 'none',
+            borderRadius: 6,
+            padding: pad,
+            transition: 'width .25s cubic-bezier(.2,.7,.2,1), height .25s cubic-bezier(.2,.7,.2,1), padding .25s, background .2s, border .2s',
+            boxShadow: hover ? '0 10px 30px rgba(31,30,27,0.08)' : 'none',
+            cursor: hover ? 'default' : 'pointer',
+            zIndex: hover ? 60 : 1,
+            flexShrink: 0,
+          }}>
+          <div style={{ position: 'absolute', left: pad, right: pad, top: '50%', height: 1, background: 'var(--ink-3)' }} />
+          <div style={{ position: 'absolute', top: pad, bottom: pad, left: '50%', width: 1, background: 'var(--ink-3)' }} />
+          {QUADRANTS.map((q, i) => {
+            const col = (q.pos === 'TL' || q.pos === 'BL') ? 0 : 1;
+            const row = (q.pos === 'TL' || q.pos === 'TR') ? 0 : 1;
+            const isActive = i === activeIdx;
+            return (
+              <button key={q.id} onClick={(e) => { e.stopPropagation(); onJump(i); }}
+                style={{
+                  position: 'absolute',
+                  left: pad + col * cellW, top: pad + row * cellH,
+                  width: cellW, height: cellH,
+                  background: 'transparent', border: 'none', padding: 0,
+                  cursor: 'pointer', fontFamily: 'inherit', color: 'inherit',
+                }}>
+                {isActive && (
+                  <div style={{
+                    position: 'absolute',
+                    width: hover ? 8 : 6, height: hover ? 8 : 6, borderRadius: '50%',
+                    background: q.tint,
+                    left: col === 0 ? (hover ? 6 : '50%') : 'auto',
+                    right: col === 1 ? (hover ? 6 : '50%') : 'auto',
+                    top: row === 0 ? (hover ? 6 : '50%') : 'auto',
+                    bottom: row === 1 ? (hover ? 6 : '50%') : 'auto',
+                    transform: hover ? 'none' : `translate(${col === 0 ? '-50%' : '50%'}, ${row === 0 ? '-50%' : '50%'})`,
+                    transition: 'all .25s',
+                  }} />
+                )}
+                {hover && (
+                  <div style={{
+                    position: 'absolute',
+                    left: col === 0 ? 6 : 'auto', right: col === 1 ? 6 : 'auto',
+                    top: row === 0 ? 20 : 'auto', bottom: row === 1 ? 8 : 'auto',
+                    maxWidth: cellW - 14,
+                    textAlign: col === 0 ? 'left' : 'right',
+                  }}>
+                    <div style={{
+                      fontFamily: 'var(--serif)', fontSize: 11, lineHeight: 1.1, letterSpacing: -0.1,
+                      color: isActive ? q.tint : 'var(--ink-2)',
+                      fontWeight: isActive ? 500 : 400,
+                    }}>{q.label}</div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function smoothstep(p) { return p * p * (3 - 2 * p); }
+
+    // =======================================================================
+    // App — hash routing.
+    // =======================================================================
+
+    function App() {
+      const [route, setRoute] = React.useState(() => window.location.hash.replace(/^#/, '') || 'home');
+      React.useEffect(() => {
+        const h = () => setRoute(window.location.hash.replace(/^#/, '') || 'home');
+        window.addEventListener('hashchange', h);
+        return () => window.removeEventListener('hashchange', h);
+      }, []);
+      const nav = (r) => { window.location.hash = r === 'home' ? '' : r; };
+      React.useEffect(() => { window.scrollTo(0, 0); }, [route]);
+
+      if (route === 'home') return <HomeV2 onNav={nav} />;
+      if (route === 'drafts' || route === 'journal') return <JournalIndex onNav={nav} />;
+      if (route === 'signals') return <Signals onNav={nav} />;
+      if (route === 'loops') return <Loops onNav={nav} />;
+      if (route.startsWith('article:')) return <JournalArticle slug={route.slice(8)} onNav={nav} />;
+      return <HomeV2 onNav={nav} />;
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

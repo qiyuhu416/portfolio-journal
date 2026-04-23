@@ -1,0 +1,9 @@
+[
+  { "x": 12, "label": "pixel perfection",         "tone": "cool" },
+  { "x": 22, "label": "saying \"yes\" to bad UX", "tone": "cool" },
+  { "x": 38, "label": "ignoring data",             "tone": "cool" },
+  { "x": 58, "label": "comfort zones",             "tone": "warm" },
+  { "x": 72, "label": "inviting challenge",        "tone": "warm" },
+  { "x": 82, "label": "finding patterns",          "tone": "warm" },
+  { "x": 90, "label": "systems thinking",          "tone": "warm" }
+]

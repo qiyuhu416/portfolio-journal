@@ -1,0 +1,26 @@
+[
+  {
+    "n": 7,
+    "text": "You keep saying 'I think' — but that's the whole point, isn't it?",
+    "who": "a designer at a coffee shop",
+    "when": "Nov 2023",
+    "changed": "Made me stop apologizing for hedging. Hedging is honesty when you're still figuring it out.",
+    "tint": "var(--warm)"
+  },
+  {
+    "n": 22,
+    "text": "The best research is just listening with slightly better manners.",
+    "who": "a UX lead at a dinner",
+    "when": "Jan 2024",
+    "changed": "Reframed my whole intake ritual. Research isn't extraction — it's attention, done well.",
+    "tint": "var(--cool)"
+  },
+  {
+    "n": 41,
+    "text": "You're describing a feedback loop but you're acting like it's a process.",
+    "who": "a PM over zoom",
+    "when": "Feb 2024",
+    "changed": "Why 'Loops' is now a category on this site. Loops aren't process — they're what you live inside.",
+    "tint": "var(--warm)"
+  }
+]

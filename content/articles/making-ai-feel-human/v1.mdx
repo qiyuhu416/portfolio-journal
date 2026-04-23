@@ -1,0 +1,59 @@
+---
+slug: making-ai-feel-human
+num: "03"
+quality: Restraint
+title: Making AI feel human
+dek: Humanity, in interfaces, is not about imitation.
+date: Apr 2026
+readtime: 9
+tint: "#7A3B14"
+surface: "#F3E0CC"
+layout: split
+sections:
+  - { id: relationship, label: "Designing the relationship" }
+  - { id: question,     label: "A question I can't shake" }
+  - { id: cant,         label: "What AI can't do" }
+---
+
+import { Figure } from '@/components/Figure'
+import { PullQuote } from '@/components/PullQuote'
+import { Aside } from '@/components/Aside'
+import { Gallery } from '@/components/Gallery'
+
+<h2 id="relationship">§1 · Designing the relationship</h2>
+
+<PullQuote attribution="a note I keep returning to">
+  Designing human–AI interaction is designing the human–AI *relationship*.
+</PullQuote>
+
+The interaction is the surface. The relationship is the shape underneath — who defers to whom, who interrupts, who learns from whose mistakes, who ends the conversation. That's the layer I've been trying to design for.
+
+<Figure fig="01" placeholder alt="TMP voice mode" caption="TMP voice mode — leaving space for the screens when the piece is further along." />
+
+<Figure fig="02" placeholder alt="Research on robots for elderly care" caption="Research I did on robots for elderly care — the clearest mirror I've found for what 'relationship' actually means here." />
+
+<h2 id="question">§2 · A question I can't shake</h2>
+
+At Apple, I ran a workshop for my design team fellows on designing *with* Claude Code. I was genuinely excited. The team… wasn't. Someone asked, very seriously: *what do you think the value of designers should be, then?*
+
+That made me sad. The question has been in my head ever since.
+
+For a while I worked at an early-stage startup where I was wired directly into the codebase. I shipped to staging myself; my changes got merged to main every week. The team was all engineers — and they wanted a designer. Not despite AI. Because of it. The hands that could move between the two modes were the bottleneck, not either mode alone.
+
+You have to put yourself in an environment like that to feel the answer. Reading about it isn't the same.
+
+<Aside>
+  The worry isn't "AI replaces designers." It's "designers don't step into the seat AI leaves open."
+</Aside>
+
+<h2 id="cant">§3 · What AI can't do</h2>
+
+Once I spent enough time collaborating with Claude, the limits became specific.
+
+**It doesn't stop.** Prompt Claude to *"act as a world-class designer, critique the work, and then give suggestions based on the critique"* and it will keep going. It will critique, suggest, critique the suggestion, suggest again. Someone still has to decide *enough*. That someone is still me.
+
+**It generates options, not judgments.** A navbar can be designed a hundred good ways. Which one is right depends on whether the tabs have dependencies between them, whether users navigate by keyboard, whether one client hits a particular button six times a day out of habit. I have a client who lives on the keyboard — Claude would never have thought of that, because it has never watched them work.
+
+**It doesn't feel the consequences.** It generates; it doesn't live inside the system afterwards. It doesn't notice a week later that the pattern it suggested is quietly producing support tickets. It doesn't experience the system over time. It doesn't pick up the subtle signals from a person — the hesitation, the habit, the context behind a decision.
+
+And even humans don't always understand themselves. There's a gap between what a person does and what they *meant* to do. That gap — between behavior and intention — is where design still matters. AI fills the fat middle of the distribution. The edges, where the real relationships live, are still ours.

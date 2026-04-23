@@ -1,0 +1,101 @@
+.article-body {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 32px;
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+/* Split layout: body fills its right-column grid cell instead of centering. */
+.article-body.split-layout {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.article-body p {
+  margin: 0 0 1.4em;
+  text-wrap: pretty;
+}
+
+.article-body h2 {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--article-tint, var(--ink-3));
+  font-weight: 500;
+  margin: 48px 0 18px;
+  scroll-margin-top: 90px;
+}
+
+.article-body h3 {
+  font-family: var(--serif);
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  margin: 40px 0 14px;
+  font-weight: 500;
+}
+
+.article-body strong { font-weight: 500; color: var(--ink); }
+.article-body em     { font-style: italic; }
+
+.article-body ul,
+.article-body ol {
+  padding-left: 24px;
+  margin: 0 0 1.4em;
+}
+.article-body li { margin: 0 0 .5em; }
+
+.article-body a {
+  color: var(--article-tint, var(--ink));
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+.article-body blockquote {
+  margin: 32px 0;
+  padding: 0 0 0 22px;
+  border-left: 3px solid var(--article-tint, var(--ink-3));
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 48px auto;
+  max-width: 120px;
+}
+
+.article-body code {
+  font-family: var(--mono);
+  font-size: 15px;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.article-body .dropcap::first-letter,
+.article-body > p:first-of-type::first-letter {
+  font-size: 62px;
+  float: left;
+  line-height: 0.9;
+  margin: 4px 10px 0 0;
+  color: var(--article-tint, var(--ink));
+  font-style: italic;
+}
+
+@keyframes drawerSlide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes drawerFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
