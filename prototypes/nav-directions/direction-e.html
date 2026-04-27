@@ -1,0 +1,458 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>E · Zoom navigation (scroll-driven)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#FBF9F4; --ink:#14130F; --ink-2:#3A3833; --ink-3:#6B665C; --ink-4:#A8A295;
+      --line:#E6E0D1; --surface:#F3EEE2;
+      --tint-tl:#B05941; --tint-tr:#A97324; --tint-bl:#4A5585; --tint-br:#7F9580;
+      --serif:'Source Serif 4',Georgia,serif;
+      --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+      --sans:'Inter',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box; margin:0; padding:0}
+    html,body{background:var(--bg); color:var(--ink); font-family:var(--sans); scroll-behavior:auto}
+    body{ min-height: 100vh }
+
+    .back{ position:fixed; top:24px; right:32px; font-family:var(--mono); font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:var(--ink-3); text-decoration:none; z-index:100 }
+    .back:hover{ color:var(--ink) }
+
+    /* Scroll driver — provides scroll height; invisible. Longer = calmer. */
+    .scroll-track{ height: 800vh; pointer-events:none }
+
+    /* Fixed camera — does not scroll; transforms based on window.scrollY. */
+    .camera{ position:fixed; inset:0; overflow:hidden; z-index:1 }
+
+    .world{
+      position:absolute; inset:0;
+      transform-origin: 50% 50%;
+      transform: scale(1);
+      will-change: transform;
+    }
+
+    /* four quadrant panels laid out as a 2×2 grid */
+    .quadrant{ position:absolute; overflow:hidden }
+    .quadrant.tl{ left:0; top:0; width:50%; height:50% }
+    .quadrant.tr{ right:0; top:0; width:50%; height:50% }
+    .quadrant.bl{ left:0; bottom:0; width:50%; height:50% }
+    .quadrant.br{ right:0; bottom:0; width:50%; height:50% }
+
+    .quadrant.tl{ --tint: var(--tint-tl) }
+    .quadrant.tr{ --tint: var(--tint-tr) }
+    .quadrant.bl{ --tint: var(--tint-bl) }
+    .quadrant.br{ --tint: var(--tint-br) }
+
+    .quadrant .surface{
+      position:absolute; inset:0;
+      background: color-mix(in srgb, var(--tint) 4%, transparent);
+    }
+
+    /* overview label — big serif title, visible when zoomed out */
+    .overview-label{
+      position:absolute; left:50%; top:50%;
+      transform: translate(-50%, -50%);
+      text-align:center; pointer-events:none;
+      transition: opacity .3s;
+    }
+    .overview-label .axis{ font-family:var(--mono); font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--tint); margin-bottom:8px }
+    .overview-label h2{ font-family:var(--serif); font-weight:400; font-size:38px; letter-spacing:-1px; color:var(--ink); margin-bottom:4px }
+    .overview-label .sub{ font-family:var(--serif); font-style:italic; font-size:14px; color:var(--ink-3); max-width:220px; margin:0 auto }
+    .overview-label .count{ font-family:var(--mono); font-size:9px; letter-spacing:1.4px; text-transform:uppercase; color:var(--ink-4); margin-top:10px }
+
+    /* detailed content appears inside a quadrant only when that quadrant is "held" */
+    .content{
+      position:absolute; inset:0; padding:96px 64px 64px; overflow:hidden;
+      /* counter-scale so content reads at normal size when world is scaled 2× */
+      transform: scale(.5);
+      transform-origin: 0 0;
+      width:200%; height:200%;
+      opacity:0;
+      transition: opacity .35s;
+      pointer-events:none;
+    }
+    .content .axis-tag{ font-family:var(--mono); font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--tint); margin-bottom:14px }
+    .content h1{ font-family:var(--serif); font-weight:400; font-size:64px; letter-spacing:-1.6px; line-height:1.02; margin-bottom:12px }
+    .content .dek{ font-family:var(--serif); font-style:italic; font-size:18px; color:var(--ink-2); max-width:560px }
+    .content .items{ display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-top:36px; max-width:820px }
+    .card{ border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--bg) }
+    .card .thumb{ aspect-ratio:16/10; background:linear-gradient(135deg, color-mix(in srgb, var(--tint) 18%, transparent), color-mix(in srgb, var(--tint) 4%, transparent)); position:relative }
+    .card .thumb::after{ content:''; position:absolute; inset:0; background:repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,.14) 18px 19px) }
+    .card .chip{ position:absolute; top:10px; left:10px; font-family:var(--mono); font-size:9px; letter-spacing:1.4px; text-transform:uppercase; color:var(--tint); background:rgba(250,248,243,.9); padding:3px 7px; border-radius:3px }
+    .card .body{ padding:12px 14px }
+    .card .title{ font-family:var(--serif); font-size:19px; line-height:1.22 }
+    .card .sub{ font-family:var(--serif); font-style:italic; font-size:14px; color:var(--ink-3); margin-top:3px }
+
+    /* dashed crosshair axes — always visible at minimum opacity; brighter at overview */
+    .axis-h, .axis-v{ position:fixed; z-index:3; pointer-events:none }
+    .axis-h{ left:0; right:0; top:50%; border-top:1px dashed var(--ink-4) }
+    .axis-v{ top:0; bottom:0; left:50%; border-left:1px dashed var(--ink-4) }
+
+    /* axis labels */
+    .label{position:fixed; font-family:var(--mono); font-size:10px; letter-spacing:1.6px; text-transform:uppercase; background:var(--bg); padding:2px 6px; z-index:4; transition:color .2s}
+    .label.qiyu  {left:50%; top:22px;   transform:translateX(-50%)}
+    .label.others{left:50%; bottom:22px;transform:translateX(-50%)}
+    .label.think {left:22px; top:50%;    transform:translateY(-50%)}
+    .label.do    {right:22px;top:50%;    transform:translateY(-50%)}
+
+    /* "you are here" breadcrumb — appears only when zoomed in */
+    .breadcrumb{
+      position:fixed; top:24px; left:50%; transform:translateX(-50%);
+      font-family:var(--mono); font-size:11px; letter-spacing:1.8px; text-transform:uppercase;
+      color:var(--ink); background:rgba(250,248,243,.92); backdrop-filter:blur(8px);
+      border:1px solid var(--line); border-radius:40px; padding:7px 14px;
+      z-index:50; pointer-events:none;
+      opacity:0; transition:opacity .35s;
+      display:inline-flex; align-items:center; gap:10px;
+    }
+    .breadcrumb .dot{ width:7px; height:7px; border-radius:50%; background:currentColor }
+    .breadcrumb .sep{ color:var(--ink-4); font-weight:400 }
+
+    /* progress rail — 4 dots along the right edge, fills as you scroll */
+    .progress{ position:fixed; right:20px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:10px; z-index:50; pointer-events:none }
+    .progress .pip{ width:6px; height:6px; border-radius:50%; background:var(--ink-4); opacity:.3; transition:opacity .25s, background .25s, transform .25s }
+    .progress .pip.on{ opacity:1; transform:scale(1.3) }
+    .progress .pip.tl.on{ background:var(--tint-tl) }
+    .progress .pip.tr.on{ background:var(--tint-tr) }
+    .progress .pip.bl.on{ background:var(--tint-bl) }
+    .progress .pip.br.on{ background:var(--tint-br) }
+
+    /* hint overlay for first-time users */
+    .hint{
+      position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+      font-family:var(--mono); font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--ink-4);
+      pointer-events:none; z-index:5;
+      transition: opacity .4s;
+    }
+    .hint .bar{ display:inline-block; width:1px; height:12px; background:var(--ink-4); margin-right:8px; vertical-align:middle; animation: blink 1.8s ease-in-out infinite }
+    @keyframes blink{ 0%,100%{opacity:.3; transform:translateY(0)} 50%{opacity:1; transform:translateY(3px)} }
+    body.moved .hint{ opacity:0 }
+
+    .legend{ position:fixed; bottom:8px; left:16px; font-family:var(--mono); font-size:9px; letter-spacing:1px; color:var(--ink-4); z-index:60 }
+  </style>
+</head>
+<body>
+  <a class="back" href="index.html">← all directions</a>
+
+  <div class="camera">
+    <div class="axis-h"></div>
+    <div class="axis-v"></div>
+    <div class="label qiyu" id="labelQiyu">Qiyu</div>
+    <div class="label others" id="labelOthers">Others</div>
+    <div class="label think" id="labelThink">Think</div>
+    <div class="label do" id="labelDo">Do</div>
+
+    <div class="world" id="world">
+      <!-- TL -->
+      <div class="quadrant tl">
+        <div class="surface"></div>
+        <div class="overview-label">
+          <div class="axis">Qiyu · Think</div>
+          <h2>The mirror</h2>
+          <div class="sub">what I see when it's just me</div>
+          <div class="count">4 pieces</div>
+        </div>
+        <div class="content" data-content="tl">
+          <div class="axis-tag">Qiyu · Think</div>
+          <h1>The mirror.</h1>
+          <div class="dek">Where I argue with myself. First drafts held up to the light.</div>
+          <div class="items">
+            <div class="card"><div class="thumb"><div class="chip">Critical</div></div><div class="body"><div class="title">Thinking outside the box</div><div class="sub">What exactly does that mean?</div></div></div>
+            <div class="card"><div class="thumb"><div class="chip">AI</div></div><div class="body"><div class="title">Designing AI products</div><div class="sub">Humanity, in interfaces, is not about imitation.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TR -->
+      <div class="quadrant tr">
+        <div class="surface"></div>
+        <div class="overview-label">
+          <div class="axis">Qiyu · Do</div>
+          <h2>The practice</h2>
+          <div class="sub">things I've initiated</div>
+          <div class="count">4 pieces</div>
+        </div>
+        <div class="content" data-content="tr">
+          <div class="axis-tag">Qiyu · Do</div>
+          <h1>The practice.</h1>
+          <div class="dek">Things I've initiated. What wouldn't exist if I waited for permission.</div>
+          <div class="items">
+            <div class="card"><div class="thumb"><div class="chip">Community</div></div><div class="body"><div class="title">Vibe-coding meetup at Apple Park</div><div class="sub">An informal lunch for the curious.</div></div></div>
+            <div class="card"><div class="thumb"><div class="chip">Hosting</div></div><div class="body"><div class="title">Friends of friends at work</div><div class="sub">I want my friends to be friends.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BL -->
+      <div class="quadrant bl">
+        <div class="surface"></div>
+        <div class="overview-label">
+          <div class="axis">Others · Think</div>
+          <h2>Paying attention</h2>
+          <div class="sub">what I notice in other people</div>
+          <div class="count">3 quotes</div>
+        </div>
+        <div class="content" data-content="bl">
+          <div class="axis-tag">Others · Think</div>
+          <h1>Paying attention.</h1>
+          <div class="dek">Watching, listening, not-yet-acting. Research is just listening with better manners.</div>
+          <div class="items">
+            <div class="card"><div class="thumb"><div class="chip">Listening</div></div><div class="body"><div class="title">“You keep saying ‘I think’.”</div><div class="sub">A designer at a coffee shop · Nov 2023</div></div></div>
+            <div class="card"><div class="thumb"><div class="chip">Synthesis</div></div><div class="body"><div class="title">“Listening with better manners.”</div><div class="sub">A UX lead at a dinner · Jan 2024</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BR -->
+      <div class="quadrant br">
+        <div class="surface"></div>
+        <div class="overview-label">
+          <div class="axis">Others · Do</div>
+          <h2>The work</h2>
+          <div class="sub">what I do with others</div>
+          <div class="count">2 pieces</div>
+        </div>
+        <div class="content" data-content="br">
+          <div class="axis-tag">Others · Do</div>
+          <h1>The work.</h1>
+          <div class="dek">Shipped, collaborative. Where thinking has to become a decision.</div>
+          <div class="items">
+            <div class="card"><div class="thumb"><div class="chip">Teamwork</div></div><div class="body"><div class="title">Collaboration: the good + annoying</div><div class="sub">Forthcoming.</div></div></div>
+            <div class="card"><div class="thumb"><div class="chip">Shipping</div></div><div class="body"><div class="title">All the things we've shipped</div><div class="sub">Forthcoming.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- "you are here" breadcrumb — positioned fixed, outside .camera -->
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="dot" id="bcDot"></span>
+    <span id="bcY">Qiyu</span>
+    <span class="sep">·</span>
+    <span id="bcX">Think</span>
+  </div>
+
+  <!-- progress rail -->
+  <div class="progress">
+    <div class="pip tl" data-q="tl"></div>
+    <div class="pip tr" data-q="tr"></div>
+    <div class="pip bl" data-q="bl"></div>
+    <div class="pip br" data-q="br"></div>
+  </div>
+
+  <div class="hint"><span class="bar"></span>scroll to zoom in</div>
+
+  <!-- scroll driver — provides height without rendering anything -->
+  <div class="scroll-track"></div>
+
+  <div class="legend">E · scroll-driven zoom — scroll down = zoom in to next quadrant; scroll up = zoom back out</div>
+
+  <script>
+    // ——— T1: one unified gesture per transition, not piecewise keyframes ———
+    // Camera = { scale, ox, oy }. Between any two holds we compute ONE
+    // continuous motion: a sinusoidal scale dip (peak-out at midpoint) +
+    // a smootherstep origin pan, with the pan staggered 20% inside the
+    // scale gesture. One acceleration, one deceleration, one move.
+    // AXIS_GAP: how close the axis line sits to the screen edge at full zoom,
+    // as a percentage of the viewport. Lower = active content fills more of
+    // the screen (landing-page feel); higher = more framing around content.
+    // 4 ≈ 48–58px on 1200–1440 viewports.
+    const AXIS_GAP = 4;
+    const G = AXIS_GAP;
+    const OVERVIEW = { scale: 1, ox: 50,       oy: 50 };
+    const TL       = { scale: 2, ox: G,        oy: G };
+    const TR       = { scale: 2, ox: 100 - G,  oy: G };
+    const BL       = { scale: 2, ox: G,        oy: 100 - G };
+    const BR       = { scale: 2, ox: 100 - G,  oy: 100 - G };
+
+    // Timeline as explicit segments over scroll progress [0..1].
+    // 'hold' segments have constant camera state; 'move' segments interpolate.
+    const SCHEDULE = [
+      { p0:0.00, p1:0.04, type:'hold', at:OVERVIEW, active:null },
+      { p0:0.04, p1:0.14, type:'move', from:OVERVIEW, to:TL, incoming:'tl' },
+      { p0:0.14, p1:0.26, type:'hold', at:TL, active:'tl' },
+      { p0:0.26, p1:0.34, type:'move', from:TL, to:TR, outgoing:'tl', incoming:'tr' },
+      { p0:0.34, p1:0.46, type:'hold', at:TR, active:'tr' },
+      { p0:0.46, p1:0.54, type:'move', from:TR, to:BL, outgoing:'tr', incoming:'bl' },
+      { p0:0.54, p1:0.66, type:'hold', at:BL, active:'bl' },
+      { p0:0.66, p1:0.74, type:'move', from:BL, to:BR, outgoing:'bl', incoming:'br' },
+      { p0:0.74, p1:0.86, type:'hold', at:BR, active:'br' },
+      { p0:0.86, p1:0.96, type:'move', from:BR, to:OVERVIEW, outgoing:'br' },
+      { p0:0.96, p1:1.00, type:'hold', at:OVERVIEW, active:null },
+    ];
+
+    const world = document.getElementById('world');
+    const contents = {
+      tl: document.querySelector('[data-content="tl"]'),
+      tr: document.querySelector('[data-content="tr"]'),
+      bl: document.querySelector('[data-content="bl"]'),
+      br: document.querySelector('[data-content="br"]'),
+    };
+    const overviewLabels = document.querySelectorAll('.overview-label');
+    const axisH = document.querySelector('.axis-h');
+    const axisV = document.querySelector('.axis-v');
+    const labelQiyu = document.getElementById('labelQiyu');
+    const labelOthers = document.getElementById('labelOthers');
+    const labelThink = document.getElementById('labelThink');
+    const labelDo = document.getElementById('labelDo');
+    const breadcrumb = document.getElementById('breadcrumb');
+    const bcY = document.getElementById('bcY');
+    const bcX = document.getElementById('bcX');
+    const bcDot = document.getElementById('bcDot');
+    const pips = {
+      tl: document.querySelector('.pip.tl'),
+      tr: document.querySelector('.pip.tr'),
+      bl: document.querySelector('.pip.bl'),
+      br: document.querySelector('.pip.br'),
+    };
+
+    const TINTS = {
+      tl: { y:'Qiyu',   x:'Think', css:'var(--tint-tl)' },
+      tr: { y:'Qiyu',   x:'Do',    css:'var(--tint-tr)' },
+      bl: { y:'Others', x:'Think', css:'var(--tint-bl)' },
+      br: { y:'Others', x:'Do',    css:'var(--tint-br)' },
+    };
+
+    function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)) }
+    function lerp(a, b, t){ return a + (b - a) * t }
+    function smootherstep(t){ return t*t*t*(t*(t*6 - 15) + 10) }  // 5th-order ease
+
+    // Unified camera gesture. Scale uses full [0,1] with sinusoidal peek-out
+    // when both endpoints are zoomed-in. Origin uses a delayed smootherstep
+    // so the pan begins after the pull-back and ends before the push-in.
+    function cameraBetween(from, to, t) {
+      const tScale  = smootherstep(t);
+      const tOrigin = smootherstep(clamp((t - 0.2) / 0.6, 0, 1));
+      const dipAmount = Math.min(from.scale, to.scale) - 1;   // 1 between zooms, 0 at overview
+      const peekDip = dipAmount * 0.55 * Math.sin(Math.PI * t);
+      return {
+        scale: lerp(from.scale, to.scale, tScale) - peekDip,
+        ox:    lerp(from.ox,    to.ox,    tOrigin),
+        oy:    lerp(from.oy,    to.oy,    tOrigin),
+      };
+    }
+
+    function segmentAt(p) {
+      for (const s of SCHEDULE) {
+        if (p >= s.p0 && p <= s.p1) return s;
+      }
+      return SCHEDULE[SCHEDULE.length - 1];
+    }
+
+    // Cross-faded, staggered content visibility:
+    // outgoing content fades from 1→0 over the first 0.55 of its move segment;
+    // incoming fades from 0→1 over the last 0.70 of its move segment.
+    function contentOpacity(q, p, seg) {
+      if (seg.type === 'hold' && seg.active === q) return 1;
+      if (seg.type === 'move') {
+        const t = (p - seg.p0) / (seg.p1 - seg.p0);
+        if (seg.outgoing === q) return clamp(1 - t / 0.55, 0, 1);
+        if (seg.incoming === q) return clamp((t - 0.30) / 0.70, 0, 1);
+      }
+      return 0;
+    }
+
+    function updateCamera(scrollY) {
+      const vh = window.innerHeight;
+      const totalScroll = document.body.scrollHeight - vh;
+      const p = clamp(scrollY / totalScroll, 0, 1);
+      const seg = segmentAt(p);
+      const state = seg.type === 'hold'
+        ? seg.at
+        : cameraBetween(seg.from, seg.to, (p - seg.p0) / (seg.p1 - seg.p0));
+
+      world.style.transformOrigin = `${state.ox}% ${state.oy}%`;
+      world.style.transform = `scale(${state.scale})`;
+
+      for (const q of ['tl','tr','bl','br']) {
+        const vis = contentOpacity(q, p, seg);
+        contents[q].style.opacity = vis;
+        contents[q].style.pointerEvents = vis > 0.5 ? 'auto' : 'none';
+        pips[q].classList.toggle('on', vis > 0.35);
+      }
+
+      // Overview elements (big quadrant titles): visible only at true overview.
+      const overviewVis = clamp((1.25 - state.scale) / 0.25, 0, 1);
+      overviewLabels.forEach(el => el.style.opacity = overviewVis);
+
+      // Crosshair position — the transformed world-center projected back to
+      // viewport coordinates. This keeps the dashed lines aligned with the
+      // actual quadrant boundary as the camera zooms/pans.
+      //   viewport = origin * (1 - scale) + world_center * scale
+      const crossVX = state.ox * (1 - state.scale) + 50 * state.scale;
+      const crossVY = state.oy * (1 - state.scale) + 50 * state.scale;
+
+      axisH.style.top  = `${crossVY}%`;
+      axisV.style.left = `${crossVX}%`;
+      labelQiyu.style.left   = `${crossVX}%`;
+      labelOthers.style.left = `${crossVX}%`;
+      labelThink.style.top   = `${crossVY}%`;
+      labelDo.style.top      = `${crossVY}%`;
+
+      // Axis lines: stay at a low baseline even when zoomed so the 2×2 frame
+      // is always legible — they're the spatial anchor.
+      const axisOpacity = 0.3 + overviewVis * 0.55;
+      axisH.style.opacity = axisOpacity;
+      axisV.style.opacity = axisOpacity;
+
+      // Active-pair emphasis — the 4 axis labels become the primary "you are
+      // here" signal when zoomed in: active pair in the quadrant's tint at
+      // full opacity, inactive pair dims.
+      const zoomAmt = clamp((state.scale - 1) / 1, 0, 1);
+      const qStrength = clamp((50 - state.oy) / 25, 0, 1);   // Qiyu = top
+      const oStrength = clamp((state.oy - 50) / 25, 0, 1);   // Others = bottom
+      const tStrength = clamp((50 - state.ox) / 25, 0, 1);   // Think = left
+      const dStrength = clamp((state.ox - 50) / 25, 0, 1);   // Do = right
+
+      // Determine the active quadrant from origin — used for active tint color
+      const activeQ = (state.oy < 50 ? (state.ox < 50 ? 'tl' : 'tr')
+                                     : (state.ox < 50 ? 'bl' : 'br'));
+      const activeTint = TINTS[activeQ].css;
+
+      function styleLabel(el, strength) {
+        // Baseline 0.7 at overview; at full zoom, active = 1, inactive = 0.25
+        const opacity = lerp(0.7, 0.25 + 0.75 * strength, zoomAmt);
+        el.style.opacity = opacity;
+        // Active labels pick up the tint; inactive stay neutral
+        const tinted = strength > 0.5 && zoomAmt > 0.3;
+        el.style.color = tinted ? activeTint : 'var(--ink-4)';
+        el.style.fontWeight = tinted ? 600 : 500;
+      }
+      styleLabel(labelQiyu, qStrength);
+      styleLabel(labelOthers, oStrength);
+      styleLabel(labelThink, tStrength);
+      styleLabel(labelDo, dStrength);
+
+      // Breadcrumb: appears only when zoomed in, shows the active pair.
+      const bcVis = clamp((state.scale - 1.2) / 0.5, 0, 1);
+      breadcrumb.style.opacity = bcVis;
+      bcY.textContent = TINTS[activeQ].y;
+      bcX.textContent = TINTS[activeQ].x;
+      bcDot.style.background = activeTint;
+
+      if (scrollY > 10) document.body.classList.add('moved');
+    }
+
+    // ——— T2: low-pass filter scrollY so camera motion isn't wheel-tick staccato ———
+    let rawScrollY = window.scrollY;
+    let smoothScrollY = rawScrollY;
+    window.addEventListener('scroll', () => { rawScrollY = window.scrollY; }, { passive: true });
+    window.addEventListener('resize', () => updateCamera(smoothScrollY));
+
+    function tick() {
+      const delta = rawScrollY - smoothScrollY;
+      // snap when arbitrarily close; lerp at 18%/frame otherwise — feels responsive but dampens wheel jitter
+      if (Math.abs(delta) < 0.3) smoothScrollY = rawScrollY;
+      else smoothScrollY += delta * 0.18;
+      updateCamera(smoothScrollY);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

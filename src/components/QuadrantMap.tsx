@@ -57,13 +57,29 @@ function dispatchItemClick(
 export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
   const itemsOpacity = clamp((fade - 0.05) * 2, 0, 1);
   const layout = q.layout ?? 'gallery';
+
+  // Scatter skips the centered reading column and plots directly on the home page's
+  // crosshair, so it gets its own top-level layout path.
+  if (layout === 'scatter') {
+    return (
+      <div style={{
+        position: 'absolute',
+        top: 0, bottom: 0, left: 0, right: 0,
+        opacity,
+        pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+      }}>
+        <ScatterLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
+      </div>
+    );
+  }
+
   // Narrower column for list (reading width); wider for gallery (image grid).
   const maxW = layout === 'list' ? 720 : 920;
 
   return (
     <div style={{
       position: 'absolute',
-      top: 80, bottom: 0, left: 0, right: 0,
+      top: 0, bottom: 0, left: 0, right: 0,
       padding: '20px 48px',
       opacity,
       overflowY: 'auto',
@@ -321,6 +337,269 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
         </a>
       ))}
     </div>
+  );
+}
+
+/**
+ * Scatter — plot the practices directly on the home page's crosshair.
+ *
+ * Doesn't draw its own axes or frame: the global QIYU / OTHERS / THINK / DO lines and labels
+ * (rendered in Home.tsx) *are* the axes. This layout aligns its plot area to where those
+ * lines sit for the active quadrant's pos, so a dot at local (x, y) lands on the real plane.
+ *
+ * The home crosshair sits 80px from the viewport edges that bound the active quadrant
+ * (see padX/padY in Home.tsx). The parent panel starts 80px below viewport top, so we
+ * match those edges in panel-relative coords below.
+ */
+function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const plotItems = q.items.filter(
+    (it) => typeof it.x === 'number' && typeof it.y === 'number',
+  );
+
+  // Panel-relative bounds of the plot area. The side touching the home crosshair
+  // gets 80px of inset to meet the dashed line exactly; the opposite side is flush.
+  // `headerReserve` keeps the quadrant's heading out of the plot region.
+  const headerReserve = 140;
+  const plotEdges: React.CSSProperties = (() => {
+    switch (q.pos) {
+      case 'TR': return { left: 80, right: 0, top: headerReserve, bottom: 80 };
+      case 'TL': return { left: 0, right: 80, top: headerReserve, bottom: 80 };
+      case 'BR': return { left: 80, right: 0, top: 80, bottom: headerReserve };
+      case 'BL': return { left: 0, right: 80, top: 80, bottom: headerReserve };
+    }
+  })();
+
+  // Heading pins to the corner nearest the crosshair, so "The practice" sits next
+  // to the QIYU label the home page already renders.
+  const headingSide: React.CSSProperties =
+    q.pos === 'TR' ? { top: 32, left: 112, textAlign: 'left' } :
+    q.pos === 'TL' ? { top: 32, right: 112, textAlign: 'right' } :
+    q.pos === 'BR' ? { bottom: 32, left: 112, textAlign: 'left' } :
+                     { bottom: 32, right: 112, textAlign: 'right' };
+
+  return (
+    <>
+      <div style={{
+        position: 'absolute', maxWidth: 520,
+        ...headingSide,
+        opacity: itemsOpacity, transition: 'opacity .3s',
+      }}>
+        <div style={{
+          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.6,
+          textTransform: 'uppercase', color: q.tint, marginBottom: 10,
+        }}>
+          {q.axis}
+        </div>
+        <h2 style={{
+          fontFamily: 'var(--serif)', fontWeight: 400,
+          fontSize: 'clamp(32px, 3.6vw, 44px)', lineHeight: 1.02, letterSpacing: -1.2,
+          margin: 0, color: 'var(--ink)', textWrap: 'balance',
+        }}>
+          {q.label}.
+        </h2>
+        <p style={{
+          fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.4,
+          color: 'var(--ink-2)', margin: '8px 0 0', maxWidth: 420,
+        }}>
+          {q.sub}.
+        </p>
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        ...plotEdges,
+        opacity: itemsOpacity, transition: 'opacity .3s',
+      }}>
+        {/* Axis labels — render only if the quadrant defined them. Position alone (plus
+            arrow glyphs) tells the viewer "this dimension goes from low to high."
+            Y endpoints sit inside the plot at the top-left and bottom-left corners;
+            X endpoints sit just below the plot in the bottom gutter, so they don't
+            collide with the Y stack at the corner. */}
+        {q.axes && (() => {
+          const microAxis: React.CSSProperties = {
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+            textTransform: 'uppercase', color: 'var(--ink-4)',
+            whiteSpace: 'nowrap', pointerEvents: 'none',
+          };
+          return (
+            <>
+              <div style={{ position: 'absolute', top: 12, left: 14, ...microAxis }}>
+                ↑ {q.axes.y[0]}
+              </div>
+              <div style={{ position: 'absolute', bottom: 14, left: 14, ...microAxis }}>
+                ↓ {q.axes.y[1]}
+              </div>
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0,
+                paddingTop: 18, paddingLeft: 4, paddingRight: 4,
+                display: 'flex', justifyContent: 'space-between',
+                pointerEvents: 'none',
+              }}>
+                <span style={microAxis}>← {q.axes.x[0]}</span>
+                <span style={microAxis}>{q.axes.x[1]} →</span>
+              </div>
+            </>
+          );
+        })()}
+
+        {hoverIdx !== null && (() => {
+          const it = plotItems[hoverIdx];
+          const xPct = it.x! * 100;
+          const yPct = it.y! * 100;
+          return (
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+              <line x1="0" y1={`${yPct}%`} x2={`${xPct}%`} y2={`${yPct}%`}
+                    stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
+              <line x1={`${xPct}%`} y1={`${yPct}%`} x2={`${xPct}%`} y2="100%"
+                    stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
+            </svg>
+          );
+        })()}
+
+        {plotItems.map((it, i) => {
+          const hovered = hoverIdx === i;
+          const dimmed = hoverIdx !== null && !hovered;
+          const onRight = (it.x ?? 0.5) > 0.58;
+          // Fixed-width label — hovering never shifts the card horizontally, it only expands downward.
+          const labelW = 300;
+          const labelSide: React.CSSProperties = onRight
+            ? { right: 28, textAlign: 'right' }
+            : { left: 28, textAlign: 'left' };
+          const isCta = it.kind === 'cta';
+          const external = it.external === true;
+
+          return (
+            <a key={i} href={it.href}
+               target={external ? '_blank' : undefined}
+               rel={external ? 'noreferrer' : undefined}
+               onClick={(e) => { if (!external) dispatchItemClick(e, it.href, onNav); }}
+               onMouseEnter={() => setHoverIdx(i)}
+               onMouseLeave={() => setHoverIdx(null)}
+               style={{
+                 position: 'absolute',
+                 left: `${it.x! * 100}%`, top: `${it.y! * 100}%`,
+                 width: 0, height: 0,
+                 textDecoration: 'none', color: 'var(--ink)',
+                 cursor: 'pointer',
+                 opacity: dimmed ? 0.45 : 1,
+                 transition: 'opacity .2s',
+                 zIndex: hovered ? 2 : 1,
+               }}>
+              {/* Dot — filled for articles, open ring for CTA so the eye registers it as a doorway, not a draft. */}
+              <span style={{
+                position: 'absolute',
+                left: '50%', top: '50%',
+                width: hovered ? 18 : 12, height: hovered ? 18 : 12,
+                transform: 'translate(-50%, -50%)',
+                borderRadius: '50%',
+                background: isCta ? 'transparent' : q.tint,
+                border: isCta ? `1.5px solid ${q.tint as string}` : 'none',
+                boxShadow: hovered ? `0 0 0 6px color-mix(in srgb, ${q.tint} 18%, transparent)` : 'none',
+                transition: 'width .2s, height .2s, box-shadow .2s',
+              }} />
+              <div style={{
+                position: 'absolute',
+                top: '50%', transform: 'translateY(-50%)',
+                width: labelW,
+                ...labelSide,
+              }}>
+                <div style={{
+                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                  textTransform: 'uppercase', color: q.tint, marginBottom: 6,
+                  display: 'flex', alignItems: 'baseline', gap: 8,
+                  justifyContent: onRight ? 'flex-end' : 'flex-start',
+                }}>
+                  <span>{it.tag}</span>
+                  {isCta && it.count && (
+                    <span style={{ color: 'var(--ink-4)', letterSpacing: 0.6 }}>
+                      · N = <span style={{ color: q.tint, fontWeight: 600 }}>{it.count}</span>
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--serif)',
+                  fontSize: hovered ? 22 : 16,
+                  lineHeight: 1.15, letterSpacing: -0.4,
+                  color: 'var(--ink)',
+                  textWrap: 'balance',
+                  transition: 'font-size .25s cubic-bezier(.2,.7,.2,1)',
+                }}>
+                  {it.title}
+                  {isCta && external && (
+                    <span style={{
+                      color: q.tint, marginLeft: 8,
+                      fontFamily: 'var(--mono)', fontWeight: 400,
+                      fontSize: hovered ? 18 : 14,
+                      transition: 'font-size .25s',
+                    }}>↗</span>
+                  )}
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateRows: hovered ? '1fr' : '0fr',
+                  opacity: hovered ? 1 : 0,
+                  transition: 'grid-template-rows .28s cubic-bezier(.2,.7,.2,1), opacity .22s',
+                }}>
+                  <div style={{ overflow: 'hidden' }}>
+                    <p style={{
+                      fontFamily: 'var(--serif)', fontStyle: 'italic',
+                      fontSize: 14, lineHeight: 1.45, color: 'var(--ink-3)',
+                      margin: '10px 0 0', textWrap: 'pretty',
+                    }}>
+                      {it.dek}
+                    </p>
+                    {it.previews && it.previews.length > 0 && (
+                      <div style={{
+                        display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap',
+                        justifyContent: onRight ? 'flex-end' : 'flex-start',
+                      }}>
+                        {it.previews.map((p, pi) => (
+                          <div key={pi} style={{ width: 60, textAlign: 'center' }}>
+                            <div style={{
+                              width: 60, height: 44, borderRadius: 4,
+                              background: p.src
+                                ? `url(${p.src}) center/cover no-repeat`
+                                : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 28%, transparent), color-mix(in srgb, ${q.tint} 8%, transparent))`,
+                              border: '1px solid var(--line)',
+                              position: 'relative', overflow: 'hidden',
+                            }}>
+                              {!p.src && (
+                                <div style={{
+                                  position: 'absolute', inset: 0,
+                                  background: 'repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,0.18) 6px 7px)',
+                                }} />
+                              )}
+                            </div>
+                            {p.label && (
+                              <div style={{
+                                fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
+                                color: 'var(--ink-4)', marginTop: 5,
+                                textTransform: 'uppercase', lineHeight: 1.2,
+                              }}>
+                                {p.label}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{
+                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
+                  color: 'var(--ink-4)', marginTop: hovered ? 12 : 8,
+                  textTransform: 'uppercase',
+                  transition: 'margin-top .22s',
+                }}>
+                  {it.meta}
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </>
   );
 }
 

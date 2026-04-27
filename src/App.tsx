@@ -34,7 +34,18 @@ export function App() {
     if (route === 'signals' || route === 'loops') {
       window.scrollTo(0, 0);
     } else if (returningHome) {
-      requestAnimationFrame(() => window.scrollTo(0, homeScrollRef.current));
+      // Pull-to-close fires while the user is still flinging the wheel/trackpad.
+      // Lock body scroll briefly so residual wheel inertia after the modal
+      // unmounts cannot drag the page back toward the landing.
+      const target = homeScrollRef.current;
+      document.body.style.overflow = 'hidden';
+      const restore = () => window.scrollTo(0, target);
+      requestAnimationFrame(restore);
+      requestAnimationFrame(() => requestAnimationFrame(restore));
+      window.setTimeout(() => {
+        document.body.style.overflow = '';
+        window.scrollTo(0, target);
+      }, 500);
     }
 
     prevRouteRef.current = route;

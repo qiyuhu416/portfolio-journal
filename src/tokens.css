@@ -1,14 +1,24 @@
 :root {
-  --bg: #FAF8F3;
-  --ink: #1F1E1B;
+  --bg: #FBF9F4;
+  --ink: #14130F;
   --ink-2: #3A3833;
   --ink-3: #6B665C;
-  --ink-4: #9A9387;
-  --line: #E9E3D6;
+  --ink-4: #A8A295;
+  --line: #E6E0D1;
   --surface: #F3EEE2;
-  --warm: #C96A2E;
-  --warm-ink: #7A3B14;
-  --cool: #5660A3;
+
+  /* Quadrant tints — warm/cool × deep/bright map to the 2×2 axes.
+     Calm family (same saturation band), each carries the axis meaning. */
+  --tint-tl: #B05941; /* terracotta — Qiyu · Think (warm, deep) */
+  --tint-tr: #A97324; /* amber     — Qiyu · Do    (warm, bright) */
+  --tint-bl: #4A5585; /* indigo    — Others · Think (cool, deep) */
+  --tint-br: #7F9580; /* sage      — Others · Do    (cool, bright) */
+
+  /* Legacy aliases — keep existing usages intact */
+  --warm: var(--tint-tl);
+  --warm-ink: var(--tint-tr);
+  --cool: var(--tint-bl);
+
   --serif: 'Source Serif 4', Charter, 'Georgia', serif;
   --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;

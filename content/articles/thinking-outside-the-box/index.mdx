@@ -6,8 +6,8 @@ title: Thinking outside the box
 dek: What exactly does that mean?
 date: Apr 2026
 readtime: 6
-tint: "#C96A2E"
-surface: "#F3E4D4"
+tint: "#B05941"
+surface: "#F6E3DB"
 sections:
   - { id: see,   label: "See the box" }
   - { id: know,  label: "Know the box" }
@@ -20,14 +20,10 @@ import { Aside } from '@/components/Aside'
 import { YouTube } from '@/components/YouTube'
 import { Collage } from '@/components/Collage'
 import { InlineLink } from '@/components/InlineLink'
+import { TabbedFigure } from '@/components/TabbedFigure'
+import bridgeStartup from './images/bridge-startup.png'
+import bridgeRoche from './images/bridge-roche.png'
 
-// Drop image files into ./images/ and uncomment these as you go.
-// The collage will automatically pick them up in item order.
-// import orangePrototype  from './images/orange-prototype.jpg'
-// import meterFace        from './images/meter-face.jpg'
-// import catJelly         from './images/cat-jelly.jpg'
-// import arduinoPlushie   from './images/arduino-plushie.jpg'
-// import smileySand       from './images/smiley-sand.jpg'
 
 I always thought I had a kind of quirky mind.
 
@@ -43,65 +39,103 @@ I always thought I had a kind of quirky mind.
   ]}
 />
 
-But then I realized thinking outside the box is actually hard. Everyone has the ability to come up with creative ideas — I've seen super creative ideas in <InlineLink to="friends-of-friends-at-work">brainstorming sessions</InlineLink> from engineers, PMs, anyone.
+But then I realized thinking creatively is actually not hard. Everyone has the ability to come up with creative ideas — I've seen super creative ideas in <InlineLink to="friends-of-friends-at-work">brainstorming sessions</InlineLink> from people from cross-functional teams, anyone.
 
-The hard part is building a system that helps you *consistently* think outside the box. Here are my takeaways so far:
+<PullQuote>
+  The hard part is building a structured system that helps you *consistently* think outside the box. and being a UX designer is to practice this mindset to build this system.
+</PullQuote>
+
+UX is a mindset - an iterative mindset of figuring out what the problem is and diverging to explore solutions to solve it. Once you have this mindset, you can apply to different places to design anything. You can apply the UX mindset to 
+- <InlineLink to="design-the-collaboration">design the XF collaboration </InlineLink> 
+- design self-reflection process (link to what i am good at, not good at, etc)
+- design the next-generation of human-AI interaction pattern (to insert link, maybe a section of the paragraph or designing AI products)
+
+// can we do things like if they click on the link it changes the content and update the content below (or change the table of content)
+
+I am still learning through the iteration itself, but here are my takeaways so far:
 
 - First, see the box.
-- Second, know the box — where it'll give, and where it won't.
-- Third, have the courage to break it — small, and together.
+- Second, understand the box in the system.
+- Third, have the courage to break the box.
 
 <h2 id="see">§1 · See the box</h2>
 
 A box is usually an assumption. The first thing that comes to mind when we hear a word. The association we didn't notice we made.
 
-- Designers → Figma
-- Engineers → coding
+- Designers → Figma (no longer true)
+- Engineers → coding (no longer true neither)
 - AI → chatbot
 - Portfolio → "hello, I am xxx" and a gallery of case studies
-- Work → sitting at an office
 
-Trace any one of these to its root and the answer is usually evolutionary or social — not a law of nature. It's a shape that happened to hold, and then everyone kept holding it.
+Right now, because of AI, we've already seen some of these changes moving on — like designers using vibe-coding tools to code.
 
-But seeing shouldn't be luck. The method I keep reaching for is the **Analysis-Synthesis Bridge** — start from something concrete (a tool, a default behavior), walk up to the pattern underneath, then come back down and ask: *is this shape still serving me?*
+So the first question to solve is "how to see our assumptions" -> it's hard to see yourself clearly from as yourself, so models play a role here. At CMU, I learned some models that can help me think structurely, depending on what problem to want to solve: 
+<TabbedFigure
+  fig="02"
+  items={[
+    {
+      label: "Analysis-Synthesis Bridge Model for product exploration (pre PMF)",
+      src: bridgeStartup,
+      alt: "Analysis-Synthesis Bridge — early-stage startup example",
+      caption: "founding designer work at a pre-PMF startup to identify ways to be unique: — start from abstracting the status quo and then brainstorm solutions based on that abstraction. Here, reframing the consumer–merchant interaction from passive exploration to collaborative discovery."
+    },
+    {
+      label: "Service Blueprint Model for mapping AI capability to user interaction (tech startup expanding customers)",
+      src: bridgeRoche,
+      alt: "Service Blueprint Model for mapping AI capability to user interaction (tech startup expanding customers)",
+      caption: "AI design fellow at Archetype AI to expand customer to Roche: Applying service-design thinking and technology to design experiences"
+    }
+  ]}
+/>
 
-<Figure fig="02" placeholder alt="Analysis-Synthesis Bridge sketches" caption="A version of the bridge I drew while untangling a problem at an early-stage startup. Not a diagram to look at — a loop to walk through." />
+At work, when the tasks pass on to me, it is somehow already defined, but it never hurts to re-review it to see whether that's the real problem to solve or **learn from senior people's way of thinking (link to quote)**
+Pull yourself out of to see it using models, sometimes you may find the problem behind the problem. 
 
-It sounds formal; in practice it's just the same loop, repeated. Name the concrete thing. Name the shape it's part of. Ask whether you still need that shape. The box becomes visible at the top of the loop — not the bottom.
+<h2 id="know">§2 · Understand the box</h2>
 
-<h2 id="know">§2 · Know the box</h2>
+However, sometimes you might thought you see the box, but you only see **part** the box. 
+So, it is more important to see it inside the system -> to better understand why it is there,and whether it is really a box. 
 
-At a startup I worked at, designers pushed to staging and merged to main every week. Mistakes were cheap.
+For example, <InlineLink to="how-i-use-ai-to-create">At a startup, I've worked as a vibe coder</InlineLink>. I directly pushed to staging, which got merged to main every week. Mistakes were reversible.
 
-At Apple, the same move would cross six teams downstream. Both are real; neither is wrong.
+At bigger companies, the same work is distributed across cross-functional teams.
 
-Once you see the box, it's tempting to assume every wall is there by accident — and that the job is to punch through. Most of the time it's the opposite. The wall is load-bearing. Someone chose it for a reason you don't know yet.
 
 <PullQuote attribution="me, after learning this the slow way">
-  Sometimes the safest solution is the right one. That's okay.
+  It is okay to do leap frog. But you need to know what the assumption is. 
 </PullQuote>
 
-But that doesn't mean you stop looking. The courage isn't in breaking everything — it's in knowing *where* to look for the places that'll give.
+There was a time when i saw the market is using a certain technology, but our team is not using it. 
+At first i was kinda not understand why, having talked to the manager many times, then i realized i only have seen part of the system. 
 
-So I draw this, sometimes on paper, sometimes just in my head:
+That workflow is not really a box if i put it in the context of the work? Different goals, different workflows. 
 
-<Figure fig="03" placeholder alt="A 2×2 of impact vs. risk" caption="Impact on one axis, risk on the other. I'm looking for the top-left: high impact, low risk. That's where most small wins hide." />
-
-A dot I'd put on that map: sharing a repo with my PM, so we can brainstorm inside the same artifact instead of around it. Low risk, real lift. Another one: paper prototyping with my engineers role-playing as an LLM — a strange-sounding thing I wrote about on [LinkedIn](#). It worked.
-
-The box is still a box. But now I know which corner I'm allowed to push on.
+But that doesn't mean you stop looking. The courage is in knowing *where*.
 
 <h2 id="break">§3 · Break the box</h2>
 
-This is the hardest part.
+This is the hardest part. This is a transition from individual work to making it a group work. 
 
-I often get asked *why?* — if something has been working the way it is, then at least it works. So what's the motivation to do things differently, especially when trying takes time and effort?
+I often get asked *why?* — changing takes time to experiments, and experimentation doesn't always lead to success (how we define success is another topic).
+The proposal won't always get adopted, but that doesn't mean I should not bring it up. 
+
+<Aside>
+  In a alumni panel to my fellows at Cornell, I said one underrated value of being a designer is to have resillience lol, you might face may rejections (link to how i face rejections)...
+</Aside>
 
 My takeaway: **start small, and make it fun.**
 
-<Aside>
-  "What if we made the survey impossible to ignore?" — Facing a recruitment challenge in a UX design project for The Mentoring Partnership, I asked my teammate to make it fun. It worked: a 10%+ increase in user responses.
-</Aside>
+Applying that model thinking we discussed in the previous section, in the design process there are so many opportunities to make it fun.
+
+(with double diamond model as the tab: first diamond diverge to explore what problem to solve, converge to analyze; second diamond diverse to explore solutions, converge to prototype)
+
+
+(first diamond diverging, brainstorming)
+In a brainstorming session, we invited them to roleplay the customer — and had our engineers roleplay the LLM. It helped us clarify the understanding before the real prototyping. And it was fun. [Read on LinkedIn](#).
+
+
+(second diamond diverge to recruit participant for testig what problem to solve)
+"What if we made the survey impossible to ignore?" — Facing a recruitment challenge in a UX design project for The Mentoring Partnership, I asked my teammate to make it fun. It worked: a 10%+ increase in user responses.
 
 <Collage
   fig="04"
@@ -115,7 +149,33 @@ My takeaway: **start small, and make it fun.**
   ]}
 />
 
-A few more small moves I've tried: brainstorming somewhere that isn't the office — a cafeteria, a bubble tea shop, on a walk *(inspired by Today Was Fun, which Mia lent me)*. Leaving rough things online on purpose — including the video below.
+
+<div style={{
+  margin: '32px 0',
+  padding: '22px 26px',
+  background: 'var(--surface)',
+  borderRadius: 10,
+  border: '1px solid var(--line)',
+}}>
+  <div style={{
+    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
+    textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
+    marginBottom: 14,
+  }}>
+    Things we can all do to break the box
+  </div>
+  <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
+      <b>Share a repo with your PM</b> — brainstorm inside the same artifact, not around it.
+    </li>
+    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
+      <b>Paper prototype with engineers role-playing as an LLM</b> <a href="#">(on LinkedIn)</a>
+    </li>
+    <li style={{ marginBottom: 0, lineHeight: 1.5 }}>
+      <b>Brainstorm somewhere that isn't the office</b> — a cafeteria, a bubble tea shop, on a walk. <i>(inspired by Today Was Fun, which Mia lent me.)</i>
+    </li>
+  </ul>
+</div>
 
 Small moves. The box bends before it breaks.
 

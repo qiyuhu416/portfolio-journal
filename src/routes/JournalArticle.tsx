@@ -78,8 +78,16 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // modal → fullscreen on scroll
-  const modalT = clamp(scrollTop / 280, 0, 1);
+  // Bottom overscroll: phase 1 shrinks the fullscreen modal back toward rest,
+  // phase 2 acts like pull-to-close (handle + caption + dismiss).
+  const [exitPull, setExitPull] = useState(0);
+  const DEFLATE_DIST = 280;
+  const exitDeflate = clamp(exitPull / DEFLATE_DIST, 0, 1);
+  const exitCloseAmt = Math.max(0, exitPull - DEFLATE_DIST);
+
+  // modal → fullscreen on scroll (reversed by exitDeflate when user bottom-overscrolls)
+  const baseModalT = clamp(scrollTop / 280, 0, 1);
+  const modalT = baseModalT * (1 - exitDeflate);
   const restMaxWidth = 1140;
   const gutterX = Math.max(32, (viewportW - restMaxWidth) / 2) * (1 - modalT);
   const gutterY = 40 * (1 - modalT);
@@ -89,7 +97,8 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
   const sidebarT = clamp((modalT - 0.75) / 0.25, 0, 1);
 
   // hero: padded "modal" at top → full-bleed as you scroll through the first ~260px
-  const heroT = clamp(scrollTop / 260, 0, 1);
+  const baseHeroT = clamp(scrollTop / 260, 0, 1);
+  const heroT = baseHeroT * (1 - exitDeflate);
   const heroPadX = 40 * (1 - heroT);
   const heroPadTop = 32 * (1 - heroT);
   const heroRadius = 8 * (1 - heroT);
@@ -110,6 +119,101 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
   }, [slug]);
+
+  // Pull-to-close at TOP: wheel-up at scrollTop=0 → modal dismisses.
+  // Pull-to-close at BOTTOM: two-phase — first the modal shrinks back to rest
+  // (exitDeflate reverses fullscreen state), then further wheel-down past the
+  // deflate distance triggers the drag animation + close.
+  const [pull, setPull] = useState(0);
+  const pullResetTimer = useRef<number | null>(null);
+  const exitResetTimer = useRef<number | null>(null);
+  const closingRef = useRef(false);
+  const PULL_THRESHOLD = 160;
+  // Bottom-exit dwell gate: once the modal has deflated back to rest, the
+  // same scroll gesture cannot keep accumulating into pull-to-close. The user
+  // must pause (gesture ends) and start a new wheel-down to cross the gate.
+  const GESTURE_GAP = 400; // ms of wheel silence = end of gesture
+  const DEFLATE_DWELL = 1500; // ms to hold the deflated state before auto-reset
+  const lastBottomWheelAtRef = useRef(0);
+  const deflateLatchedRef = useRef(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (closingRef.current) return;
+      const atTop = el.scrollTop <= 0;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+      // Top: wheel-up at top → pull to close
+      if (e.deltaY < 0 && atTop) {
+        e.preventDefault();
+        setPull((p) => {
+          const next = Math.min(320, p + Math.abs(e.deltaY) * 0.45);
+          if (next >= PULL_THRESHOLD && !closingRef.current) {
+            closingRef.current = true;
+            window.setTimeout(() => onClose(), 180);
+          }
+          return next;
+        });
+        if (pullResetTimer.current) window.clearTimeout(pullResetTimer.current);
+        pullResetTimer.current = window.setTimeout(() => {
+          if (!closingRef.current) setPull(0);
+        }, 320);
+        return;
+      }
+      // Bottom: wheel-down at bottom → deflate first (phase 1), dwell at rest,
+      // then a separate wheel-down gesture pulls to close (phase 2).
+      if (e.deltaY > 0 && atBottom) {
+        e.preventDefault();
+        const now = Date.now();
+        const sameGesture = now - lastBottomWheelAtRef.current < GESTURE_GAP;
+        lastBottomWheelAtRef.current = now;
+        // Starting a new gesture (after a pause) clears the latch, so the
+        // next burst of scroll is allowed to cross into pull-to-close.
+        if (!sameGesture) deflateLatchedRef.current = false;
+
+        setExitPull((p) => {
+          // Dwell gate: if we're already latched in the same gesture, freeze
+          // at the deflated position. The user has to lift and try again.
+          if (deflateLatchedRef.current) return DEFLATE_DIST;
+
+          const next = Math.min(DEFLATE_DIST + 320, p + Math.abs(e.deltaY) * 0.45);
+
+          // Crossing phase 1 → phase 2 mid-gesture triggers the latch and
+          // clamps pull so close cannot fire on the same gesture.
+          if (p < DEFLATE_DIST && next >= DEFLATE_DIST) {
+            deflateLatchedRef.current = true;
+            return DEFLATE_DIST;
+          }
+
+          if (next - DEFLATE_DIST >= PULL_THRESHOLD && !closingRef.current) {
+            closingRef.current = true;
+            window.setTimeout(() => onClose(), 180);
+          }
+          return next;
+        });
+
+        if (exitResetTimer.current) window.clearTimeout(exitResetTimer.current);
+        exitResetTimer.current = window.setTimeout(() => {
+          if (!closingRef.current) {
+            setExitPull(0);
+            deflateLatchedRef.current = false;
+          }
+        }, DEFLATE_DWELL);
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      if (pullResetTimer.current) window.clearTimeout(pullResetTimer.current);
+      if (exitResetTimer.current) window.clearTimeout(exitResetTimer.current);
+    };
+  }, [onClose]);
+
+  const pullNorm = clamp(pull / PULL_THRESHOLD, 0, 1);
+  const modalPullY = pull * 0.35 + exitCloseAmt * 0.35;
+  const modalPullScale = 1 - (pull + exitCloseAmt) * 0.00035;
+  const exitPullNorm = clamp(exitCloseAmt / PULL_THRESHOLD, 0, 1);
 
   const next = useMemo(() => computeNext(slug), [slug]);
 
@@ -156,7 +260,65 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
           borderRadius: modalRadius,
           boxShadow: modalShadow,
           overflow: 'hidden',
+          transform: `translateY(${modalPullY}px) scale(${modalPullScale})`,
+          transformOrigin: '50% 0',
+          transition: pull === 0 && exitPull === 0 ? 'transform .28s cubic-bezier(.2,.7,.2,1), top .24s, bottom .24s, left .24s, right .24s, border-radius .24s' : 'none',
         }}>
+          {/* pull-to-close handle: appears on overscroll, widens + darkens past threshold */}
+          <div style={{
+            position: 'absolute', top: 10, left: '50%',
+            transform: `translateX(-50%) translateY(${pull * 0.25}px)`,
+            width: 44 + pullNorm * 40,
+            height: 4,
+            borderRadius: 2,
+            background: pullNorm >= 1 ? meta.tint : 'var(--ink-4)',
+            opacity: clamp(pull / 24, 0, 1),
+            transition: pull === 0 ? 'opacity .2s, width .2s, background .15s' : 'background .15s',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }} />
+          <div style={{
+            position: 'absolute', top: 24, left: '50%',
+            transform: `translateX(-50%) translateY(${pull * 0.25}px)`,
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+            textTransform: 'uppercase',
+            color: pullNorm >= 1 ? meta.tint : 'var(--ink-3)',
+            opacity: clamp((pull - 30) / 40, 0, 1),
+            pointerEvents: 'none',
+            zIndex: 20,
+            whiteSpace: 'nowrap',
+          }}>
+            {pullNorm >= 1 ? 'Release to close' : 'Keep pulling'}
+          </div>
+
+          {/* bottom pull-to-close: mirrored handle + caption that appears only
+              after the modal has deflated back to rest (phase 2 of exit-pull). */}
+          <div style={{
+            position: 'absolute', bottom: 10, left: '50%',
+            transform: `translateX(-50%) translateY(${exitCloseAmt * -0.25}px)`,
+            width: 44 + exitPullNorm * 40,
+            height: 4,
+            borderRadius: 2,
+            background: exitPullNorm >= 1 ? meta.tint : 'var(--ink-4)',
+            opacity: clamp(exitCloseAmt / 24, 0, 1),
+            transition: exitPull === 0 ? 'opacity .2s, width .2s, background .15s' : 'background .15s',
+            pointerEvents: 'none',
+            zIndex: 20,
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 24, left: '50%',
+            transform: `translateX(-50%) translateY(${exitCloseAmt * -0.25}px)`,
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+            textTransform: 'uppercase',
+            color: exitPullNorm >= 1 ? meta.tint : 'var(--ink-3)',
+            opacity: clamp((exitCloseAmt - 30) / 40, 0, 1),
+            pointerEvents: 'none',
+            zIndex: 20,
+            whiteSpace: 'nowrap',
+          }}>
+            {exitPullNorm >= 1 ? 'Release to close' : 'Keep pulling'}
+          </div>
+
           {/* reading progress — thin line above everything */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 12, pointerEvents: 'none' }}>
             <div style={{ height: '100%', background: meta.tint, width: `${progress * 100}%`, transition: 'width .1s linear' }} />

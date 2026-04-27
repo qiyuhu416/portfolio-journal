@@ -1,0 +1,163 @@
+---
+slug: designing-ai-products
+num: "02"
+quality: Restraint
+title: Designing Next-Gen AI products (crossed) experiences
+dek: Humanity, in interfaces, is not about imitation.
+date: Apr 2026
+readtime: 8
+tint: "#C18A3D"
+surface: "#F6E8D3"
+sections:
+  - { id: relationship, label: "Designing the relationship" }
+  - { id: errors,       label: "Designing for errors" }
+  - { id: ui,           label: "Will UI disappear?" }
+---
+
+{/*
+Merge of making-ai-feel-human + ui-needs-to-serve-a-goal, plus your new §1 material.
+Body text is your wording — chat phrasing cleaned up for grammar only, not style.
+
+Still open — flagged inline throughout:
+  - Title — you asked whether it could be a question; current "Designing AI products" is placeholder
+  - Section 1: "human–human relationship" is italicized — may want to link to your research page once it exists
+  - Section 1: research-participant link target needs URL
+  - Section 2: now holds two distrust examples (elder care + phone call); opener is "Sometimes people don't believe what AI gives"
+  - Section 2: elder-care figure caption was written for §1's relationship frame — rewrite for the distrust frame when ready
+  - Section 2: phone-call sentence + link drafted; could expand with more scene detail
+  - Section 2: phone-call image is a placeholder Figure — drop the actual file in and update the fig/src
+  - Section 2: the "people hesitate / cost of mistakes" line uses your chat wording verbatim — rework in your voice when you're ready
+  - Section 3: pull quote now "Service design and experience design — how and when AI should intervene — will become important"
+  - Section 3: opening scene placeholder with suggested content (rewrite in your voice)
+  - Section 3: animation asset — choose Tabs component vs. video/GIF, then build/record
+  - Section 3: four tradeoff paragraphs placeholder with suggested content (rewrite in your voice)
+  - Section 3: connecting paragraph placeholder with suggested content (rewrite in your voice)
+  - Section 3: link to "What I'm good at. What I'm not." → #loops (flagged inline)
+  - Removed in this restructure (flag if you want any back): the "We do see a trend / I sometimes chat with ChatGPT on my down days" paragraph; the OpenAI 5-stages-of-AGI citation flag
+  - quality tag, dek — placeholders from the old frontmatter
+
+Source folders making-ai-feel-human/ and ui-needs-to-serve-a-goal/ left in place for
+reference — delete when you're happy with this merge.
+*/}
+
+import { Figure } from '@/components/Figure'
+import { PullQuote } from '@/components/PullQuote'
+import { Aside } from '@/components/Aside'
+
+<h2 id="relationship">§1 · Designing the relationship</h2>
+
+Since when "humans" become a frequent word in our conversations?
+
+In the pre-AI era, we seldom use the word "humans" as we are within it, a part of it. Now the emergence of AI started to make us more aware of us being a human, what AI can or cannot do, and the unique part on each side. 
+It is also interesting to see discussions around "human-AI symbiosis" from biologists perspective from academia (link to how I keep myself updated to stay curious through always being a research participants in HCI)
+
+To answer the question of how to design human-ai interaction, let's first look at how it has been designed over time.
+
+<Figure fig="01" placeholder alt="Evolution of human-computer interaction" caption="Command line → GUI for common users → Claude Code, back to the terminal → human and AI on more equal terms, where AI can sometimes help a person see themselves in ways they wouldn't otherwise." />
+
+The evolution of HCI is basically the evolution of human–computer relationship — from humans confronting AI, to making computers more accessible, to computers having an equal or even higher relationship than humans. And then "designing human–AI interaction" is designing the human–AI relationship. we see similar way of of approaching this in roadmap from OpenAI regarding the next 5 stages towards AGI.
+
+<PullQuote attribution="a note I keep returning to">
+  Designing human–AI interaction is designing the human–AI *relationship*, which stems from current human-human relationships.
+</PullQuote>
+
+That's the most interesting part about being in the field of HCI. Everything is related. This article can never list out of them, so plz i am happy to chat with anyone from any field! (link)
+
+
+<h2 id="errors">§2 · Designing for errors</h2>
+So, how a relationship is created? and what the relationship could be?
+
+No one should have an answer unless we hear from real humans. 
+
+AND HUMANS ARE REALLY COMPLICATED. Interactions among humans are even more complicated!!
+So let me try to draw this to explain what i think:
+
+(chart of nodes connected what i think, what i say, what i do, what other people perceived, what others say, what others do.)
+
+Each one has a gap. And even humans don't always understand themselves. There's a gap between what a person does and what they *meant* to do. That gap — between behavior and intention — is where design still matters. AI fills the fat middle of the distribution. The edges, where the real relationships live, are still ours. humans might have a well-trained system to understand those gaps (which we may call gut feeling), and designing AI with the level of human partners is to find *where among all these elements is the sweet spot that we feel comfortable and confident to hand over to AI*
+
+<PullQuote>
+  The Best AI products is either easy inferences with great performance, or hard inferences with fair performances
+</PullQuote>
+
+In other words, designing AI is designing for errors. 
+
+{/* Example 1 — elder care (moved here from §1) */}
+
+1. understanding the known-unknowns (errors)
+
+For example, in the elder care example, one error could be AI does not give suggestions based on ground truth. 
+Therefore, we need to design around a way so that we have humans able to identify if AI is grounding things on the truth and have humans correct it and teach AI if not.
+To rephrase the problem, the end goal is to design a trustworthy AI that provides the elder with suggestions when it needs its help.
+To achieve that goal, we did research around human-human trust building, and then created prompts of how AI should talk to users based on how humans build trust with each other, with the scope being language.
+
+<Figure fig="02" placeholder alt="Research on robots for elderly care" caption="chart of logics of how humans build trust in conversational design" />
+
+There are still sooooo many other tricky errors in this scenario: as the older adult's health decline, who should the AI listen to (the older adults or their caregiver), who should have access to the living will and when, what if the older adults change their living but they are cognitively uncapable, how to define that turning points?
+
+No one knows the answer as we are not users. So, we designed a qualitative research process, to interviewed 15+ older adults to understand how they are currently deal with the situation with their current stakehodlers, and use storyboads to hear their reactiosn on the hypothetical scenarios on "what if there were a bot". 
+Research is ongoing, stay tuned!
+
+
+{/* Example 2 — phone call agent */}
+
+2. Prototype to explore AI errors
+
+This is for another project about using AI to answer repetitive easy questions (easy inferences with great performance).
+But still I [prototyped a phone call agent] (#article:how-i-use-ai-to-create) to answer repetitive questions on behalf of the company staff.
+
+<Figure fig="03" placeholder alt="Phone call agent prototype" caption="Phone call agent prototype." />
+
+Even with great performance (everything follows a logics that the current staff is following), AI cannot achieve 100% performance. So this is a prototype for eliciting "where the errors could happen" and findings were:
+- voice recognition error: when user answer the call in noisy places
+- logic error: users said something but wanna change later, but the rest of AI response depends on that
+- human take over: user may start with "i just wanna talk to a human, shut up"
+
+and then design would be much easier when prototypes elicit those problems to solve
+
+
+<h2 id="ui">§3 · Will AI be invisible?  </h2>
+
+We talked a lot about designing AI products. 
+Products are not services. 
+Sometimes we are creating products, but we deliver that products as a part of the service.
+
+<PullQuote>
+   What's important is the unseen part. (my fav book the little prince)
+</PullQuote>
+
+Apple also says: "Design is how it feels"
+
+Feeling is very human, very personal. Different relationships may have different feelings. So i'd decide to approach this from the human-AI **relationship** we discussed earlier to design those feelings.
+
+For example, I used to prototype a human–AI co-writing tool for the startup. AI's goal is to correct errors that users wrote reactively.
+
+Let's say when to trigger the AI search, itself is a very detailed point but can generate different feelings. 
+
+1. if trigger is based on just timing (send API call every 1 sec)
+AI = strict teach, user feel = there is always an eyes on you, 
+
+2. if trigger is based on whether user paused typing > 3 seconds
+we are assuming long pause means finishing a sentence, about to move on to the next sentence. 
+error: but if you do that, you may abrupt user's thinking process. their mind has moved on to the next sentence, but you drag them back to the previous sentence
+
+3. if trigger is after user clicks away from the field
+AI =..., user feel = i have space to do things on my own and ai give suggestions when i am ready
+errors: AI might suggest too late, and one suggestion might lead user to restructure the whole content. users may think: "why didn't you say that earlier"
+
+of course different trigger will also result in number of API call and cost, etc.
+If you were me, how would you design?
+
+solution: (collapsed). The answer is to do personal-level personalization, and have AI learn user's preference through their unspoken reactions to those AI suggestions.
+The process of discovering that was i created prototypes for each, and asked people to use it and think out loud. 
+We only tested on 3 people, but for fast-paced qualitative research this number should be enough. Each person feels it differently. Some users want AI to lead — start drafting and let them edit. Others want it to wait — only suggest when called. The interaction model *is* the relationship.
+
+
+<Figure fig="04" placeholder alt="Co-writing prototype: four AI-support options" caption="An animation showing four design options for how AI could support the writer — each making different tradeoffs." />
+
+
+<PullQuote>
+  Service design and experience design — how and when AI should intervene — will become important.
+</PullQuote>
+
+The writer doesn't think about the AI — they just write better.

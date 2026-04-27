@@ -32,9 +32,9 @@ export function Signals({ onNav }: Props) {
           fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 22, lineHeight: 1.5,
           color: 'var(--ink-2)', marginTop: 28, maxWidth: 680,
         }}>
-          Being a UX designer has made me curious about the diversity in how we think, act, and
-          interact. So I've been meeting more people — counting them, paying attention to what
-          surprises me. This is what I've collected.
+          Most of what I think about design, someone else said to me first. So I've been meeting
+          more people — counting them, paying attention to what surprises me. This is what I've
+          collected.
         </p>
       </section>
 

@@ -5,7 +5,7 @@
     "sub": "what I see when it’s just me",
     "axis": "Qiyu · think",
     "pos": "TL",
-    "tint": "var(--warm)",
+    "tint": "var(--tint-tl)",
     "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet — where first drafts go to be held up to the light.",
     "layout": "list",
     "items": [
@@ -18,20 +18,20 @@
         "companies": [{ "name": "Apple" }, { "name": "IDEO" }, { "name": "Figma" }]
       },
       {
-        "tag": "Visual skills",
-        "title": "UI needs to serve a goal",
-        "dek": "Good visuals aren't about perfection. They're about clarity.",
-        "meta": "02 · 3 min",
-        "href": "#article:ui-needs-to-serve-a-goal",
-        "companies": [{ "name": "Meetfood" }, { "name": "Apple" }]
+        "tag": "AI products",
+        "title": "Designing AI products",
+        "dek": "Humanity, in interfaces, is not about imitation.",
+        "meta": "02 · 8 min",
+        "href": "#article:designing-ai-products",
+        "companies": [{ "name": "Apple" }, { "name": "Meetfood" }, { "name": "Anthropic" }]
       },
       {
         "tag": "AI collaboration",
-        "title": "Making AI feel human",
-        "dek": "Humanity, in interfaces, is not about imitation.",
-        "meta": "03 · 9 min",
-        "href": "#article:making-ai-feel-human",
-        "companies": [{ "name": "Anthropic" }, { "name": "OpenAI" }, { "name": "Notion" }]
+        "title": "How I use AI to create",
+        "dek": "Not despite AI. Because of it.",
+        "meta": "03 · 5 min",
+        "href": "#article:how-i-use-ai-to-create",
+        "companies": [{ "name": "Anthropic" }, { "name": "Apple" }]
       },
       {
         "tag": "Self-awareness",
@@ -49,37 +49,62 @@
     "sub": "things I’ve initiated",
     "axis": "Qiyu · do",
     "pos": "TR",
-    "tint": "var(--warm-ink)",
+    "tint": "var(--tint-tr)",
     "framing": "What I kick off when nobody asked. Meetups, experiments, rituals I run on myself — the stuff that wouldn’t exist if I waited for permission.",
-    "layout": "gallery",
+    "layout": "scatter",
+    "axes": {
+      "x": ["comfort zone", "stretch"],
+      "y": ["within myself", "gathers a room"]
+    },
     "items": [
       {
         "tag": "Community",
-        "title": "Vibe-coding meetup at Apple Park",
+        "title": "Events I host at Apple",
         "dek": "An informal lunch for people curious about the new tools.",
         "meta": "04 · 3 min",
-        "href": "#article:vibe-coding-meetup-at-apple-park"
+        "href": "#article:vibe-coding-meetup-at-apple-park",
+        "x": 0.72,
+        "y": 0.72,
+        "previews": [
+          { "label": "Event" },
+          { "label": "Lunch" }
+        ]
       },
       {
         "tag": "Hosting",
-        "title": "Friends of friends at work",
+        "title": "The channels, not the meetings",
         "dek": "I want my friends to be friends with each other.",
         "meta": "05 · 2 min",
-        "href": "#article:friends-of-friends-at-work"
+        "href": "#article:friends-of-friends-at-work",
+        "x": 0.38,
+        "y": 0.85
       },
       {
         "tag": "Play",
         "title": "Making design fun",
         "dek": "Caltrain, After Effects, and a stubborn suspicion that everything could be easier.",
         "meta": "06 · 5 min",
-        "href": "#article:making-design-fun"
+        "href": "#article:making-design-fun",
+        "x": 0.22,
+        "y": 0.2,
+        "previews": [
+          { "label": "AE" },
+          { "label": "Voice" },
+          { "label": "Gesture" },
+          { "label": "Camera" }
+        ]
       },
       {
         "tag": "Listening",
         "title": "Meet the stranger challenge",
         "dek": "Twenty minutes with someone I’ve never met — this is what made me start paying attention →",
-        "meta": "book a chat · ongoing",
-        "href": "mailto:hello@qiyuhu.com?subject=Meet%20the%20stranger"
+        "meta": "ongoing",
+        "href": "#",
+        "external": true,
+        "kind": "cta",
+        "count": "72",
+        "x": 0.9,
+        "y": 0.5
       }
     ]
   },
@@ -89,7 +114,7 @@
     "sub": "paying attention to what I notice in other people",
     "axis": "others · think",
     "pos": "BL",
-    "tint": "var(--cool)",
+    "tint": "var(--tint-bl)",
     "framing": "Watching, listening, not-yet-acting. Most of what I’ve learned about design I’ve learned by watching people describe their work out loud.",
     "layout": "quotes",
     "items": []
@@ -100,7 +125,7 @@
     "sub": "what I do with others",
     "axis": "others · do",
     "pos": "BR",
-    "tint": "#3A6A52",
+    "tint": "var(--tint-br)",
     "framing": "The finished, shipped, collaborative stuff. Where thinking has to become a decision and other people have to live with it.",
     "items": [
       { "tag": "Teamwork", "title": "Collaboration: the good side and the annoying side", "dek": "Forthcoming.", "meta": "draft",                 "href": "#" },

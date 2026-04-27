@@ -1,0 +1,53 @@
+---
+slug: how-i-use-ai-to-create
+num: "03"
+quality: Craft
+title: How I use AI to create
+dek: Not despite AI. Because of it.
+date: Apr 2026
+readtime: 5
+tint: "#C18A3D"
+surface: "#F6E8D3"
+sections:
+  - { id: codebase, label: "Into the codebase" }
+  - { id: question, label: "A question I keep thinking about" }
+  - { id: stop,     label: "It doesn't stop" }
+---
+
+{/*
+Shape uses your existing words from making-ai-feel-human drafts, just rearranged:
+- Opens with the startup story (concrete, first person, no Apple framing).
+- Workshop moment appears only as the question — no team context.
+- §3 keeps "It doesn't stop" from the original draft.
+
+Decisions still open: slug, title, dek, quality tag, tint/surface, num (will collide with
+making-ai-feel-human=03 until you renumber in quadrants.json).
+*/}
+
+import { Figure } from '@/components/Figure'
+import { PullQuote } from '@/components/PullQuote'
+import { Aside } from '@/components/Aside'
+
+<h2 id="codebase">§1 · Into the codebase</h2>
+
+For a while I worked at an early-stage startup where I was wired directly into the codebase. I shipped to staging myself; my changes got merged to main every week. The team was all engineers — and they wanted a designer. Not despite AI. Because of it. The hands that could move between the two modes were the bottleneck, not either mode alone.
+
+You have to put yourself in an environment like that to feel the answer. Reading about it isn't the same.
+
+<Figure fig="01" placeholder alt="Shipping to staging" caption="Shipping to staging — forthcoming." />
+
+<h2 id="question">§2 · A question I keep thinking about</h2>
+
+Someone once asked me, very seriously: *what do you think the value of designers should be, then?*
+
+The question has been in my head ever since.
+
+<PullQuote attribution="a note from around then">
+  The worry isn't "AI replaces designers." It's "designers don't step into the seat AI leaves open."
+</PullQuote>
+
+<h2 id="stop">§3 · It doesn't stop</h2>
+
+Once I spent enough time collaborating with Claude, the limits became specific.
+
+**It doesn't stop.** Prompt Claude to *"act as a world-class designer, critique the work, and then give suggestions based on the critique"* and it will keep going. It will critique, suggest, critique the suggestion, suggest again. Someone still has to decide *enough*. That someone is still me.

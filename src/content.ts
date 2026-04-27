@@ -58,6 +58,10 @@ export type Company = {
   logo?: string;
 };
 
+/** Small thumbnail revealed on scatter-dot hover. `src` optional — placeholder chips render
+ *  as a tinted square when there's no asset yet, so the dot still hints at content shape. */
+export type PreviewChip = { label?: string; src?: string };
+
 export type QuadrantItem = {
   tag: string;
   title: string;
@@ -67,9 +71,27 @@ export type QuadrantItem = {
   image?: string;
   /** Where the thinking came from — the "reflection credit line" under the dek. */
   companies?: Company[];
+  /** Normalized plot coords (0–1) — only used when the parent quadrant's layout is 'scatter'. */
+  x?: number;
+  y?: number;
+  /** 'cta' renders the scatter dot as an open-ring call-to-action with a count and ↗ glyph
+   *  instead of an article-style filled dot. Default is article-like. */
+  kind?: 'cta';
+  /** Headline number for 'cta' items (e.g., "72" → "N = 72"). */
+  count?: string;
+  /** Small preview chips revealed on scatter-dot hover, hinting at the content's shape. */
+  previews?: PreviewChip[];
+  /** When true, render the link with target=_blank — for CTA items pointing off-site. */
+  external?: boolean;
 };
 
-export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects';
+export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatter';
+
+/** Labels for the scatter plot's axes. Tuples are [low, high] — i.e. [left, right] and [top, bottom]. */
+export type QuadrantAxes = {
+  x: [string, string];
+  y: [string, string];
+};
 
 export type Quadrant = {
   id: string;
@@ -80,6 +102,7 @@ export type Quadrant = {
   tint: string;
   framing: string;
   layout?: QuadrantLayout;
+  axes?: QuadrantAxes;
   items: QuadrantItem[];
 };
 
