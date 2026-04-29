@@ -19,8 +19,8 @@
   --warm-ink: var(--tint-tr);
   --cool: var(--tint-bl);
 
-  --serif: 'Source Serif 4', Charter, 'Georgia', serif;
-  --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --serif: 'Plein', 'Source Serif 4', Charter, 'Georgia', serif;
+  --sans: 'Switzer', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
@@ -45,4 +45,31 @@ button { font-family: inherit; }
   0%   { transform: translateY(0); opacity: .4; }
   50%  { transform: translateY(6px); opacity: 1; }
   100% { transform: translateY(0); opacity: .4; }
+}
+@keyframes statusFade {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Landing dots: gentle drift while they're scattered. Each dot uses a
+   different keyframe so the constellation feels alive rather than synced.
+   `translate` is applied separately from `transform`, so the parent's
+   centering transform stays intact while the dot drifts. */
+@keyframes float-a {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(22px, -28px); }
+  50%      { transform: translate(-14px, -12px); }
+  75%      { transform: translate(10px, 24px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-20px, 16px); }
+  50%      { transform: translate(18px, 10px); }
+  75%      { transform: translate(-12px, -22px); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(16px, 22px); }
+  50%      { transform: translate(-24px, -16px); }
+  75%      { transform: translate(20px, -10px); }
 }

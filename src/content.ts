@@ -85,7 +85,14 @@ export type QuadrantItem = {
   external?: boolean;
 };
 
-export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatter';
+export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatter' | 'statement';
+
+/** A single chunk of a statement-layout quadrant. Plain `text` reads as body
+ *  copy; a `phrase` is a hoverable, colored highlight that opens an article
+ *  modal on click. The href follows the standard `#article:<slug>` convention. */
+export type StatementSegment =
+  | { type: 'text'; text: string }
+  | { type: 'phrase'; text: string; href: string; tint: string };
 
 /** Labels for the scatter plot's axes. Tuples are [low, high] — i.e. [left, right] and [top, bottom]. */
 export type QuadrantAxes = {
@@ -104,6 +111,9 @@ export type Quadrant = {
   layout?: QuadrantLayout;
   axes?: QuadrantAxes;
   items: QuadrantItem[];
+  /** Used when `layout === 'statement'`: an ordered list of text and phrase
+   *  segments that compose the panel's hero sentence. */
+  statement?: StatementSegment[];
 };
 
 export type LoopPoint = { x: number; label: string; tone: 'warm' | 'cool' };

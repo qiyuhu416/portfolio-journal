@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { NavFn } from '@/App';
-import { quadrants, signals, type Quadrant } from '@/content';
+import { quadrants, signals, type Quadrant, type StatementSegment } from '@/content';
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
@@ -73,6 +73,23 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
     );
   }
 
+  // Statement layout is a single hero sentence — no axis tag, no header, no
+  // separate item list. The phrases in the sentence are the navigation.
+  if (layout === 'statement') {
+    return (
+      <div style={{
+        position: 'absolute',
+        top: 0, bottom: 0, left: 0, right: 0,
+        opacity,
+        pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '60px 64px',
+      }}>
+        <StatementLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
+      </div>
+    );
+  }
+
   // Narrower column for list (reading width); wider for gallery (image grid).
   const maxW = layout === 'list' ? 720 : 920;
 
@@ -88,15 +105,14 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
       <div style={{
         maxWidth: maxW,
         margin: '0 auto',
-        paddingTop: 16,
-        textAlign: 'left',
+        paddingTop: 64,
+        textAlign: 'center',
       }}>
-        <div style={{
-          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.6,
-          textTransform: 'uppercase', color: q.tint, marginBottom: 10,
-        }}>
-          {q.axis}
-        </div>
+        {/* The axis-pair tag (e.g. "OTHERS · NOTICING") used to render here as
+            a small mono caps line above the title, but it now lives as the
+            top-of-viewport breadcrumb pill in Home — that pill plays the same
+            role for every quadrant, so duplicating it inside the panel just
+            put a redundant label in the path of the dashed cross line. */}
         <h2 style={{
           fontFamily: 'var(--serif)', fontWeight: 400,
           fontSize: 'clamp(32px, 3.6vw, 44px)', lineHeight: 1.02, letterSpacing: -1.2,
@@ -106,7 +122,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
         </h2>
         <p style={{
           fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.4,
-          color: 'var(--ink-2)', margin: '8px 0 18px',
+          color: 'var(--ink-2)', margin: '8px auto 18px',
           maxWidth: 520,
         }}>
           {q.sub}.
@@ -127,6 +143,79 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
 }
 
 type LayoutProps = { q: Quadrant; onNav: NavFn; itemsOpacity: number };
+
+/**
+ * Statement — a single hero sentence where article titles appear as colored,
+ * hoverable phrases inside the prose. Mouse over a phrase to bring its color
+ * forward; click opens the article modal via the standard #article:slug nav.
+ *
+ * Use when the quadrant's pieces share a tight thematic spine that reads better
+ * as one breath than as a list — a manifesto rather than a TOC.
+ */
+function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
+  if (!q.statement) return null;
+  return (
+    <div style={{
+      opacity: itemsOpacity, transition: 'opacity .3s',
+      maxWidth: 1100,
+    }}>
+      <div style={{
+        fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400,
+        fontSize: 'clamp(18px, 1.6vw, 24px)',
+        lineHeight: 1.2, letterSpacing: '-0.005em',
+        color: 'var(--ink-3)',
+        margin: '0 0 22px',
+      }}>
+        {q.label}.
+      </div>
+      <p style={{
+        fontFamily: 'var(--sans)', fontWeight: 500,
+        fontSize: 'clamp(28px, 3.6vw, 56px)',
+        lineHeight: 1.22, letterSpacing: '-0.015em',
+        margin: 0,
+        color: 'var(--ink)', textAlign: 'left',
+        textWrap: 'balance',
+      }}>
+        {q.statement.map((seg, i) =>
+          seg.type === 'text'
+            ? <span key={i}>{seg.text}</span>
+            : <PhraseButton key={i} seg={seg} onNav={onNav} />,
+        )}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * A clickable phrase inside a Statement. Resting state is a soft tint wash so
+ * the phrase reads as part of the sentence; hover saturates to the full color
+ * with reversed-out text, signalling "this is a doorway." `box-decoration-break:
+ * clone` keeps the highlight rectangle clean when the phrase wraps a line.
+ */
+function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: 'phrase' }>; onNav: NavFn }) {
+  const [hover, setHover] = useState(false);
+  const restingBg = `color-mix(in srgb, ${seg.tint} 22%, transparent)`;
+  return (
+    <a
+      href={seg.href}
+      onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: hover ? seg.tint : restingBg,
+        color: hover ? 'var(--bg)' : 'var(--ink)',
+        textDecoration: 'none',
+        cursor: 'pointer',
+        padding: '0.04em 0.18em',
+        boxDecorationBreak: 'clone',
+        WebkitBoxDecorationBreak: 'clone',
+        transition: 'background .18s, color .18s',
+      }}
+    >
+      {seg.text}
+    </a>
+  );
+}
 
 /**
  * Editorial list — for quadrants whose items reward a slow read rather than a quick scan.
@@ -370,78 +459,21 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
     }
   })();
 
-  // Heading pins to the corner nearest the crosshair, so "The practice" sits next
-  // to the QIYU label the home page already renders.
-  const headingSide: React.CSSProperties =
-    q.pos === 'TR' ? { top: 32, left: 112, textAlign: 'left' } :
-    q.pos === 'TL' ? { top: 32, right: 112, textAlign: 'right' } :
-    q.pos === 'BR' ? { bottom: 32, left: 112, textAlign: 'left' } :
-                     { bottom: 32, right: 112, textAlign: 'right' };
-
   return (
     <>
-      <div style={{
-        position: 'absolute', maxWidth: 520,
-        ...headingSide,
-        opacity: itemsOpacity, transition: 'opacity .3s',
-      }}>
-        <div style={{
-          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.6,
-          textTransform: 'uppercase', color: q.tint, marginBottom: 10,
-        }}>
-          {q.axis}
-        </div>
-        <h2 style={{
-          fontFamily: 'var(--serif)', fontWeight: 400,
-          fontSize: 'clamp(32px, 3.6vw, 44px)', lineHeight: 1.02, letterSpacing: -1.2,
-          margin: 0, color: 'var(--ink)', textWrap: 'balance',
-        }}>
-          {q.label}.
-        </h2>
-        <p style={{
-          fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.4,
-          color: 'var(--ink-2)', margin: '8px 0 0', maxWidth: 420,
-        }}>
-          {q.sub}.
-        </p>
-      </div>
+      {/* Heading block (axis tag / title / sub) is suppressed for now — the
+          home page's morphing title overlay covers the quadrant title, and we
+          want this layout to read as plot-only while we iterate. */}
 
       <div style={{
         position: 'absolute',
         ...plotEdges,
         opacity: itemsOpacity, transition: 'opacity .3s',
       }}>
-        {/* Axis labels — render only if the quadrant defined them. Position alone (plus
-            arrow glyphs) tells the viewer "this dimension goes from low to high."
-            Y endpoints sit inside the plot at the top-left and bottom-left corners;
-            X endpoints sit just below the plot in the bottom gutter, so they don't
-            collide with the Y stack at the corner. */}
-        {q.axes && (() => {
-          const microAxis: React.CSSProperties = {
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
-            textTransform: 'uppercase', color: 'var(--ink-4)',
-            whiteSpace: 'nowrap', pointerEvents: 'none',
-          };
-          return (
-            <>
-              <div style={{ position: 'absolute', top: 12, left: 14, ...microAxis }}>
-                ↑ {q.axes.y[0]}
-              </div>
-              <div style={{ position: 'absolute', bottom: 14, left: 14, ...microAxis }}>
-                ↓ {q.axes.y[1]}
-              </div>
-              <div style={{
-                position: 'absolute', top: '100%', left: 0, right: 0,
-                paddingTop: 18, paddingLeft: 4, paddingRight: 4,
-                display: 'flex', justifyContent: 'space-between',
-                pointerEvents: 'none',
-              }}>
-                <span style={microAxis}>← {q.axes.x[0]}</span>
-                <span style={microAxis}>{q.axes.x[1]} →</span>
-              </div>
-            </>
-          );
-        })()}
+        {/* Local micro-axis labels (↑ within myself / ↓ gathers a room /
+            ← comfort zone / risky →) are also suppressed for now. The plot
+            stands on its own without them; we can reintroduce when the rest
+            of the layout settles. */}
 
         {hoverIdx !== null && (() => {
           const it = plotItems[hoverIdx];
@@ -460,14 +492,10 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
         {plotItems.map((it, i) => {
           const hovered = hoverIdx === i;
           const dimmed = hoverIdx !== null && !hovered;
-          const onRight = (it.x ?? 0.5) > 0.58;
-          // Fixed-width label — hovering never shifts the card horizontally, it only expands downward.
-          const labelW = 300;
-          const labelSide: React.CSSProperties = onRight
-            ? { right: 28, textAlign: 'right' }
-            : { left: 28, textAlign: 'left' };
           const isCta = it.kind === 'cta';
           const external = it.external === true;
+          const baseSize = 140;
+          const size = hovered ? baseSize + 12 : baseSize;
 
           return (
             <a key={i} href={it.href}
@@ -479,122 +507,38 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                style={{
                  position: 'absolute',
                  left: `${it.x! * 100}%`, top: `${it.y! * 100}%`,
-                 width: 0, height: 0,
-                 textDecoration: 'none', color: 'var(--ink)',
+                 width: size, height: size,
+                 marginLeft: -size / 2, marginTop: -size / 2,
+                 textDecoration: 'none',
                  cursor: 'pointer',
-                 opacity: dimmed ? 0.45 : 1,
-                 transition: 'opacity .2s',
+                 opacity: dimmed ? 0.55 : 1,
+                 transition: 'opacity .2s, width .25s cubic-bezier(.2,.7,.2,1), height .25s cubic-bezier(.2,.7,.2,1), margin .25s cubic-bezier(.2,.7,.2,1)',
                  zIndex: hovered ? 2 : 1,
+                 // The dot itself: a filled circle for articles, an outlined
+                 // ring for CTA. Title text sits inside the circle, centered.
+                 borderRadius: '50%',
+                 background: isCta ? 'transparent' : 'var(--ink)',
+                 border: isCta ? `2px solid ${q.tint as string}` : 'none',
+                 boxShadow: hovered
+                   ? `0 0 0 8px color-mix(in srgb, ${q.tint} 14%, transparent)`
+                   : 'none',
+                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                 padding: 18, boxSizing: 'border-box',
                }}>
-              {/* Dot — filled for articles, open ring for CTA so the eye registers it as a doorway, not a draft. */}
               <span style={{
-                position: 'absolute',
-                left: '50%', top: '50%',
-                width: hovered ? 18 : 12, height: hovered ? 18 : 12,
-                transform: 'translate(-50%, -50%)',
-                borderRadius: '50%',
-                background: isCta ? 'transparent' : q.tint,
-                border: isCta ? `1.5px solid ${q.tint as string}` : 'none',
-                boxShadow: hovered ? `0 0 0 6px color-mix(in srgb, ${q.tint} 18%, transparent)` : 'none',
-                transition: 'width .2s, height .2s, box-shadow .2s',
-              }} />
-              <div style={{
-                position: 'absolute',
-                top: '50%', transform: 'translateY(-50%)',
-                width: labelW,
-                ...labelSide,
+                fontFamily: 'var(--sans)',
+                fontWeight: 400,
+                fontSize: 14, lineHeight: 1.25,
+                color: isCta ? (q.tint as string) : '#fff',
+                textAlign: 'center',
+                textWrap: 'balance',
+                pointerEvents: 'none',
               }}>
-                <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
-                  textTransform: 'uppercase', color: q.tint, marginBottom: 6,
-                  display: 'flex', alignItems: 'baseline', gap: 8,
-                  justifyContent: onRight ? 'flex-end' : 'flex-start',
-                }}>
-                  <span>{it.tag}</span>
-                  {isCta && it.count && (
-                    <span style={{ color: 'var(--ink-4)', letterSpacing: 0.6 }}>
-                      · N = <span style={{ color: q.tint, fontWeight: 600 }}>{it.count}</span>
-                    </span>
-                  )}
-                </div>
-                <div style={{
-                  fontFamily: 'var(--serif)',
-                  fontSize: hovered ? 22 : 16,
-                  lineHeight: 1.15, letterSpacing: -0.4,
-                  color: 'var(--ink)',
-                  textWrap: 'balance',
-                  transition: 'font-size .25s cubic-bezier(.2,.7,.2,1)',
-                }}>
-                  {it.title}
-                  {isCta && external && (
-                    <span style={{
-                      color: q.tint, marginLeft: 8,
-                      fontFamily: 'var(--mono)', fontWeight: 400,
-                      fontSize: hovered ? 18 : 14,
-                      transition: 'font-size .25s',
-                    }}>↗</span>
-                  )}
-                </div>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateRows: hovered ? '1fr' : '0fr',
-                  opacity: hovered ? 1 : 0,
-                  transition: 'grid-template-rows .28s cubic-bezier(.2,.7,.2,1), opacity .22s',
-                }}>
-                  <div style={{ overflow: 'hidden' }}>
-                    <p style={{
-                      fontFamily: 'var(--serif)', fontStyle: 'italic',
-                      fontSize: 14, lineHeight: 1.45, color: 'var(--ink-3)',
-                      margin: '10px 0 0', textWrap: 'pretty',
-                    }}>
-                      {it.dek}
-                    </p>
-                    {it.previews && it.previews.length > 0 && (
-                      <div style={{
-                        display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap',
-                        justifyContent: onRight ? 'flex-end' : 'flex-start',
-                      }}>
-                        {it.previews.map((p, pi) => (
-                          <div key={pi} style={{ width: 60, textAlign: 'center' }}>
-                            <div style={{
-                              width: 60, height: 44, borderRadius: 4,
-                              background: p.src
-                                ? `url(${p.src}) center/cover no-repeat`
-                                : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 28%, transparent), color-mix(in srgb, ${q.tint} 8%, transparent))`,
-                              border: '1px solid var(--line)',
-                              position: 'relative', overflow: 'hidden',
-                            }}>
-                              {!p.src && (
-                                <div style={{
-                                  position: 'absolute', inset: 0,
-                                  background: 'repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,0.18) 6px 7px)',
-                                }} />
-                              )}
-                            </div>
-                            {p.label && (
-                              <div style={{
-                                fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
-                                color: 'var(--ink-4)', marginTop: 5,
-                                textTransform: 'uppercase', lineHeight: 1.2,
-                              }}>
-                                {p.label}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
-                  color: 'var(--ink-4)', marginTop: hovered ? 12 : 8,
-                  textTransform: 'uppercase',
-                  transition: 'margin-top .22s',
-                }}>
-                  {it.meta}
-                </div>
-              </div>
+                {it.title}
+                {isCta && external && (
+                  <span style={{ marginLeft: 4, fontFamily: 'var(--mono)' }}>↗</span>
+                )}
+              </span>
             </a>
           );
         })}

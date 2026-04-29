@@ -368,7 +368,7 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
           <div
             ref={scrollRef}
             style={{
-              height: '100%', overflowY: 'auto',
+              height: '100%', overflowY: 'auto', overflowX: 'hidden',
               background: 'var(--bg)',
             }}
           >

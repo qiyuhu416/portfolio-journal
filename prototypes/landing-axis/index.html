@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Landing → Axis · prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#ECECEC; --ink:#14130F; --ink-2:#3A3833; --ink-3:#6B665C; --ink-4:#A8A295;
+      --line:#D4D4D4;
+      --tint-tl:#B05941; --tint-tr:#A97324; --tint-bl:#4A5585; --tint-br:#7F9580;
+      --warm:var(--tint-tl);
+      --accent:#2B7CFF;
+      --serif:'Source Serif 4',Georgia,serif;
+      --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+      --sans:'Inter',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box; margin:0; padding:0}
+    html,body{background:var(--bg); color:var(--ink); font-family:var(--sans); overflow-x:hidden}
+
+    .driver{ height:600vh }
+    .stage{ position:fixed; inset:0; overflow:hidden; z-index:1 }
+
+    /* QIYU + status pill at top */
+    .qiyu-pill{
+      position:fixed; top:36px; left:50%; transform:translateX(-50%);
+      display:flex; align-items:center; gap:14px;
+      font-family:var(--sans); font-size:14px;
+      z-index:40; pointer-events:none;
+      transition:opacity .25s;
+    }
+    .qiyu-pill .name{
+      font-weight:600; letter-spacing:.6px; color:var(--accent);
+    }
+    .qiyu-pill .qdot{
+      width:14px; height:14px; border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 0 0 rgba(43,124,255,.45);
+      animation:pulse 2.4s ease-in-out infinite;
+    }
+    .qiyu-pill .status{
+      color:var(--accent); font-weight:500;
+      letter-spacing:.2px;
+      transition:opacity .15s;
+    }
+    @keyframes pulse{
+      0%,100%{ box-shadow:0 0 0 0 rgba(43,124,255,.35) }
+      50%   { box-shadow:0 0 0 8px rgba(43,124,255,0) }
+    }
+
+    /* Slogan at bottom — large sans-serif question */
+    .tagline{
+      position:fixed; left:8%; right:8%; bottom:64px;
+      font-family:var(--sans); font-weight:700;
+      font-size:clamp(40px, 7.5vw, 110px);
+      line-height:1.05; letter-spacing:-2px;
+      color:var(--ink);
+      text-wrap:balance;
+      pointer-events:none;
+      z-index:30;
+      transition:opacity .3s, transform .3s;
+    }
+
+    /* Constellation: scattered dots that will become the four axis nodes */
+    .dot{
+      position:fixed; width:14px; height:14px; border-radius:50%;
+      background:var(--ink-4);
+      cursor:pointer;
+      transition:background .2s, transform .2s, box-shadow .2s;
+      z-index:35;
+    }
+    .dot:hover{
+      background:var(--ink); transform:scale(1.25);
+      box-shadow:0 0 0 6px rgba(20,19,15,.08);
+    }
+    .dot .label{
+      position:absolute; left:50%; top:-22px; transform:translateX(-50%);
+      font-family:var(--sans); font-size:13px; color:var(--ink-2);
+      white-space:nowrap; pointer-events:none;
+      font-weight:500;
+    }
+
+    /* SVG axis-cross overlay (drawn by stroke-dasharray on scroll) */
+    .axis-svg{
+      position:fixed; inset:0; pointer-events:none; z-index:20;
+    }
+    .axis-svg path{
+      fill:none; stroke:var(--ink-4); stroke-width:1;
+      stroke-dasharray:2 6;
+    }
+
+    /* Quadrant titles — sit on the axis line, rise into cells */
+    .qtitle{
+      position:fixed; font-family:var(--serif); font-weight:400;
+      font-size:34px; letter-spacing:-0.4px; line-height:1;
+      pointer-events:none; will-change:transform, opacity;
+      text-align:center; opacity:0;
+    }
+    .qtitle .axis-tag{
+      display:block; font-family:var(--mono); font-size:10px; letter-spacing:1.8px;
+      text-transform:uppercase; margin-bottom:10px;
+    }
+    .qtitle.tl{ left:25%; top:25%; transform:translate(-50%, -50%) }
+    .qtitle.tr{ left:75%; top:25%; transform:translate(-50%, -50%) }
+    .qtitle.bl{ left:25%; top:75%; transform:translate(-50%, -50%) }
+    .qtitle.br{ left:75%; top:75%; transform:translate(-50%, -50%) }
+    .qtitle.tl .axis-tag{ color:var(--tint-tl) }
+    .qtitle.tr .axis-tag{ color:var(--tint-tr) }
+    .qtitle.bl .axis-tag{ color:var(--tint-bl) }
+    .qtitle.br .axis-tag{ color:var(--tint-br) }
+
+    /* Edge axis labels (Qiyu/Others/Noticing/Making) — fade in last */
+    .edge{
+      position:fixed; font-family:var(--mono); font-size:10px;
+      letter-spacing:1.6px; text-transform:uppercase;
+      color:var(--ink-3); background:var(--bg); padding:2px 6px;
+      pointer-events:none; z-index:25; opacity:0;
+    }
+    .edge.qiyu  { top:64px;  left:50%; transform:translateX(-50%) }
+    .edge.others{ bottom:24px; left:50%; transform:translateX(-50%) }
+    .edge.notice{ left:24px;  top:50%;  transform:translateY(-50%) }
+    .edge.make  { right:24px; top:50%;  transform:translateY(-50%) }
+
+    /* Phase legend — for the prototype only */
+    .phase-legend{
+      position:fixed; bottom:24px; right:24px;
+      font-family:var(--mono); font-size:10px; letter-spacing:1.4px;
+      color:var(--ink-4); z-index:60; pointer-events:none;
+    }
+    .phase-legend b{ color:var(--ink); font-weight:500 }
+  </style>
+</head>
+<body>
+  <div class="driver"></div>
+
+  <div class="stage">
+    <!-- QIYU + live status pill (top-center) -->
+    <div class="qiyu-pill" id="pill">
+      <span class="name">QIYU</span>
+      <span class="qdot"></span>
+      <span class="status" id="status">Thinking…</span>
+    </div>
+
+    <!-- Bottom tagline -->
+    <div class="tagline" id="tagline">Yo, how might we connect the dots?</div>
+
+    <!-- The four dots — will animate to axis-cross positions on scroll -->
+    <!-- Each dot's hover updates the QIYU status to name the relationship -->
+    <div class="dot" id="dot-self"  data-status="Thinking…"        style="left:50%; top:46%"></div>
+    <div class="dot" id="dot-other" data-status="Listening…"
+                                                                    style="left:55%; top:42%">
+      <span class="label">Others</span>
+    </div>
+    <div class="dot" id="dot-think" data-status="Noticing…"        style="left:24%; top:46%"></div>
+    <div class="dot" id="dot-make"  data-status="Making…"           style="left:80%; top:54%"></div>
+
+    <!-- Axis cross — drawn by scroll. Two paths so each can animate independently. -->
+    <svg class="axis-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+      <path id="axis-h" d="M 0 500 L 1000 500" pathLength="1000" />
+      <path id="axis-v" d="M 500 0 L 500 1000" pathLength="1000" />
+    </svg>
+
+    <!-- Quadrant titles — rise from axis line on scroll -->
+    <div class="qtitle tl" id="q-tl">
+      <span class="axis-tag">Qiyu · Noticing</span>
+      The mirror.
+    </div>
+    <div class="qtitle tr" id="q-tr">
+      <span class="axis-tag">Qiyu · Making</span>
+      The practice.
+    </div>
+    <div class="qtitle bl" id="q-bl">
+      <span class="axis-tag">Others · Noticing</span>
+      Paying attention.
+    </div>
+    <div class="qtitle br" id="q-br">
+      <span class="axis-tag">Others · Making</span>
+      The work.
+    </div>
+
+    <!-- Edge axis labels -->
+    <div class="edge qiyu"   id="e-qiyu"  >Qiyu</div>
+    <div class="edge others" id="e-others">Others</div>
+    <div class="edge notice" id="e-notice">Noticing</div>
+    <div class="edge make"   id="e-make"  >Making</div>
+
+    <div class="phase-legend" id="phase">phase: <b>landing</b></div>
+  </div>
+
+  <script>
+    const lerp  = (a, b, t) => a + (b - a) * t;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const smooth = t => t * t * (3 - 2 * t);
+
+    const status   = document.getElementById('status');
+    const tagline  = document.getElementById('tagline');
+    const phase    = document.getElementById('phase');
+
+    // Dot elements + their landing/axis positions (in % of viewport)
+    // Landing: scattered (matches the screenshot composition)
+    // Axis:    final cross positions (top/bottom for Q/O, left/right for Notice/Make)
+    const DOTS = [
+      { id:'dot-self',  landing:{x:50, y:46}, axis:{x:50, y:8 },  status:'Thinking…'  },
+      { id:'dot-other', landing:{x:55, y:42}, axis:{x:50, y:92},  status:'Listening…' },
+      { id:'dot-think', landing:{x:24, y:46}, axis:{x:5,  y:50},  status:'Noticing…'  },
+      { id:'dot-make',  landing:{x:80, y:54}, axis:{x:95, y:50},  status:'Making…'    },
+    ].map(d => ({ ...d, el: document.getElementById(d.id) }));
+
+    const axisH = document.getElementById('axis-h');
+    const axisV = document.getElementById('axis-v');
+
+    const titles = ['q-tl','q-tr','q-bl','q-br'].map(id => document.getElementById(id));
+    const edges  = ['e-qiyu','e-others','e-notice','e-make'].map(id => document.getElementById(id));
+
+    // ——— Hover: dot's data-status replaces the QIYU pill text
+    let hoverStatus = null;
+    DOTS.forEach(d => {
+      d.el.addEventListener('mouseenter', () => {
+        hoverStatus = d.status;
+        status.style.opacity = 0;
+        setTimeout(() => { status.textContent = hoverStatus; status.style.opacity = 1; }, 100);
+      });
+      d.el.addEventListener('mouseleave', () => {
+        hoverStatus = null;
+        status.style.opacity = 0;
+        setTimeout(() => { status.textContent = 'Thinking…'; status.style.opacity = 1; }, 100);
+      });
+    });
+
+    // ——— Smooth scroll
+    let rawScroll = 0, smoothScroll = 0;
+    addEventListener('scroll', () => { rawScroll = scrollY; }, { passive:true });
+
+    function applyDots(t){
+      // t: 0 → landing positions; 1 → axis positions
+      DOTS.forEach(d => {
+        const x = lerp(d.landing.x, d.axis.x, smooth(t));
+        const y = lerp(d.landing.y, d.axis.y, smooth(t));
+        d.el.style.left = x + '%';
+        d.el.style.top  = y + '%';
+      });
+    }
+
+    function applyAxis(tH, tV){
+      const total = 1000;
+      axisH.style.strokeDasharray = `${tH * total} ${total}`;
+      axisV.style.strokeDasharray = `${tV * total} ${total}`;
+      axisH.style.opacity = clamp(tH * 1.5, 0, 1);
+      axisV.style.opacity = clamp(tV * 1.5, 0, 1);
+    }
+
+    function applyTitleRise(el, p, dirY){
+      const eased = smooth(p);
+      const cellOffset = 25; // %; 25% from center to mid-quadrant
+      const yPct = lerp(0, dirY * cellOffset, eased) - 50;
+      el.style.transform = `translate(-50%, ${yPct}%)`;
+      el.style.opacity   = eased;
+    }
+
+    function render(){
+      smoothScroll += (rawScroll - smoothScroll) * 0.16;
+      const docH     = document.body.scrollHeight - innerHeight;
+      const progress = clamp(smoothScroll / docH, 0, 1);
+
+      // —— Beats
+      const beatA = clamp(progress / 0.30, 0, 1);          // dots travel to axis positions; tagline fades
+      const beatB = clamp((progress - 0.25) / 0.35, 0, 1); // axis cross is drawn (h then v)
+      const beatC = clamp((progress - 0.55) / 0.45, 0, 1); // titles rise from axis line
+
+      // Beat A: dots reposition; tagline + pill fade out as the page-state turns
+      applyDots(beatA);
+      tagline.style.opacity = 1 - beatA;
+      tagline.style.transform = `translateY(${beatA * 24}px)`;
+
+      // Beat B: line drawn — h first, then v slightly delayed so it reads as two strokes
+      const tH = clamp(beatB * 1.4, 0, 1);
+      const tV = clamp((beatB - 0.3) * 1.7, 0, 1);
+      applyAxis(tH, tV);
+
+      // Beat C: titles rise into their quadrant cells
+      applyTitleRise(titles[0], beatC, -1); // tl
+      applyTitleRise(titles[1], beatC, -1); // tr
+      applyTitleRise(titles[2], beatC, +1); // bl
+      applyTitleRise(titles[3], beatC, +1); // br
+
+      // Edge axis labels fade in last
+      const edgeT = clamp((progress - 0.7) / 0.3, 0, 1);
+      edges.forEach(e => e.style.opacity = edgeT);
+
+      // Phase indicator
+      let label = 'landing';
+      if (progress > 0.05 && progress < 0.32) label = 'dots find their axes';
+      else if (progress >= 0.32 && progress < 0.6) label = 'axis being drawn';
+      else if (progress >= 0.6) label = 'titles rising into quadrants';
+      phase.innerHTML = `phase: <b>${label}</b>  ·  scroll: ${(progress*100).toFixed(0)}%`;
+
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>

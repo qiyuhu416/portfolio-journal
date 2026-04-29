@@ -7,7 +7,15 @@
     "pos": "TL",
     "tint": "var(--tint-tl)",
     "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet — where first drafts go to be held up to the light.",
-    "layout": "list",
+    "layout": "statement",
+    "statement": [
+      { "type": "text",   "text": "I practice the mindset to " },
+      { "type": "phrase", "text": "think outside the box",          "href": "#article:thinking-outside-the-box", "tint": "var(--tint-tl)" },
+      { "type": "text",   "text": ", applying that to " },
+      { "type": "phrase", "text": "design human–AI interactions",   "href": "#article:designing-ai-products",    "tint": "var(--tint-bl)" },
+      { "type": "text",   "text": ", with " },
+      { "type": "phrase", "text": "AI as my prototyping tool",      "href": "#article:how-i-use-ai-to-create",   "tint": "var(--ink)" }
+    ],
     "items": [
       {
         "tag": "Critical thinking",
@@ -32,14 +40,6 @@
         "meta": "03 · 5 min",
         "href": "#article:how-i-use-ai-to-create",
         "companies": [{ "name": "Anthropic" }, { "name": "Apple" }]
-      },
-      {
-        "tag": "Self-awareness",
-        "title": "What I’m good at. What I’m not.",
-        "dek": "And who I want to work with.",
-        "meta": "self-audit",
-        "href": "#loops",
-        "companies": [{ "name": "Apple" }, { "name": "Google" }]
       }
     ]
   },
@@ -58,40 +58,31 @@
     },
     "items": [
       {
-        "tag": "Community",
-        "title": "Events I host at Apple",
-        "dek": "An informal lunch for people curious about the new tools.",
-        "meta": "04 · 3 min",
-        "href": "#article:vibe-coding-meetup-at-apple-park",
-        "x": 0.72,
-        "y": 0.72,
-        "previews": [
-          { "label": "Event" },
-          { "label": "Lunch" }
-        ]
-      },
-      {
-        "tag": "Hosting",
-        "title": "The channels, not the meetings",
-        "dek": "I want my friends to be friends with each other.",
-        "meta": "05 · 2 min",
-        "href": "#article:friends-of-friends-at-work",
-        "x": 0.38,
-        "y": 0.85
-      },
-      {
         "tag": "Play",
         "title": "Making design fun",
         "dek": "Caltrain, After Effects, and a stubborn suspicion that everything could be easier.",
         "meta": "06 · 5 min",
         "href": "#article:making-design-fun",
-        "x": 0.22,
-        "y": 0.2,
+        "x": 0.28,
+        "y": 0.32,
         "previews": [
           { "label": "AE" },
           { "label": "Voice" },
           { "label": "Gesture" },
           { "label": "Camera" }
+        ]
+      },
+      {
+        "tag": "Community",
+        "title": "Events I host at Apple",
+        "dek": "An informal lunch for people curious about the new tools.",
+        "meta": "04 · 3 min",
+        "href": "#article:vibe-coding-meetup-at-apple-park",
+        "x": 0.55,
+        "y": 0.78,
+        "previews": [
+          { "label": "Event" },
+          { "label": "Lunch" }
         ]
       },
       {
@@ -103,8 +94,8 @@
         "external": true,
         "kind": "cta",
         "count": "72",
-        "x": 0.9,
-        "y": 0.5
+        "x": 0.92,
+        "y": 0.50
       }
     ]
   },
