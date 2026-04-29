@@ -2,7 +2,10 @@
   max-width: 680px;
   margin: 0 auto;
   padding: 0 32px;
-  font-family: var(--serif);
+  /* Long-form reading uses Source Serif 4 (--reading), tuned for sustained
+     paragraph rhythm. Headings stay on Fraunces (--serif) for display
+     punch — both classified-modern serifs, so they pair visually. */
+  font-family: var(--reading);
   font-size: 19px;
   line-height: 1.7;
   color: var(--ink);
@@ -61,6 +64,8 @@
   margin: 32px 0;
   padding: 0 0 0 22px;
   border-left: 3px solid var(--article-tint, var(--ink-3));
+  /* Pull-quotes shift to the display serif (Fraunces) italic — its italic
+     has more personality than Source Serif's, perfect for set-apart text. */
   font-family: var(--serif);
   font-style: italic;
   color: var(--ink-2);

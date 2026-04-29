@@ -1,27 +1,59 @@
 :root {
-  --bg: #FBF9F4;
-  --ink: #14130F;
-  --ink-2: #3A3833;
-  --ink-3: #6B665C;
-  --ink-4: #A8A295;
-  --line: #E6E0D1;
-  --surface: #F3EEE2;
+  /* ——— Graphite palette ———
+     Editorial monochrome on warm parchment. Quadrants are encoded as four
+     graphite values walking from deepest (Qiyu · Notice) to lightest
+     (Others · Make), so the 2×2's "depth" axis still reads at a glance —
+     but the warm/cool axis is dropped. A single signal red is the only
+     non-grey ink on the page, reserved strictly for live/active states
+     (the QIYU pill, "Open to work", hovered cell labels, the CTA arrow). */
+  --bg: #F4F2EC;          /* warm paper, very subtly */
+  --ink: #1A1814;         /* walnut */
+  --ink-2: #45403A;
+  --ink-3: #807A6E;
+  --ink-4: #B0AA9C;
+  --line: #DDD8CB;
+  --surface: #ECE7DA;
 
-  /* Quadrant tints — warm/cool × deep/bright map to the 2×2 axes.
-     Calm family (same saturation band), each carries the axis meaning. */
-  --tint-tl: #B05941; /* terracotta — Qiyu · Think (warm, deep) */
-  --tint-tr: #A97324; /* amber     — Qiyu · Do    (warm, bright) */
-  --tint-bl: #4A5585; /* indigo    — Others · Think (cool, deep) */
-  --tint-br: #7F9580; /* sage      — Others · Do    (cool, bright) */
+  /* Quadrant tints — pigment colors brought back from graphite. Each section
+     gets a chromatic identity that only shows when you're INSIDE it (active
+     corner dots, hovered cell, statement-layout phrase highlights). The
+     palette stays calm because graphite still owns the static page; color
+     blooms in moments of attention. Calm at rest, playful in motion. */
+  --tint-tl: #C66243; /* coral sienna   — Reflection (warm, deep)   */
+  --tint-tr: #DB9230; /* honeyed amber  — Create     (warm, bright) */
+  --tint-bl: #5A75A0; /* blueprint blue — Learn      (cool, deep)   */
+  --tint-br: #80A07E; /* fresh sage     — Work       (cool, bright) */
 
-  /* Legacy aliases — keep existing usages intact */
-  --warm: var(--tint-tl);
-  --warm-ink: var(--tint-tr);
-  --cool: var(--tint-bl);
+  /* Single signal — the only non-tint accent. Used ONLY for live state:
+     pulsing dots, hovered cell labels, route arrows, "Open to work". */
+  --signal: #C13D2F;
+  /* Halo glow — soft butter for one-shot attention moments (corner-nav
+     arrival pulse, active-dot swap halo, selection wash). Warm enough to
+     pair with the parchment bg, soft enough not to compete with --signal. */
+  --accent-glow: #F5D982;
 
-  --serif: 'Plein', 'Source Serif 4', Charter, 'Georgia', serif;
-  --sans: 'Switzer', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Legacy aliases — repointed at --signal so existing references that
+     used --warm / --cool to mean "alive / emphasized" still read as
+     emphasized in this palette (e.g. Signals/Loops accents, footer pulse,
+     InlineLink default tint). */
+  --warm:     var(--signal);
+  --warm-ink: var(--signal);
+  --cool:     var(--signal);
+
+  /* ——— Type system ———
+     - --serif: editorial display serif (Fraunces, variable, optical sizing).
+       Used for hero/section titles, the wordmark, and short editorial body
+       (footer manifesto, statement layouts).
+     - --sans: UI workhorse (Inter, variable). Body, labels, kickers,
+       navigation, lists. Reads well at every size.
+     - --reading: long-form article body (Source Serif 4). Companion text
+       serif optimized for sustained reading; pairs with Fraunces visually
+       (both classified-modern serifs) but is tuned for paragraph rhythm.
+     - --mono: live-state / system info only (QIYU pill, "Open to work"). */
+  --serif:   'Fraunces',       'Source Serif 4', Charter, 'Georgia', serif;
+  --sans:    'Inter',          -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --reading: 'Source Serif 4', Charter, 'Georgia', serif;
+  --mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 html, body { margin: 0; padding: 0; background: var(--bg); }
@@ -34,7 +66,7 @@ body {
 }
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
-::selection { background: #F3B98C; color: var(--ink); }
+::selection { background: var(--accent-glow); color: var(--ink); } /* butter-yellow wash, warm + playful */
 * { box-sizing: border-box; }
 
 @keyframes livePulse {
@@ -48,6 +80,24 @@ button { font-family: inherit; }
 }
 @keyframes statusFade {
   from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* One-shot expanding halo — used when the corner nav first appears and
+   when the active-arc pair changes mid-section. A "look here" gesture that
+   blooms then fades, like an iOS notification dot's first appearance.
+   Origin scale should be set on the parent element (the dot itself stays
+   unchanged); this just animates a sibling pseudo-ring outward. */
+@keyframes haloPing {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.4); }
+  18%  { opacity: 0.7; }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(2.6); }
+}
+
+/* Section-title cross-fade. Title enters from below + fades in over ~250ms;
+   used by the kicker + section-title block at the top of each section. */
+@keyframes titleEnter {
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 

@@ -159,15 +159,10 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
       opacity: itemsOpacity, transition: 'opacity .3s',
       maxWidth: 1100,
     }}>
-      <div style={{
-        fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400,
-        fontSize: 'clamp(18px, 1.6vw, 24px)',
-        lineHeight: 1.2, letterSpacing: '-0.005em',
-        color: 'var(--ink-3)',
-        margin: '0 0 22px',
-      }}>
-        {q.label}.
-      </div>
+      {/* The italic "The mirror." label that used to render here was
+          duplicating the section subheading shown at the top of the viewport
+          by Home (kicker + section title). Removed to prevent the same
+          label appearing twice on the same page. */}
       <p style={{
         fontFamily: 'var(--sans)', fontWeight: 500,
         fontSize: 'clamp(28px, 3.6vw, 56px)',
@@ -206,7 +201,11 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
         color: hover ? 'var(--bg)' : 'var(--ink)',
         textDecoration: 'none',
         cursor: 'pointer',
-        padding: '0.04em 0.18em',
+        // Vertical padding gives the highlight breathing room above/below the
+        // text; horizontal padding stays at 0 so the highlight ends exactly
+        // where the text ends — otherwise the trailing comma in the next
+        // segment looks like it's floating away from the phrase.
+        padding: '0.08em 0',
         boxDecorationBreak: 'clone',
         WebkitBoxDecorationBreak: 'clone',
         transition: 'background .18s, color .18s',
@@ -480,7 +479,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           const xPct = it.x! * 100;
           const yPct = it.y! * 100;
           return (
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}>
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }}>
               <line x1="0" y1={`${yPct}%`} x2={`${xPct}%`} y2={`${yPct}%`}
                     stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
               <line x1={`${xPct}%`} y1={`${yPct}%`} x2={`${xPct}%`} y2="100%"
@@ -539,6 +538,49 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   <span style={{ marginLeft: 4, fontFamily: 'var(--mono)' }}>↗</span>
                 )}
               </span>
+              {it.previews && it.previews.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%', left: '50%',
+                  transform: 'translateX(-50%)',
+                  marginTop: 18,
+                  display: 'flex', gap: 8, flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  width: 280,
+                  opacity: hovered ? 1 : 0,
+                  transition: 'opacity .22s',
+                  pointerEvents: 'none',
+                }}>
+                  {it.previews.map((p, pi) => (
+                    <div key={pi} style={{ width: 60, textAlign: 'center' }}>
+                      <div style={{
+                        width: 60, height: 44, borderRadius: 4,
+                        background: p.src
+                          ? `url(${p.src}) center/cover no-repeat`
+                          : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 28%, transparent), color-mix(in srgb, ${q.tint} 8%, transparent))`,
+                        border: '1px solid var(--line)',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        {!p.src && (
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,0.18) 6px 7px)',
+                          }} />
+                        )}
+                      </div>
+                      {p.label && (
+                        <div style={{
+                          fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
+                          color: 'var(--ink-4)', marginTop: 5,
+                          textTransform: 'uppercase', lineHeight: 1.2,
+                        }}>
+                          {p.label}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </a>
           );
         })}

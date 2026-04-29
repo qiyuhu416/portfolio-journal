@@ -128,7 +128,22 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
   const pullResetTimer = useRef<number | null>(null);
   const exitResetTimer = useRef<number | null>(null);
   const closingRef = useRef(false);
-  const PULL_THRESHOLD = 160;
+  // Threshold raised from 160 → 220 so closing feels intentional, not
+  // accidental (paired with the diminishing-input-rate curve below, this
+  // means a single trackpad flick can't trip the close).
+  const PULL_THRESHOLD = 220;
+  // Past this point, each new wheel pixel produces less pull — the gesture
+  // gets harder the further you go (rubber-band-style resistance).
+  const PULL_SOFT_KNEE = 80;
+  // Convert raw pull into the visual displacement amount. Power < 1 = the
+  // modal moves a lot at first, then plateaus — feels like dragging a heavy
+  // spring rather than sliding a tile.
+  const visualPullAmount = (raw: number) => Math.pow(Math.max(0, raw), 0.72) * 2.0;
+  // Diminishing accumulation: first PULL_SOFT_KNEE pixels accumulate at full
+  // rate; past that, each new wheel-pixel produces a smaller pull increment
+  // (rate falls off as pull grows).
+  const pullRate = (current: number) =>
+    current < PULL_SOFT_KNEE ? 0.45 : 0.45 / (1 + (current - PULL_SOFT_KNEE) / 120);
   // Bottom-exit dwell gate: once the modal has deflated back to rest, the
   // same scroll gesture cannot keep accumulating into pull-to-close. The user
   // must pause (gesture ends) and start a new wheel-down to cross the gate.
@@ -144,11 +159,12 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
       if (closingRef.current) return;
       const atTop = el.scrollTop <= 0;
       const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
-      // Top: wheel-up at top → pull to close
+      // Top: wheel-up at top → pull to close. Accumulation rate decays past
+      // PULL_SOFT_KNEE so the gesture genuinely resists past the easy zone.
       if (e.deltaY < 0 && atTop) {
         e.preventDefault();
         setPull((p) => {
-          const next = Math.min(320, p + Math.abs(e.deltaY) * 0.45);
+          const next = Math.min(420, p + Math.abs(e.deltaY) * pullRate(p));
           if (next >= PULL_THRESHOLD && !closingRef.current) {
             closingRef.current = true;
             window.setTimeout(() => onClose(), 180);
@@ -177,7 +193,12 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
           // at the deflated position. The user has to lift and try again.
           if (deflateLatchedRef.current) return DEFLATE_DIST;
 
-          const next = Math.min(DEFLATE_DIST + 320, p + Math.abs(e.deltaY) * 0.45);
+          // Phase 1 (deflate) uses full rate so the modal shrinks back
+          // responsively; phase 2 (close pull) uses the diminishing rate
+          // measured against the post-deflate pull amount.
+          const phase2Pull = Math.max(0, p - DEFLATE_DIST);
+          const rate = p < DEFLATE_DIST ? 0.45 : pullRate(phase2Pull);
+          const next = Math.min(DEFLATE_DIST + 420, p + Math.abs(e.deltaY) * rate);
 
           // Crossing phase 1 → phase 2 mid-gesture triggers the latch and
           // clamps pull so close cannot fire on the same gesture.
@@ -211,8 +232,13 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
   }, [onClose]);
 
   const pullNorm = clamp(pull / PULL_THRESHOLD, 0, 1);
-  const modalPullY = pull * 0.35 + exitCloseAmt * 0.35;
-  const modalPullScale = 1 - (pull + exitCloseAmt) * 0.00035;
+  // Visual displacement uses a sub-linear curve: small pulls produce
+  // big movement (responsive feel), large pulls plateau (resistance feel).
+  // Pairs with the diminishing-input-rate above so the modal looks like it's
+  // physically resisting the user.
+  const visualPull = visualPullAmount(pull) + visualPullAmount(exitCloseAmt);
+  const modalPullY = visualPull * 0.45;
+  const modalPullScale = 1 - visualPull * 0.0008;
   const exitPullNorm = clamp(exitCloseAmt / PULL_THRESHOLD, 0, 1);
 
   const next = useMemo(() => computeNext(slug), [slug]);
