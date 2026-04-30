@@ -15,6 +15,8 @@ export type CollageItem = {
   aspectRatio?: string;
 };
 
+type Layout = 'preview' | 'strip';
+
 type Props = {
   items: CollageItem[];
   fig?: string;
@@ -24,6 +26,9 @@ type Props = {
   span?: Span;
   /** If true, the collage starts expanded. Default: false (compact preview). */
   defaultExpanded?: boolean;
+  /** "preview" (default): card stack that expands on click.
+   *  "strip": bleeds beyond the column, all items tilted in a row, no toggling. */
+  layout?: Layout;
 };
 
 const WRAPPER_BY_SPAN: Record<Span, CSSProperties> = {
@@ -42,13 +47,137 @@ const PREVIEW_ROTATIONS = [-8, 2, 6];
  * scrolling row of all items. ESC (or the Collapse button) closes.
  */
 export function Collage({
-  items, fig, caption, span = 'full', defaultExpanded = false,
+  items, fig, caption, span = 'full', defaultExpanded = false, layout = 'preview',
 }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const article = useArticle();
   const tint = article?.tint ?? 'var(--ink-3)';
   const surface = article?.surface ?? 'var(--surface)';
   const id = useId();
+
+  // ---------- STRIP ----------
+  // Bleeds beyond the article column; renders all items as a tilted row.
+  if (layout === 'strip') {
+    return (
+      <figure
+        style={{
+          // The calc() trick lets the figure escape the article-body's 680px
+          // max-width by spanning the full viewport width, then re-centering.
+          margin: '56px calc(50% - 50vw)',
+          padding: 0,
+          width: '100vw',
+          maxWidth: 'none',
+        }}
+      >
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 32px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 28,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            {items.map((it, i) => {
+              const angle = EXPANDED_ROTATIONS[i % EXPANDED_ROTATIONS.length];
+              const tile = it.src ? (
+                <img
+                  src={it.src}
+                  alt={it.alt}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    aspectRatio: it.aspectRatio ?? '1 / 1',
+                    objectFit: 'cover',
+                    borderRadius: 6,
+                    boxShadow: '0 10px 28px rgba(31,30,27,0.10)',
+                    background: surface,
+                  }}
+                />
+              ) : (
+                <div
+                  role="img"
+                  aria-label={it.alt}
+                  style={{
+                    width: '100%',
+                    aspectRatio: it.aspectRatio ?? '1 / 1',
+                    background: surface,
+                    borderRadius: 6,
+                    boxShadow: '0 10px 28px rgba(31,30,27,0.10)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background:
+                        'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 8,
+                      textAlign: 'center',
+                      fontFamily: 'var(--mono)',
+                      fontSize: 9,
+                      letterSpacing: 0.4,
+                      color: tint,
+                      opacity: 0.8,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {it.alt}
+                  </div>
+                </div>
+              );
+              return (
+                <div
+                  key={i}
+                  style={{
+                    flex: '1 1 0',
+                    minWidth: 0,
+                    transform: `rotate(${angle}deg)`,
+                    transition: 'transform .3s cubic-bezier(.2,.7,.2,1)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'rotate(0deg) scale(1.04)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = `rotate(${angle}deg) scale(1)`;
+                  }}
+                >
+                  {tile}
+                </div>
+              );
+            })}
+          </div>
+
+          {(caption || fig) && (
+            <figcaption
+              style={{
+                marginTop: 32,
+                textAlign: 'center',
+                fontFamily: 'var(--mono)',
+                fontSize: 11,
+                letterSpacing: 0.3,
+                color: 'var(--ink-3)',
+              }}
+            >
+              {fig && <>Fig. {fig} · </>}
+              {caption}
+            </figcaption>
+          )}
+        </div>
+      </figure>
+    );
+  }
 
   // ESC collapses
   useEffect(() => {

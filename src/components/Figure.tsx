@@ -1,23 +1,18 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useArticle } from '@/routes/ArticleContext';
-
-type Span = 'text' | 'full' | 'bleed';
+import { WRAPPER_BY_SPAN, PARATEXT_MAX, type FigureSpan } from './figureLayout';
 
 type Props = {
   src?: string;
   alt?: string;
   fig?: string;
   caption?: ReactNode;
-  span?: Span;
+  span?: FigureSpan;
   height?: number;
   placeholder?: boolean;
 };
 
-const WRAPPER_BY_SPAN: Record<Span, CSSProperties> = {
-  text:  { maxWidth: 680,  margin: '40px auto' },
-  full:  { maxWidth: 1040, margin: '56px auto' },
-  bleed: { maxWidth: 'none', margin: '72px 0', paddingLeft: 0, paddingRight: 0 },
-};
+const VIDEO_EXT = /\.(mp4|webm|mov)(\?|$)/i;
 
 export function Figure({
   src,
@@ -32,6 +27,7 @@ export function Figure({
   const tint = article?.tint ?? 'var(--ink-3)';
   const surface = article?.surface ?? 'var(--surface)';
   const showPlaceholder = placeholder || !src;
+  const isVideo = !!src && VIDEO_EXT.test(src);
 
   return (
     <figure style={{ ...WRAPPER_BY_SPAN[span], padding: '0 32px' }}>
@@ -50,13 +46,16 @@ export function Figure({
             </div>
           )}
         </div>
+      ) : isVideo ? (
+        <video src={src} autoPlay muted loop playsInline aria-label={alt}
+          style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8 }} />
       ) : (
         <img src={src} alt={alt}
           style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8 }} />
       )}
       {(caption || fig) && (
         <figcaption style={{
-          maxWidth: 680, margin: '14px auto 0',
+          maxWidth: PARATEXT_MAX, margin: '14px auto 0',
           fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3,
         }}>
           {fig && <>Fig. {fig} · </>}{caption}

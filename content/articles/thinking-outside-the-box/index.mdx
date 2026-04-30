@@ -17,17 +17,27 @@ sections:
 import { Figure } from '@/components/Figure'
 import { PullQuote } from '@/components/PullQuote'
 import { Aside } from '@/components/Aside'
+import { Sidebar } from '@/components/Sidebar'
+import { MicroHeading } from '@/components/MicroHeading'
 import { YouTube } from '@/components/YouTube'
 import { Collage } from '@/components/Collage'
 import { InlineLink } from '@/components/InlineLink'
+import { ExternalLink } from '@/components/ExternalLink'
 import { TabbedFigure } from '@/components/TabbedFigure'
+import { Carousel } from '@/components/Carousel'
 import bridgeStartup from './images/bridge-startup.png'
 import bridgeRoche from './images/bridge-roche.png'
+import surveyRobot from './images/survey-robot.png'
+import surveyFalling from './images/survey-falling.png'
+import surveyWall from './images/survey-wall.png'
+import surveyGround from './images/survey-ground.png'
+import surveyToilet from './images/survey-toilet.png'
 
 <p>I used to think I just had a quirky mind.</p>
 
 <Collage
   fig="01"
+  layout="strip"
   caption="Things I made before I had the word for it."
   items={[
     { alt: "Orange, prototype",          aspectRatio: "3 / 4", caption: "Orange, prototype" },
@@ -40,53 +50,28 @@ import bridgeRoche from './images/bridge-roche.png'
 
 <p>
 But then I realized — coming up with creative ideas is not hard.
-Everyone's crazy 8's ideas are super crazy. What’s hard is building a system to get there consistently.
 </p>
 
-<PullQuote>
-  Thinking outside the box is a practice.
-</PullQuote>
+<Aside>
+Everyone's crazy 8's ideas are super crazy...!! 
+</Aside>
 
 <p>
-My 5-year education in HCI taught me that mindset.
-A way of figuring out what the problem actually is, then exploring what it could become.
+  What’s hard is building a system to get there consistently. Thinking outside the box is a practice. 
 </p>
 
-<p>Once you see it that way, you can design anything:</p>
+<p>
+I am still practicing this mindset, but it tends to come back to three steps.
+</p>
 
-<ul>
-  <li><InlineLink to="design-the-collaboration">design the XF collaboration</InlineLink></li>
-  <li>design self-reflection process</li>
-  <li>design the next-gen of human-AI interaction</li>
-</ul>
-
-<hr />
-
-<div style={{
-  fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-  textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-  marginTop: 24, marginBottom: 12,
-}}>
-  My mental model
-</div>
-
-<p>I am still practicing this mindset, but here is what I keep coming back to:</p>
-
-<ul>
-  <li>1. See the box</li>
-  <li>2. Understand the box in the system</li>
-  <li>3. Break the box</li>
-</ul>
-
-<h2 id="see">§1 · See the box</h2>
-
-<PullQuote>
-  You can’t question the box if you can’t see it.
-</PullQuote>
+<h2 id="see">☝️· See the box</h2>
 
 <p>
-A “box” is usually just an assumption —  
-the first thing that comes to mind when we hear a word. The association we didn’t notice we made.
+You can’t question the box if you can’t see it.
+</p>
+
+<p>
+A “box” is usually just an assumption, the association we didn’t notice we made, just like:
 </p>
 
 <ul>
@@ -97,91 +82,84 @@ the first thing that comes to mind when we hear a word. The association we didn�
 </ul>
 
 <p>
-These used to feel true. Now, because of AI, a lot of them are already shifting. Designers are vibe-coding (which is what I'm doing right now, building this site). Engineers are prototyping interfaces. AI is becoming more than a chatbot.
+These used to feel true. Now, because of AI, a lot of them are already shifting (like I am vibe coding this site using Claude Code now).
 </p>
 
-<PullQuote>
-  Most problems aren’t wrong — they’re just framed too early. 
+<PullQuote attribution="me, after rushing too many briefs">
+  You can’t see your own assumptions from inside them.
 </PullQuote>
 
-<p>
-And, the tricky part is you can’t see your own assumptions from inside them.
-</p>
+<Sidebar label="Method">
+  <p>
+  So I use models to pull myself out:
+  </p>
 
-<div style={{
-  fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-  textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-  marginTop: 32, marginBottom: 12,
-}}>
-  Method
-</div>
-
-<p>
-So I use models to pull myself out:
-</p>
-
-<TabbedFigure
-  fig="02"
-  items={[
-    {
-      label: "Analysis–Synthesis Bridge",
-      src: bridgeStartup,
-      alt: "Analysis-Synthesis Bridge",
-      caption: "Reframing consumer–merchant interaction from passive browsing → collaborative discovery."
-    },
-    {
-      label: "Service Blueprint",
-      src: bridgeRoche,
-      alt: "Service Blueprint",
-      caption: "Mapping AI capability → actual user experience when expanding to enterprise customers."
-    }
-  ]}
-/>
+  <TabbedFigure
+    fig="02"
+    span="full"
+    items={[
+      {
+        label: "Analysis–Synthesis Bridge",
+        src: bridgeStartup,
+        alt: "Analysis-Synthesis Bridge",
+        when: "To define a new product direction — when the problem is open and the team needs a shared shape to push against.",
+        where: "Founding designer at a pre-PMF startup",
+        caption: "Reframing consumer–merchant interaction from passive browsing → collaborative discovery."
+      },
+      {
+        label: "Service Blueprint",
+        src: bridgeRoche,
+        alt: "Service Blueprint",
+        when: "To map AI capability into a real workflow — when there are multiple actors, handoffs, and the question is where the AI actually fits.",
+        where: "AI design fellow at Archetype AI, expanding to Roche",
+        caption: "Mapping AI capability → actual user experience when expanding to enterprise customers."
+      }
+    ]}
+  />
+</Sidebar>
 
 <p>
 Sometimes I'll prompt AI: <i>"act as a world-class PM, analyze the problem and propose solutions."</i> But this thinking shouldn't be offshored. Use mental models — to train my own brain, not theirs.
 </p>
 
-<h2 id="know">§2 · Understand the box</h2>
+<h2 id="know">✌️ · Understand the box</h2>
 
-<PullQuote>
+<p>
+Sometimes you think you’ve seen the box — but you’ve only seen part of it. 
+</p>
+
+<PullQuote attribution="me, the long way">
   If you don’t understand the context of where the box lives, you may break the wrong thing.
 </PullQuote>
 
 <p>
-Sometimes you think you’ve seen the box — but you’ve only seen part of it. That’s why I try to understand the box inside the system: why it exists, who is involved, and whether it is actually a constraint or just a habit.
+These are the aspects I look for to understand the box inside the system: why it exists, who is involved, and whether it is actually a constraint or just a habit.
 </p>
 
-<div style={{
-  fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-  textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-  marginTop: 32, marginBottom: 12,
-}}>
-  Example
-</div>
+<Sidebar label="Example">
+  <p>
+  At a startup, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>.  
+  I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.
+  </p>
 
-<p>
-At a startup, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>.  
-I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.
-</p>
+  <p>
+  At a bigger company, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.
+  </p>
 
-<p>
-At a bigger company, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.
-</p>
+  <p>
+  There was a time when I saw the market using a certain technology, but our team wasn’t. At first, I didn’t really get why. After talking to my manager many times, I realized I had only seen part of the system.
+  </p>
 
-<p>
-There was a time when I saw the market using a certain technology, but our team wasn’t. At first, I didn’t really get why. After talking to my manager many times, I realized I had only seen part of the system.
-</p>
-
-<p>
-Different goals, different workflows.
-</p>
+  <p>
+  Different goals, different workflows.
+  </p>
+</Sidebar>
   
 <p>
 But that doesn’t mean I stop questioning it. The courage is in knowing where to push.
 </p>
 
-<h2 id="break">§3 · Break the box</h2>
+<h2 id="break">👌 · Break the box</h2>
 
 <p>
 This is the hardest part, because it moves from individual thinking to group work.
@@ -192,14 +170,12 @@ I often get asked “why?” Why change this? Why try this? Why spend time exper
 </p>
 
 <Aside>
-  In an alumni panel to my fellows at Cornell, I said one underrated value of being a designer is resilience lol. You might face many rejections.
+  In Autumn 2025, I participated as an alumni panelist, where I told my fellow designers "one underrated value of being a designer is resilience."  Still applies now in 2026... lol. 
 </Aside>
 
-<PullQuote>
-  Start small, and make it fun
-</PullQuote>
+<MicroHeading>Start small, and make it fun.</MicroHeading>
 
-<p><b>Breaking the box together can be very fun:</b></p>
+<p>Breaking the box together can be very fun:</p>
 
 <p>
     In a brainstorming session, I invited my team to roleplay — engineers were the LLM, my manager was the customer. It helped us align before real prototyping. And it was fun.
@@ -209,33 +185,21 @@ I often get asked “why?” Why change this? Why try this? Why spend time exper
 In another project, we had a recruitment problem. So I asked: what if the survey was impossible to ignore? We placed it in strange, funny, unavoidable places.
 </p>
 
-<Collage
+<Carousel
   fig="04"
   caption="Strange, but effective."
+  perView={2}
   items={[
-    { alt: "Placed on the ground",       aspectRatio: "1 / 1", caption: "On the ground" },
-    { alt: "Horizontally on the wall",   aspectRatio: "1 / 1", caption: "On the wall" },
-    { alt: "Falling off",                aspectRatio: "1 / 1", caption: "Falling off" },
-    { alt: "Robot",                      aspectRatio: "1 / 1", caption: "Held by a robot 🤖" },
-    { alt: "Facing toilet",              aspectRatio: "1 / 1", caption: "Facing the toilet" },
+    { src: surveyRobot,   alt: "Survey held by a cute robot",     caption: "Held by a robot 🤖" },
+    { src: surveyFalling, alt: "Survey intentionally falling off the board", caption: "Falling off" },
+    { src: surveyWall,    alt: "Survey horizontally on the wall", caption: "On the wall" },
+    { src: surveyGround,  alt: "Survey placed on the ground",     caption: "On the ground" },
+    { src: surveyToilet,  alt: "Survey facing the toilet",        caption: "Facing the toilet" },
   ]}
 />
 
   
-<div style={{
-  margin: '32px 0',
-  padding: '22px 26px',
-  background: 'var(--surface)',
-  borderRadius: 10,
-  border: '1px solid var(--line)',
-}}>
-  <div style={{
-    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-    textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-    marginBottom: 14,
-  }}>
-    Small ways we can all try to practice thinking outside the box and break it:
-  </div>
+<Sidebar label="Small ways we can all try to practice thinking outside the box and break it">
   <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
     <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
       <b>Coding doesn't have to be eng's work</b> — share a repo with your PM and brainstorm together.
@@ -247,11 +211,9 @@ In another project, we had a recruitment problem. So I asked: what if the survey
       <b>Prototyping doesn't have to be technical</b> — try paper prototyping in meetings.
     </li>
   </ul>
-</div>
+</Sidebar>
 
-<PullQuote>
-  Small moves first. The box bends before it breaks.
-</PullQuote>
+<MicroHeading>Small moves first. The box bends before it breaks.</MicroHeading>
 
 <YouTube
   id="cUdWs5kfGss"
@@ -259,3 +221,13 @@ In another project, we had a recruitment problem. So I asked: what if the survey
   title="Thinking outside the box — a video essay"
   caption="A video version of the argument, made earlier. It's not polished. I'm leaving it that way on purpose."
 />
+
+<p>Once you see outside the box, you can apply that mindset to design anything:</p>
+
+<ul>
+  <li>Design <InlineLink to="design-the-collaboration">the XF collaboration</InlineLink></li>
+  <li>Design <ExternalLink href="https://tinyurl.com/who-is-qiyu" kind="FigJam" title="Who is Qiyu" dek="A self-reflection map I keep updating.">the self-reflection process</ExternalLink></li>
+  <li>Design <InlineLink to="designing-ai-products">the next-gen of human-AI interaction</InlineLink></li>
+</ul>
+
+<p>Enjoy.</p>

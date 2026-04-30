@@ -6,7 +6,15 @@ import { ArticleDrawer } from '@/components/ArticleDrawer';
 import { bySlug, articles, findQuadrantBySlug } from '@/content';
 import './JournalArticle.css';
 
-type Props = { slug: string; onClose: () => void; onNav: NavFn };
+type Props = {
+  slug: string;
+  /** When present, scroll to the section with this id once the article
+   *  mounts (instead of starting at the top). Set by deep-link routes
+   *  like `#article:slug:sectionId` — see App.tsx route parsing. */
+  initialSectionId?: string | null;
+  onClose: () => void;
+  onNav: NavFn;
+};
 
 type NextInfo = {
   slug: string;
@@ -59,7 +67,7 @@ function clamp(v: number, lo: number, hi: number) {
 
 const SPLIT_MIN_WIDTH = 960;
 
-export function JournalArticle({ slug, onClose, onNav }: Props) {
+export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props) {
   const entry = bySlug[slug] ?? articles[0];
   const meta = entry.meta;
   const Body = entry.Body;
@@ -68,6 +76,11 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [progress, setProgress] = useState(0);
+  // Hide the sticky top bar on scroll-down past TOP_BAR_HIDE_AT, restore on
+  // scroll-up. Same pattern Medium and Substack use — keeps controls
+  // discoverable without parking them on the canvas.
+  const [topBarHidden, setTopBarHidden] = useState(false);
+  const lastScrollTopRef = useRef(0);
   const [viewportW, setViewportW] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200,
   );
@@ -105,16 +118,47 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
 
   // scroll tracking — also resets to top when slug changes so clicking
   // "Next" doesn't leave you stranded at the bottom of the new article.
+  // If `initialSectionId` is provided, jump to that section instead of the
+  // top — the section's id is resolved against the rendered article body
+  // (MDX heading anchors), with a small offset to keep the heading off
+  // the top edge.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTop = 0;
-    setScrollTop(0);
+    let startTop = 0;
+    if (initialSectionId) {
+      // querySelector is run after the body renders; on a fresh mount the
+      // section element may not be in the DOM yet, so we wait a frame.
+      requestAnimationFrame(() => {
+        const target = el.querySelector(`#${initialSectionId}`) as HTMLElement | null;
+        if (target) {
+          el.scrollTop = Math.max(0, target.offsetTop - 24);
+          setScrollTop(el.scrollTop);
+        }
+      });
+    } else {
+      el.scrollTop = 0;
+    }
+    setScrollTop(startTop);
     setProgress(0);
+    setTopBarHidden(false);
+    lastScrollTopRef.current = 0;
+    const HIDE_AT = 200;   // don't hide until past hero/title block
+    const SHOW_NEAR_TOP = 80;
+    const DELTA = 4;       // ignore tiny scroll jitter
     const onScroll = () => {
-      setScrollTop(el.scrollTop);
+      const cur = el.scrollTop;
+      setScrollTop(cur);
       const max = el.scrollHeight - el.clientHeight;
-      setProgress(max > 0 ? el.scrollTop / max : 0);
+      setProgress(max > 0 ? cur / max : 0);
+
+      const last = lastScrollTopRef.current;
+      if (cur > HIDE_AT && cur > last + DELTA) {
+        setTopBarHidden(true);
+      } else if (cur < last - DELTA || cur < SHOW_NEAR_TOP) {
+        setTopBarHidden(false);
+      }
+      lastScrollTopRef.current = cur;
     };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
@@ -398,7 +442,7 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
               background: 'var(--bg)',
             }}
           >
-          {/* sticky top bar */}
+          {/* sticky top bar — hides on scroll-down, restores on scroll-up */}
           <div
             style={{
               position: 'sticky', top: 0, zIndex: 10,
@@ -407,7 +451,10 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
               background: 'rgba(250,248,243,0.85)',
               backdropFilter: 'blur(10px)',
               borderBottom: `1px solid rgba(233,227,214,${clamp(scrollTop / 40, 0, 1) * 0.8})`,
-              transition: 'border-color .2s',
+              transform: topBarHidden ? 'translateY(-100%)' : 'translateY(0)',
+              opacity: topBarHidden ? 0 : 1,
+              pointerEvents: topBarHidden ? 'none' : 'auto',
+              transition: 'transform .25s ease, opacity .25s ease, border-color .2s',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -498,18 +545,22 @@ export function JournalArticle({ slug, onClose, onNav }: Props) {
                 }}>
                   {meta.quality}
                 </div>
-                <h1 style={{
-                  fontFamily: 'var(--serif)', fontWeight: 400,
-                  fontSize: useSplit
-                    ? 'clamp(36px, 3.6vw, 52px)'
-                    : 'clamp(44px, 6vw, 68px)',
-                  lineHeight: 1.04, letterSpacing: -1.5,
-                  margin: 0,
-                }}>
-                  {meta.title}
-                </h1>
+                <h1
+                  className="article-title"
+                  style={{
+                    fontFamily: 'var(--serif)', fontWeight: 400,
+                    fontSize: useSplit
+                      ? 'clamp(36px, 3.6vw, 52px)'
+                      : 'clamp(44px, 6vw, 68px)',
+                    lineHeight: 1.04, letterSpacing: -1.5,
+                    margin: 0,
+                  }}
+                  {...(meta.titleHtml
+                    ? { dangerouslySetInnerHTML: { __html: meta.titleHtml } }
+                    : { children: meta.title })}
+                />
                 <p style={{
-                  fontFamily: 'var(--serif)', fontStyle: 'italic',
+                  fontFamily: 'var(--reading)', fontStyle: 'italic',
                   fontSize: useSplit ? 18 : 22,
                   lineHeight: 1.45, color: 'var(--ink-2)',
                   marginTop: 16,

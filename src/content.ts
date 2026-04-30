@@ -12,6 +12,10 @@ export type ArticleFrontmatter = {
   num: string;
   quality: string;
   title: string;
+  /** Optional HTML version of the title for inline styling like <s>strikethrough</s>.
+   *  When present, the article hero <h1> renders this via dangerouslySetInnerHTML.
+   *  Card previews and share links still use the plain `title` field. */
+  titleHtml?: string;
   dek: string;
   date: string;
   readtime: number;

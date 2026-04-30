@@ -1,13 +1,40 @@
+/* ============================================================
+ * Article visual hierarchy — the contract for every article body.
+ *
+ * Loudest → quietest. Each level differs from its parent by ONE
+ * axis (size, weight, family, or position) so the reader can
+ * scan the system without needing to learn it.
+ *
+ *   TITLE        Fraunces 400, 44–68px           (display, in JournalArticle.tsx)
+ *   DEK          Source Serif italic 400, 22px   (subtitle under title)
+ *   PULL QUOTE   Source Serif italic 400, 28–38px, centered, NO surface
+ *                  → quoted speech / climax line
+ *   H2           Fraunces 400, 28–36px, ink      (§1, §2, §3 — sections)
+ *   H3           Fraunces 500, 26px, ink         (sub-sections, rare)
+ *   SIDEBAR      kicker (mono 11, tinted) + neutral surface card
+ *                  → structured set-apart content (methods, examples)
+ *   MICROHEADING Source Serif 600, 21px, ink     (<MicroHeading>)
+ *                  → punchy beat within a section
+ *   BODY         Source Serif 400, 19px / 1.6, ink
+ *   ASIDE        Source Serif italic 400, 17px, ink-3, indented (no card)
+ *                  → small editorial side-comment
+ *   EMPHASIS     <strong> 500-weight inline only (NEVER as faux heading)
+ *   META         JetBrains Mono 11px uppercase, ink-3
+ *                  → captions, "Fig 02", figure attribution, kicker labels
+ *
+ * Reserved tokens:
+ *   tint  → links, §-numerals, sidebar kicker, drop-cap
+ *           NOT for headings, body, or backgrounds.
+ *   mono uppercase → meta only (kicker labels, captions). Never body.
+ * ============================================================ */
+
 .article-body {
   max-width: 680px;
   margin: 0 auto;
   padding: 0 32px;
-  /* Long-form reading uses Source Serif 4 (--reading), tuned for sustained
-     paragraph rhythm. Headings stay on Fraunces (--serif) for display
-     punch — both classified-modern serifs, so they pair visually. */
   font-family: var(--reading);
   font-size: 19px;
-  line-height: 1.7;
+  line-height: 1.6;
   color: var(--ink);
 }
 
@@ -28,7 +55,10 @@
   font-size: clamp(28px, 3vw, 36px);
   line-height: 1.1;
   letter-spacing: -0.6px;
-  color: var(--article-tint, var(--ink));
+  /* Heading color is --ink (structural). Tint is reserved for accents
+     (links, drop-cap, §-numerals) so the page reads as ink-with-accent
+     rather than tinted-throughout. */
+  color: var(--ink);
   font-weight: 400;
   margin: 72px 0 22px;
   text-wrap: balance;
@@ -64,9 +94,10 @@
   margin: 32px 0;
   padding: 0 0 0 22px;
   border-left: 3px solid var(--article-tint, var(--ink-3));
-  /* Pull-quotes shift to the display serif (Fraunces) italic — its italic
-     has more personality than Source Serif's, perfect for set-apart text. */
-  font-family: var(--serif);
+  /* Pull-quotes use --reading (Source Serif 4) italic, regular weight —
+     italic does the "quoted speech" work; same family as the body keeps the
+     voice consistent. Bold display serif here read as headline, not quote. */
+  font-family: var(--reading);
   font-style: italic;
   color: var(--ink-2);
 }
@@ -93,7 +124,19 @@
   line-height: 0.9;
   margin: 4px 10px 0 0;
   color: var(--article-tint, var(--ink));
-  font-style: italic;
+  /* Roman drop-cap, not italic — italic on a single 62px glyph at the
+     article opening reads as performance, not anchor. */
+}
+
+/* Strikethrough word in the article hero title (e.g. <s>products</s> in titleHtml).
+ * Slightly faded + thicker strike so it reads as an intentional edit, not a typo. */
+.article-title s {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-skip-ink: none;
+  color: var(--ink-3);
+  opacity: 0.7;
+  font-weight: inherit;
 }
 
 @keyframes drawerSlide {

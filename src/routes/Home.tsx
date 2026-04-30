@@ -34,20 +34,16 @@ const HUB_FADE_END       = 0.14;  // ring + labels + title fully faded in
 const HUB_HOLD_END       = 0.18;  // brief register, then yields to corner. Arcs
                                   // are no longer scroll-cycled — visitors see
                                   // all four at once and hover to highlight.
-// Corner-settle stretched from 4% → 8% so the multi-element exit can stagger
-// (hub title fades first → ring/labels fade → dots fly → section fades in)
-// instead of all happening in the same lockstep frame. Sub-stops below
-// describe the choreography:
-//   HUB_HOLD_END   → HUB_TITLE_OUT_END : hub title alone fades down
-//   HUB_HOLD_END   → CORNER_SETTLE_END : dots fly to corner (full duration)
-//   HUB_TITLE_OUT_END → RING_OUT_END   : ring + node labels fade
-//   RING_OUT_END   → CORNER_SETTLE_END : section content fades in
-const HUB_TITLE_OUT_END  = 0.21;
-const RING_OUT_END       = 0.24;
-const CORNER_SETTLE_END  = 0.26;  // dots have settled in bottom-left cluster
+const CORNER_SETTLE_END  = 0.22;  // dots fly out to bottom-left corner cluster
 const SECTIONS_END       = 0.78;
-const END_RETURN_END     = 0.88;
-// 0.88 → 1.00 = end fan (dots out to edges, 2×2 reveal)
+// End-of-journey choreography — three beats, not two:
+//   Converge (0.78 → 0.86): dots magnet inward to a TIGHT cluster at center.
+//   Hold     (0.86 → 0.89): brief beat of stillness — anticipation before bang.
+//   Fan      (0.89 → 1.00): dots explode outward to viewport edges; axis arms
+//                           draw from center after dots have committed (fanT > 0.3),
+//                           so the axis is *created by* the expansion, not alongside it.
+const END_CONVERGE_END   = 0.86;
+const END_HOLD_END       = 0.89;
 
 // The four sections share the (CORNER_SETTLE_END → SECTIONS_END) slice — each
 // gets a quarter of it. Scrolling naturally walks through them; the corner-nav
@@ -146,14 +142,6 @@ const SECTION_ARC: Record<SectionId, { startId: DotId; endId: DotId }> = {
   work:      { startId: 'make',   endId: 'other' },  // bottom-right arc
 };
 
-// CSS-rotation degrees for each section, measured from the canonical arc
-// (top-right = practice = qiyu→make = 0°). Walked clockwise: 0 → 90 → 180
-// → 270 maps to practice → work → attention → mirror, so auto-cycle is
-// just "+90°" each tick and the visual is a clean rotation around center.
-const ROT_BY_ID: Record<SectionId, number> = {
-  practice: 0, work: 90, attention: 180, mirror: 270,
-};
-
 // Default status phrases — cycle through these when no dot is hovered.
 // Should read like a live now-doing feed: specific, playful, present-continuous.
 const STATUS_PHRASES = [
@@ -234,23 +222,159 @@ function previewLinePos(id: DotId, vw: number, vh: number): Pos {
   return { x, y };
 }
 
-// Corner-cluster geometry. Dots are larger and the cluster sits a bit further
-// inset so the bigger dots have room to breathe (matches image #12 sizing).
-const CORNER_CX = 72;
-const CORNER_R = 22;
-function cornerPos(id: DotId, _vw: number, vh: number): Pos {
+// Corner cluster — the conceptual full circle is now centered close to the
+// bottom-left corner so the two INACTIVE nodes fall OFF-SCREEN (left + bottom
+// quadrants of the conceptual circle exit the viewport). Only the active
+// upper-right quadrant — its 90° arc + 2 endpoint dots + 2 labels — is
+// visible. Larger radius gives the visible arc presence on the page.
+// Matches image #25.
+const CORNER_CX = 50;
+const CORNER_R = 180;
+function cornerPos(id: DotId, _vw: number, vh: number, rotationDeg: number): Pos {
   const cx = CORNER_CX, cy = vh - CORNER_CX;
-  const a = (DOT_ANGLE[id] * Math.PI) / 180;
+  // The cluster rotates as a whole by `rotationDeg` around its center —
+  // animated continuously by the JS rAF loop in the Home component, so dots
+  // travel along the circle (not in a straight chord between section
+  // positions). Each section's "settled" rotation lands the active node
+  // pair at top + right (see SECTION_CLUSTER_ROTATION).
+  const baseAngle = DOT_ANGLE[id] + rotationDeg;
+  const a = (baseAngle * Math.PI) / 180;
   return { x: cx + CORNER_R * Math.cos(a), y: cy + CORNER_R * Math.sin(a) };
 }
 
+// Per-section rotation that lands the active node pair at top + right.
+// CW circle order: qiyu(top) → make(right) → other(bottom) → notice(left).
+// Practice (qiyu+make) is already top+right, so 0°. The other sections
+// rotate the WHOLE cluster (all 4 dots, even invisible ones) so their
+// active pair ends up in the same physical position.
+const SECTION_CLUSTER_ROTATION: Record<SectionId, number> = {
+  practice:    0,    // qiyu top, make right (natural)
+  work:      -90,    // make→top, other→right
+  attention: 180,    // other→top, notice→right
+  mirror:     90,    // notice→top, qiyu→right
+};
+
 function endHubPos(id: DotId, vw: number, vh: number): Pos {
   const cx = vw / 2, cy = vh / 2;
-  // Slightly larger ring than the converge hub — gives the grey disc room
-  // to breathe inside while the dots line its perimeter.
-  const r = Math.min(vw, vh) * 0.24;
+  // Tight convergence cluster — the dots magnet *toward* a single point so
+  // the wrap-up reads as "they came together," not "they reformed a ring."
+  // Radius is small enough that the four dots look huddled but still distinct.
+  const r = Math.min(vw, vh) * 0.03;
   const a = (DOT_ANGLE[id] * Math.PI) / 180;
   return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+
+// ——— Unified ring (image + motion brief) ———
+// The conceptual circle exists as ONE object that moves through three
+// resting positions: hub-center → corner → end-hub-center. Phase 4
+// (corner-settle) and Phase 6 (end-return) interpolate (cx, cy, r) between
+// adjacent rest states, so the ring TRAVELS — never cross-fades to a new
+// position. This is the "one object, three positions" principle that ties
+// the journey together.
+type RingState = { cx: number; cy: number; r: number };
+function ringHub(vw: number, vh: number): RingState {
+  return { cx: vw / 2, cy: vh * HUB_CY_RATIO, r: Math.min(vw, vh) * HUB_R_RATIO };
+}
+function ringCorner(_vw: number, vh: number): RingState {
+  return { cx: CORNER_CX, cy: vh - CORNER_CX, r: CORNER_R };
+}
+function ringEndHub(vw: number, vh: number): RingState {
+  // Tight convergence cluster (matches endHubPos r). The "ring" is conceptual
+  // here — the four dots cluster nearly at a point.
+  return { cx: vw / 2, cy: vh / 2, r: Math.min(vw, vh) * 0.03 };
+}
+function ringStateAt(p: number, vw: number, vh: number): RingState {
+  const HUB = ringHub(vw, vh);
+  const CORNER = ringCorner(vw, vh);
+  const END = ringEndHub(vw, vh);
+  if (p <= HUB_HOLD_END) return HUB;
+  if (p <= CORNER_SETTLE_END) {
+    const t = smootherstep((p - HUB_HOLD_END) / (CORNER_SETTLE_END - HUB_HOLD_END));
+    return {
+      cx: lerp(HUB.cx, CORNER.cx, t),
+      cy: lerp(HUB.cy, CORNER.cy, t),
+      r:  lerp(HUB.r,  CORNER.r,  t),
+    };
+  }
+  if (p <= SECTIONS_END) return CORNER;
+  if (p <= END_CONVERGE_END) {
+    const t = smootherstep((p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END));
+    return {
+      cx: lerp(CORNER.cx, END.cx, t),
+      cy: lerp(CORNER.cy, END.cy, t),
+      r:  lerp(CORNER.r,  END.r,  t),
+    };
+  }
+  // Hold + fan: ring stays at the tight-cluster center. During fan, dots
+  // leave the ring and fly to viewport edges, so the ring's r value isn't
+  // visually rendered — only the cx/cy matters as the convergence point.
+  return END;
+}
+// A dot's position on a given ring state, accounting for cluster rotation.
+function ringDotPos(id: DotId, ring: RingState, rotationDeg: number): Pos {
+  const a = ((DOT_ANGLE[id] + rotationDeg) * Math.PI) / 180;
+  return { x: ring.cx + ring.r * Math.cos(a), y: ring.cy + ring.r * Math.sin(a) };
+}
+
+// ——— Continuous cluster rotation ———
+// Computes the cluster rotation directly from scroll progress instead of
+// snapping to activeSection and tweening. Within a section's range, sits
+// at that section's rotation; near each section boundary, smoothly
+// interpolates to the next section's rotation along the SHORTEST arc.
+// The user feels the rotation as scroll-driven motion rather than a delayed
+// reaction to crossing a boundary.
+const SECTIONS_IN_ORDER: SectionId[] = ['mirror', 'practice', 'attention', 'work'];
+const ROTATION_TRANSITION_BAND = 0.025; // ±half-width of cross-fade around each boundary
+function clusterRotationAt(p: number, hoveredArc: SectionId | null): number {
+  // Hub & earlier: hovered arc rotates the WHOLE hub (dots + labels) so the
+  // hovered pair sits at top + right — the same orientation it'll occupy in
+  // the corner cluster. This way "hover an arc" already shows the user the
+  // entry orientation; corner-settle is then pure translation, not rotation.
+  if (p <= HUB_HOLD_END) {
+    if (hoveredArc) return SECTION_CLUSTER_ROTATION[hoveredArc];
+    return 0;
+  }
+  // Phase 4 (corner-settle): cluster rotates from whatever the hub ended at
+  // (0 if no hover, hovered section's rotation otherwise) → mirror's target.
+  // Shortest-arc interpolation so a -90°→+90° transition picks the shorter
+  // sweep direction instead of going the long way around.
+  if (p < SECTION_RANGES.mirror[0]) {
+    const fromRot = hoveredArc ? SECTION_CLUSTER_ROTATION[hoveredArc] : 0;
+    const toRot = SECTION_CLUSTER_ROTATION.mirror;
+    let delta = toRot - fromRot;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    const t = (p - HUB_HOLD_END) / (SECTION_RANGES.mirror[0] - HUB_HOLD_END);
+    return fromRot + delta * smootherstep(clamp(t, 0, 1));
+  }
+  if (p >= SECTIONS_END) {
+    // End-convergence: rotate from work's −90° back to canonical 0° so the
+    // dots arrive at the tight center cluster in their canonical positions
+    // (qiyu top, make right, other bottom, notice left). This lines them up
+    // with their fan-out targets, so the hold→fan boundary has no jump.
+    if (p >= END_CONVERGE_END) return 0;
+    const t = (p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END);
+    return SECTION_CLUSTER_ROTATION.work * (1 - smootherstep(clamp(t, 0, 1)));
+  }
+  for (let i = 0; i < SECTIONS_IN_ORDER.length; i++) {
+    const id = SECTIONS_IN_ORDER[i];
+    const [lo, hi] = SECTION_RANGES[id];
+    if (p < lo || p >= hi) continue;
+    // Inside this section. If near the upper boundary, start tweening to next.
+    if (p > hi - ROTATION_TRANSITION_BAND && i < SECTIONS_IN_ORDER.length - 1) {
+      const nextId = SECTIONS_IN_ORDER[i + 1];
+      const t = (p - (hi - ROTATION_TRANSITION_BAND)) / ROTATION_TRANSITION_BAND;
+      const fromR = SECTION_CLUSTER_ROTATION[id];
+      const toR   = SECTION_CLUSTER_ROTATION[nextId];
+      // Shortest-arc interpolation
+      let delta = toR - fromR;
+      if (delta > 180)  delta -= 360;
+      if (delta < -180) delta += 360;
+      return fromR + delta * smootherstep(clamp(t, 0, 1));
+    }
+    return SECTION_CLUSTER_ROTATION[id];
+  }
+  return SECTION_CLUSTER_ROTATION.mirror;
 }
 
 function fanPos(id: DotId, vw: number, vh: number): Pos {
@@ -283,10 +407,17 @@ function sectionAxisPos(sectionId: SectionId, id: DotId, vw: number, vh: number)
 // Smoothly extracts a dot from its corner home to its axis position when
 // the user enters a section's range, then retracts as they exit. Returns
 // 0 (fully in cluster) → 1 (fully extracted to axis).
+//
+// Practice gets a "stay" beat (0.015 progress) before extract begins: the
+// active dots sit at the cluster — already amber-tinted — long enough for
+// the user to register "these two are the actors" before they start moving
+// to the axis ends. Without it, the dots leave the cluster the moment the
+// section activates and the eye misses who's about to become the axis.
 function sectionExtractT(p: number, sectionId: SectionId): number {
   const [lo, hi] = SECTION_RANGES[sectionId];
+  const stayBeat = sectionId === 'practice' ? 0.015 : 0;
   const easeRange = 0.04;
-  const enterT = clamp((p - lo) / easeRange, 0, 1);
+  const enterT = clamp((p - (lo + stayBeat)) / easeRange, 0, 1);
   const exitT  = clamp((hi - p) / easeRange, 0, 1);
   return smootherstep(Math.min(enterT, exitT));
 }
@@ -304,13 +435,13 @@ function dotState(
   vw: number,
   vh: number,
   activeSection: SectionId,
+  clusterRotationDeg: number,
   qiyuHeroOverride?: Pos | null,
 ) {
   const hero = id === 'qiyu' && qiyuHeroOverride
     ? qiyuHeroOverride
     : heroPos(id, vw, vh);
-  const hub = hubPos(id, vw, vh);
-  const corner = cornerPos(id, vw, vh);
+  const corner = cornerPos(id, vw, vh, clusterRotationDeg);
   const endHub = endHubPos(id, vw, vh);
   const fan = fanPos(id, vw, vh);
 
@@ -325,24 +456,33 @@ function dotState(
     // ring with a tiny "settle" — feels like an object with weight, not a
     // tween that snaps to its mark.
     const t = easeOutBack(clamp((p - HERO_END) / (DOTS_AT_HUB - HERO_END), 0, 1));
+    // Lerp toward the rotated hub position so an in-progress hover (rare
+    // but possible: cursor on an arc as scroll begins) doesn't snap when
+    // the dots arrive.
+    const hubRotated = ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg);
     return {
-      pos: { x: lerp(hero.x, hub.x, t), y: lerp(hero.y, hub.y, t) },
+      pos: { x: lerp(hero.x, hubRotated.x, t), y: lerp(hero.y, hubRotated.y, t) },
       size: lerp(10, HUB_DOT_SIZE, t),
     };
   }
-  // Hub hold: dots stay parked at ring positions while the ring + labels +
-  // title fade in over them, then continue holding so the page feels like a
-  // discrete frame before the corner exit begins.
+  // Hub hold: dots park ON the ring at positions derived from the cluster
+  // rotation. When no arc is hovered, rotation = 0 → canonical positions.
+  // When an arc is hovered, the hub rotates so that pair lands at top+right
+  // (matching the corner-cluster orientation it'll occupy after settle).
   if (p <= HUB_HOLD_END) {
-    return { pos: hub, size: HUB_DOT_SIZE };
+    return {
+      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      size: HUB_DOT_SIZE,
+    };
   }
   if (p <= CORNER_SETTLE_END) {
-    // Same easeOutBack settle when arriving at the corner cluster — the
-    // overshoot helps draw the eye to the new resting position so users
-    // notice the nav is now down there.
+    // Dots stay ON the ring — the ring TRAVELS via ringStateAt, and each
+    // dot's position is recomputed from the live ring + cluster rotation.
+    // Result: dots ride the ring from hub to corner along an arc-style path,
+    // not a straight chord. (Size still lerps independently for visual.)
     const t = easeOutBack(clamp((p - HUB_HOLD_END) / (CORNER_SETTLE_END - HUB_HOLD_END), 0, 1));
     return {
-      pos: { x: lerp(hub.x, corner.x, t), y: lerp(hub.y, corner.y, t) },
+      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
       size: lerp(HUB_DOT_SIZE, CORNER_SIZE, t),
     };
   }
@@ -358,14 +498,24 @@ function dotState(
       size: CORNER_SIZE,
     };
   }
-  if (p <= END_RETURN_END) {
-    const t = smootherstep((p - SECTIONS_END) / (END_RETURN_END - SECTIONS_END));
+  if (p <= END_CONVERGE_END) {
+    // Phase 6 (converge): dots travel from the corner cluster inward to the
+    // tight center cluster. They follow the ring as it scales + moves.
+    const t = smootherstep((p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END));
     return {
-      pos: { x: lerp(corner.x, endHub.x, t), y: lerp(corner.y, endHub.y, t) },
+      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
       size: lerp(CORNER_SIZE, 12, t),
     };
   }
-  const t = smootherstep((p - END_RETURN_END) / (1 - END_RETURN_END));
+  if (p <= END_HOLD_END) {
+    // Phase 7 (hold): dots sit at the tight cluster — anticipation beat.
+    return {
+      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      size: 12,
+    };
+  }
+  // Phase 8 (fan): dots explode outward to viewport edges.
+  const t = smootherstep((p - END_HOLD_END) / (1 - END_HOLD_END));
   return {
     pos: { x: lerp(endHub.x, fan.x, t), y: lerp(endHub.y, fan.y, t) },
     size: 12,
@@ -383,6 +533,11 @@ export function Home({ onNav }: Props) {
   const rawScrollRef = useRef(0);
   const [hoveredDot, setHoveredDot] = useState<DotId | null>(null);
   const [statusIdx, setStatusIdx] = useState(0);
+  // (Cluster rotation is now computed directly from scroll progress via
+  // clusterRotationAt() — no rAF tween needed. See computation below.)
+  // hoveredArc state still drives `visibleSectionId` for the hub label
+  // crossfade (see below); the setter went away when we removed the
+  // hub-ring hover affordance, so it stays read-only for now.
   const [hoveredArc, setHoveredArc] = useState<SectionId | null>(null);
   const [hoveredCell, setHoveredCell] = useState<SectionId | null>(null);
   const [phraseHovered, setPhraseHovered] = useState(false);
@@ -512,32 +667,47 @@ export function Home({ onNav }: Props) {
   const hubFadeT  = clamp((progress - DOTS_AT_HUB) / (HUB_FADE_END - DOTS_AT_HUB), 0, 1);
   // Dots leaving the hub for the corner cluster (begins after the hub hold).
   const cornerT   = clamp((progress - HUB_HOLD_END) / (CORNER_SETTLE_END - HUB_HOLD_END), 0, 1);
-  // Staggered exit sub-phases — these let the hub disassemble in sequence
-  // (title first → ring/labels → section content) instead of every element
-  // crossfading at the same instant. Eye can track each layer.
-  const hubTitleOutT = clamp((progress - HUB_HOLD_END) / (HUB_TITLE_OUT_END - HUB_HOLD_END), 0, 1);
-  const ringOutT     = clamp((progress - HUB_TITLE_OUT_END) / (RING_OUT_END - HUB_TITLE_OUT_END), 0, 1);
-  const sectionInT   = clamp((progress - RING_OUT_END) / (CORNER_SETTLE_END - RING_OUT_END), 0, 1);
-  const returnT   = clamp((progress - SECTIONS_END) / (END_RETURN_END - SECTIONS_END), 0, 1);
-  const fanT      = clamp((progress - END_RETURN_END) / (1 - END_RETURN_END), 0, 1);
+  // Convergence T: 0 at SECTIONS_END, 1 at END_CONVERGE_END. Drives the
+  // "dots travel inward to tight cluster" motion + the centered-text fade-in.
+  const returnT   = clamp((progress - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END), 0, 1);
+  // Fan T: 0 at END_HOLD_END (after the hold beat), 1 at 1.0. Drives the
+  // outward explosion. The hold beat is the gap between returnT hitting 1
+  // (at END_CONVERGE_END = 0.86) and fanT starting (at END_HOLD_END = 0.89).
+  const fanT      = clamp((progress - END_HOLD_END) / (1 - END_HOLD_END), 0, 1);
+  // Axis draw-on: the cross arms only start drawing AFTER the dots have
+  // committed to expanding (fanT > 0.30). Each arm grows from center to
+  // its dot, racing alongside the fan motion. By the time fanT reaches
+  // 0.85, the arms have caught up to the dots; from there the dots keep
+  // moving outward and the arm endpoints follow them to the edges.
+  const axisDrawT = smootherstep(clamp((fanT - 0.30) / 0.55, 0, 1));
 
-  // Visibilities for non-dot scenery. Each element's fade window now keys off
-  // its own sub-phase so the corner-settle exit reads as a sequence.
-  const heroVis      = clamp(1 - heroT * 1.4, 0, 1);
-  const ringVis      = hubFadeT * (1 - ringOutT);
-  const hubLabelVis  = hubFadeT * (1 - ringOutT);
-  const hubTitleVis  = hubFadeT * (1 - hubTitleOutT); // fades first
-  const sectionVis   = sectionInT * (1 - returnT);    // fades in last
-  const cornerNavVis = clamp((progress - HUB_TITLE_OUT_END) / (CORNER_SETTLE_END - HUB_TITLE_OUT_END), 0, 1) * (1 - returnT);
+  // Visibilities for non-dot scenery. Corner-settle is split into three
+  // sub-beats so each motion gets a clean canvas:
+  //   cornerT 0.00 → 0.35  hub elements fade OUT (hubFadeOutT)
+  //   cornerT 0.35 → 0.65  dots travel alone (no text)
+  //   cornerT 0.65 → 1.00  section content fades IN (sectionFadeInT)
+  // Without this, hub labels + dots-in-flight + section content all
+  // cross-fade together inside the same 4% scroll window.
+  const heroVis        = clamp(1 - heroT * 1.4, 0, 1);
+  const hubFadeOutT    = smootherstep(clamp(cornerT / 0.35, 0, 1));
+  const sectionFadeInT = smootherstep(clamp((cornerT - 0.65) / 0.35, 0, 1));
+  const ringVis      = hubFadeT * (1 - hubFadeOutT);
+  const hubLabelVis  = hubFadeT * (1 - hubFadeOutT);
+  const hubTitleVis  = hubLabelVis; // alias kept for any callers expecting the staggered name
+  const sectionVis   = sectionFadeInT * (1 - returnT);
+  const cornerNavVis = sectionVis;
   const endHubVis    = returnT * (1 - fanT);
-  const fanCrossVis  = fanT;
+  // Cross-axis visibility uses axisDrawT (delayed reveal) instead of fanT,
+  // so the axis is invisible during the first 30% of the fan expansion —
+  // dots leave first, axis follows.
+  const fanCrossVis  = axisDrawT > 0 ? 1 : 0;
   const cellLabelVis = fanT;
-  // Hub arc highlight is hover-only. The ring + four faint arcs sit visible
-  // simultaneously during hub; the user doesn't have to scroll to reveal each
-  // pairing. Hover an arc → that quarter highlights bold and the title shows.
-  // Continued scroll yields directly to the sections.
-  const arcRotateDeg = hoveredArc ? ROT_BY_ID[hoveredArc] : 0;
-  const visibleSectionId: SectionId | null = hoveredArc;
+  // Hub-hold view: dots, arc and labels stay COMPLETELY STILL once they've
+  // come together. Default labels show the Reflection (mirror) pair —
+  // Noticing + Qiyu — as a calm starter state. Only hover overrides this;
+  // there's no scroll-driven cycling, which previously felt "clinchy"
+  // because all four section names flicked past in ~280px of scroll.
+  const visibleSectionId: SectionId = hoveredArc ?? 'mirror';
 
   // The active section is purely scroll-driven — each section holds the
   // (CORNER_SETTLE_END → SECTIONS_END) slice for a quarter, so scrolling
@@ -552,15 +722,33 @@ export function Home({ onNav }: Props) {
     window.scrollTo({ top: ((lo + hi) / 2) * tourScrollPx, behavior: 'smooth' });
   };
 
-  // Hub centered title — only meaningful when an arc is hovered. The pair
-  // and section name fade in for the hovered arc; otherwise the kicker shows
-  // the four cardinal labels and no section title is shown.
-  const hubArcSection = visibleSectionId ? SECTION_BY_ID[visibleSectionId] : null;
-  const hubTitle = hubArcSection
-    ? `${hubArcSection.axisPair[0]} × ${hubArcSection.axisPair[1]}`
-    : '';
+  // Cluster rotation is a pure function of scroll progress + hover state.
+  // Re-derived every render — no state, no rAF. As the user scrolls across
+  // a section boundary, rotation interpolates along the shortest arc within
+  // a small transition band; everywhere else it's pinned at the current
+  // section's target. Result: dots' angular positions track scroll directly.
+  const clusterRotationDeg = clusterRotationAt(progress, hoveredArc);
+
+  // Hub centered title — pairs the two cardinal nodes joined by the
+  // currently visible arc (hover overrides; otherwise mirror by default).
+  const hubArcSection = SECTION_BY_ID[visibleSectionId];
+  const hubTitle = `${hubArcSection.axisPair[0]} × ${hubArcSection.axisPair[1]}`;
+
+  // Bold arc stays anchored at the canonical top-right quadrant. The CLUSTER
+  // ROTATION (applied to the dots + labels) puts the visible section's pair
+  // at top + right, so the canonical-position arc always overlays them — no
+  // arc rotation needed. This is the geometry trick that makes the new
+  // hub-rotates-per-hover system work cleanly.
+  const arcRotateDeg = 0;
+
+  // Hub neutral state — purely hover-driven. While the user hasn't
+  // hovered an arc, the headline reads "Look closer →" as a serif
+  // invitation (no kicker, no section name) and the bold arc is hidden.
+  // Scrolling does NOT cycle through the four sections — that previously
+  // felt "clinchy" with names flicking past in ~280px of scroll. Only
+  // hover swings the arc and swaps the title.
   const isHubNeutral = !hoveredArc;
-  const NEUTRAL_AXIS = 'Look closer →';
+  const NEUTRAL_AXIS = 'Look closer';
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
@@ -723,23 +911,23 @@ export function Home({ onNav }: Props) {
           </svg>
         )}
 
-        {/* ——— Centered ring ——— Drawn only during the converge phase: the
-            dots land on its perimeter, then it fades as they leave for the
-            corner cluster. The bold quarter-arc is drawn ONCE at the
-            canonical top-right position (qiyu→make) and rotated into place
-            via CSS transform — that way the highlight glides smoothly
-            around the ring instead of jumping. Four invisible thick-stroke
-            arcs sit on top as hover hit-targets. */}
+        {/* ——— Hub ring ——— Full circle with all four cardinal dots (rendered
+            by the global dot layer below) sitting on its perimeter, plus a
+            rotating bold arc that highlights the visible section's quadrant.
+            In neutral state the bold arc fades to opacity 0 so the ring
+            reads as the calm "all four" view. Each quarter is a transparent
+            thick-stroke hit target that swaps the visible section on hover. */}
         {ringVis > 0 && (() => {
-          const cx = viewportW / 2, cy = viewportH * HUB_CY_RATIO;
-          const r = Math.min(viewportW, viewportH) * HUB_R_RATIO;
-          // Canonical (un-rotated) arc — top-right quarter, qiyu → make.
-          const cStart = hubPos('qiyu', viewportW, viewportH);
-          const cEnd   = hubPos('make', viewportW, viewportH);
-          const canonicalD = `M ${cStart.x},${cStart.y} A ${r},${r} 0 0 1 ${cEnd.x},${cEnd.y}`;
-          // Hit-targets need to be active during the full hub hold; gate
-          // them on hubLabelVis so they don't catch clicks while the page
-          // is fading or while the hub is mid-transition to corner.
+          // Ring + dots position lerps between hub-center and corner via
+          // ringStateAt(progress) — so the SAME ring object appears to TRAVEL
+          // from hub to corner during Phase 4, instead of cross-fading. The
+          // corner SVG below also reads ringStateAt(progress), so during the
+          // overlap window both renders draw at the identical (cx, cy, r)
+          // and the cross-fade is invisible to the eye.
+          const ring = ringStateAt(progress, viewportW, viewportH);
+          const cStart = ringDotPos('qiyu', ring, 0);
+          const cEnd   = ringDotPos('make', ring, 0);
+          const canonicalD = `M ${cStart.x},${cStart.y} A ${ring.r},${ring.r} 0 0 1 ${cEnd.x},${cEnd.y}`;
           const hitActive = hubLabelVis > 0.6;
           return (
             <svg style={{
@@ -747,10 +935,10 @@ export function Home({ onNav }: Props) {
               pointerEvents: 'none', zIndex: 33,
               opacity: ringVis,
             }}>
-              <circle cx={cx} cy={cy} r={r}
+              <circle cx={ring.cx} cy={ring.cy} r={ring.r}
                 stroke="var(--line)" strokeWidth={1} fill="none" />
               <g style={{
-                transformOrigin: `${cx}px ${cy}px`,
+                transformOrigin: `${ring.cx}px ${ring.cy}px`,
                 transform: `rotate(${arcRotateDeg}deg)`,
                 opacity: isHubNeutral ? 0 : 1,
                 transition: 'transform .65s cubic-bezier(.4,.2,.2,1), opacity .35s ease',
@@ -762,12 +950,12 @@ export function Home({ onNav }: Props) {
               {/* Hover/click hit-targets — one transparent thick stroke per
                   fixed quarter arc. pointer-events:stroke restricts hits to
                   the stroke band so the ring's interior stays clickable
-                  through (e.g. for dot hovers if needed). */}
+                  through. */}
               {SECTIONS.map((s) => {
                 const arc = SECTION_ARC[s.id];
-                const start = hubPos(arc.startId, viewportW, viewportH);
-                const end   = hubPos(arc.endId, viewportW, viewportH);
-                const d = `M ${start.x},${start.y} A ${r},${r} 0 0 1 ${end.x},${end.y}`;
+                const start = ringDotPos(arc.startId, ring, 0);
+                const end   = ringDotPos(arc.endId,   ring, 0);
+                const d = `M ${start.x},${start.y} A ${ring.r},${ring.r} 0 0 1 ${end.x},${end.y}`;
                 return (
                   <path key={s.id} d={d}
                     stroke="transparent" strokeWidth={32} fill="none"
@@ -784,42 +972,60 @@ export function Home({ onNav }: Props) {
           );
         })()}
 
-        {/* ——— End-hub label ——— On the return phase the four dots reform a
-            ring around the viewport center; instead of a grey disc, a single
-            line of text sits at the centroid: "Connecting the dots…". */}
-        {endHubVis > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: '50%', left: 0, right: 0,
-            transform: 'translateY(-50%)',
-            textAlign: 'center',
-            opacity: endHubVis,
-            pointerEvents: 'none',
-            zIndex: 34,
-          }}>
-            <h2 style={{
-              fontFamily: 'var(--serif)',
-              fontSize: TYPE.sectionH1.size,
-              fontWeight: TYPE.sectionH1.weight,
-              letterSpacing: TYPE.sectionH1.tracking,
-              lineHeight: TYPE.sectionH1.lineHeight,
-              margin: 0, color: 'var(--ink)',
+        {/* ——— End-hub label ——— On the return phase the four dots converge
+            to a tight cluster at the viewport center; the label sits BELOW
+            the cluster (offset by the cluster's radius + a small gap) so
+            the text and the dots never overlap. */}
+        {endHubVis > 0 && (() => {
+          const endR = Math.min(viewportW, viewportH) * 0.03;
+          return (
+            <div style={{
+              position: 'absolute',
+              top: `calc(50% + ${endR + SPACE.xxl}px)`,
+              left: 0, right: 0,
+              textAlign: 'center',
+              opacity: endHubVis,
+              pointerEvents: 'none',
+              zIndex: 34,
             }}>
-              Connecting the dots…
-            </h2>
-          </div>
-        )}
+              <h2 style={{
+                fontFamily: 'var(--serif)',
+                fontSize: TYPE.sectionH1.size,
+                fontWeight: TYPE.sectionH1.weight,
+                letterSpacing: TYPE.sectionH1.tracking,
+                lineHeight: TYPE.sectionH1.lineHeight,
+                margin: 0, color: 'var(--ink)',
+              }}>
+                Connecting the dots…
+              </h2>
+            </div>
+          );
+        })()}
 
+        {/* ——— Endpoint labels ——— Two labels pinned to the cropped quarter's
+            two dots. The visual position is fixed; only the text changes as
+            scroll iterates the four sections (mirror → practice → work →
+            attention). The active section's startId becomes the top label;
+            its endId becomes the right label. Each label keys off
+            visibleSectionId so React remounts and the statusFade animation
+            crossfades the text on every section change. */}
         {/* ——— Hub node labels ——— Cardinal text labels around the centered
-            ring during converge. Tight offsets + small sans face so the
-            labels read like illustration captions, not chart axes. */}
+            ring during converge. Each label sits OUTSIDE the dot along the
+            radial direction, so when the cluster rotates (per hovered arc),
+            labels rotate with their dots — no mismatch between dot identity
+            and label. Anchor is derived from the dot's current angle on the
+            ring (snapped to the nearest cardinal: top/right/bottom/left). */}
         {hubLabelVis > 0 && (() => {
-          const labels: { id: DotId; text: string; dx: number; dy: number; anchor: 'start' | 'middle' | 'end' }[] = [
-            { id: 'qiyu',   text: 'Qiyu',     dx: 0,            dy: -SPACE.md, anchor: 'middle' },
-            { id: 'make',   text: 'Making',   dx: SPACE.sm,     dy: 4,         anchor: 'start' },
-            { id: 'other',  text: 'Others',   dx: 0,            dy: SPACE.md + 4, anchor: 'middle' },
-            { id: 'notice', text: 'Noticing', dx: -SPACE.sm,    dy: 4,         anchor: 'end' },
+          const ring = ringStateAt(progress, viewportW, viewportH);
+          const labels: { id: DotId; text: string }[] = [
+            { id: 'qiyu',   text: 'Qiyu' },
+            { id: 'make',   text: 'Making' },
+            { id: 'other',  text: 'Others' },
+            { id: 'notice', text: 'Noticing' },
           ];
+          // Label gap past the dot edge — small enough to read as a caption,
+          // large enough not to crowd the dot.
+          const LABEL_GAP = HUB_DOT_SIZE / 2 + SPACE.md;
           return (
             <div style={{
               position: 'absolute', inset: 0,
@@ -827,17 +1033,28 @@ export function Home({ onNav }: Props) {
               opacity: hubLabelVis,
             }}>
               {labels.map((l) => {
-                const p = hubPos(l.id, viewportW, viewportH);
+                const angleDeg = DOT_ANGLE[l.id] + clusterRotationDeg;
+                const angleRad = (angleDeg * Math.PI) / 180;
+                const dotX = ring.cx + ring.r * Math.cos(angleRad);
+                const dotY = ring.cy + ring.r * Math.sin(angleRad);
+                const labelX = dotX + Math.cos(angleRad) * LABEL_GAP;
+                const labelY = dotY + Math.sin(angleRad) * LABEL_GAP;
+                // Snap to nearest cardinal (0=right, 1=bottom, 2=left, 3=top)
+                // to determine text alignment relative to its dot.
+                const norm = ((angleDeg % 360) + 360) % 360;
+                const cardinal = Math.round(norm / 90) % 4;
+                const transform =
+                  cardinal === 0 ? 'translateY(-50%)' :                  // right of dot
+                  cardinal === 1 ? 'translate(-50%, 0)' :                // below dot
+                  cardinal === 2 ? 'translate(-100%, -50%)' :            // left of dot
+                                   'translate(-50%, -100%)';             // above dot (cardinal === 3)
                 return (
                   <div key={l.id} style={{
                     position: 'absolute',
-                    left: p.x + l.dx, top: p.y + l.dy,
-                    transform:
-                      l.anchor === 'middle' ? 'translateX(-50%)' :
-                      l.anchor === 'end' ? 'translateX(-100%)' : 'none',
+                    left: labelX, top: labelY,
+                    transform,
                     fontFamily: 'var(--sans)',
-                    fontSize: 12,
-                    fontWeight: 400,
+                    fontSize: 12, fontWeight: 400,
                     color: 'var(--ink-2)', whiteSpace: 'nowrap',
                   }}>{l.text}</div>
                 );
@@ -868,11 +1085,13 @@ export function Home({ onNav }: Props) {
             pointerEvents: 'none',
             zIndex: 34,
           }}>
+            {/* This single line plays two roles:
+                  • Neutral state: "Look closer →" reads as a content-sized
+                    invitation in serif sentence case (cellLabel size). It
+                    *replaces* the kicker+title pair entirely.
+                  • Active state: small mono caps kicker (the visible
+                    section's axis pair) above the section name below it. */}
             <div style={{
-              // Neutral state ("Look closer →") reads as a content-sized
-              // invitation in serif sentence case, sitting at cellLabel size.
-              // Hovered state (axis pair like "Qiyu × Noticing") stays as the
-              // small mono caps kicker above the section title below it.
               fontFamily: isHubNeutral ? 'var(--serif)' : 'var(--mono)',
               fontSize: isHubNeutral ? TYPE.cellLabel.size : TYPE.meta.size,
               fontWeight: isHubNeutral ? TYPE.cellLabel.weight : TYPE.meta.weight,
@@ -882,12 +1101,12 @@ export function Home({ onNav }: Props) {
               color: isHubNeutral ? 'var(--ink)' : 'var(--ink-3)',
               marginBottom: SPACE.md,
             }}>
-              <span key={`pair-${visibleSectionId ?? 'neutral'}`}
+              <span key={`pair-${isHubNeutral ? 'neutral' : visibleSectionId}`}
                 style={{ animation: 'statusFade .35s ease', display: 'inline-block' }}>
                 {isHubNeutral ? NEUTRAL_AXIS : hubTitle}
               </span>
             </div>
-            {hubArcSection && (
+            {!isHubNeutral && (
               <h2 key={`title-${visibleSectionId}`} style={{
                 fontFamily: 'var(--serif)',
                 fontSize: TYPE.hubTitle.size,
@@ -948,11 +1167,7 @@ export function Home({ onNav }: Props) {
                   display: 'inline-flex', alignItems: 'center', gap: SPACE.sm,
                 }}>
                   <span>{section.axisPair[0]}</span>
-                  <span style={{
-                    width: 4, height: 4, borderRadius: '50%',
-                    background: section.tint,
-                    display: 'inline-block',
-                  }} />
+                  <span style={{ color: 'var(--ink-4)' }}>×</span>
                   <span>{section.axisPair[1]}</span>
                 </div>
                 <div style={{
@@ -972,40 +1187,70 @@ export function Home({ onNav }: Props) {
           );
         })()}
 
-        {/* ——— Create-section axis ——— Dashed L-line connecting the extracted
-            qiyu dot (top-left) → corner cluster (the bend) → extracted make
-            dot (bottom-right), plus the "Qiyu" / "Creating" labels next to
-            each axis end. Faded in lock-step with the dot extraction so the
-            line and the dots draw together. */}
+        {/* ——— Practice-section axis ——— Two-part motion in amber:
+              1. Arc (visible during expand): a quadratic curve hangs between
+                 the two dots and stretches with them as they pull apart.
+                 Reads as "these two are connected, and the connection is
+                 the thing that's becoming the axis."
+              2. Axis L (snaps in at the END of expand): two perpendicular
+                 amber segments meeting at the corner bend (CORNER_CX, vh-…).
+                 Arc fades in the last 25% of expand while the axis fades in
+                 — same color, same endpoints, so the eye reads the swap as
+                 the arc *snapping* into the axis, not a cut.
+            Both stroke `--tint-tr` (the practice section's amber/honey),
+            so the page picks up its hue alongside the dots. */}
         {sectionVis > 0 && activeSection === 'practice' && (() => {
           const t = sectionExtractT(progress, 'practice');
           if (t <= 0) return null;
           const cl = { x: CORNER_CX, y: viewportH - CORNER_CX };
-          const qpos = sectionAxisPos('practice', 'qiyu', viewportW, viewportH)!;
-          const mpos = sectionAxisPos('practice', 'make', viewportW, viewportH)!;
+          // Live dot positions — match exactly what dotState renders, so the
+          // arc/axis endpoints stay glued to the dots through the lerp.
+          const qStart = cornerPos('qiyu', viewportW, viewportH, clusterRotationDeg);
+          const mStart = cornerPos('make', viewportW, viewportH, clusterRotationDeg);
+          const qEnd = sectionAxisPos('practice', 'qiyu', viewportW, viewportH)!;
+          const mEnd = sectionAxisPos('practice', 'make', viewportW, viewportH)!;
+          const qpos = { x: lerp(qStart.x, qEnd.x, t), y: lerp(qStart.y, qEnd.y, t) };
+          const mpos = { x: lerp(mStart.x, mEnd.x, t), y: lerp(mStart.y, mEnd.y, t) };
+          // Crossfade window — last 25% of expand. Arc fades out as axis
+          // fades in over the same band, anchored to the dot endpoints
+          // so the visual continuity is "the arc snaps inward to the bend."
+          const swapT = smootherstep(clamp((t - 0.75) / 0.25, 0, 1));
+          const arcOpacity  = 1 - swapT;
+          const axisOpacity = swapT;
+          // Arc control point — bowed OUTWARD (away from the corner bend),
+          // so the swap reads as "the curve relaxes toward the corner."
+          // Push factor 0.25 of the chord — gentle bow, not a balloon.
+          const mx = (qpos.x + mpos.x) / 2;
+          const my = (qpos.y + mpos.y) / 2;
+          const dx = mx - cl.x, dy = my - cl.y;
+          const ctrl = { x: mx + dx * 0.25, y: my + dy * 0.25 };
           return (
             <>
               <svg style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%',
                 pointerEvents: 'none', zIndex: 33,
-                opacity: t * sectionVis,
               }}>
-                <line x1={qpos.x} y1={qpos.y} x2={cl.x} y2={cl.y}
-                  stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 5" />
-                <line x1={cl.x} y1={cl.y} x2={mpos.x} y2={mpos.y}
-                  stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 5" />
+                <path d={`M ${qpos.x},${qpos.y} Q ${ctrl.x},${ctrl.y} ${mpos.x},${mpos.y}`}
+                  stroke="var(--tint-tr)" strokeWidth="1.5" fill="none"
+                  strokeLinecap="round"
+                  opacity={arcOpacity * sectionVis} />
+                <g opacity={axisOpacity * sectionVis}>
+                  <line x1={qpos.x} y1={qpos.y} x2={cl.x} y2={cl.y}
+                    stroke="var(--tint-tr)" strokeWidth="1" />
+                  <line x1={cl.x} y1={cl.y} x2={mpos.x} y2={mpos.y}
+                    stroke="var(--tint-tr)" strokeWidth="1" />
+                </g>
               </svg>
-              {/* Axis-end labels — both rendered with the same restrained
-                  treatment (small sans, ink-2). Reserving warm/accent color
-                  was tempting for "Qiyu" but the page is ink-only elsewhere;
-                  one rogue red label would break the palette. */}
+              {/* Axis-end labels — appear with the axis (last 25% of expand),
+                  not with the arc. Until the L settles, the labels would be
+                  attached to a curve that doesn't read as an axis yet. */}
               <div style={{
                 position: 'absolute',
                 left: qpos.x, top: qpos.y - SPACE.md,
                 transform: 'translate(-50%, -100%)',
                 fontFamily: 'var(--sans)', fontSize: TYPE.body.size,
                 color: 'var(--ink-2)', whiteSpace: 'nowrap',
-                opacity: t * sectionVis, pointerEvents: 'none',
+                opacity: axisOpacity * sectionVis, pointerEvents: 'none',
                 zIndex: 34,
               }}>Qiyu</div>
               <div style={{
@@ -1014,32 +1259,42 @@ export function Home({ onNav }: Props) {
                 transform: 'translateY(-50%)',
                 fontFamily: 'var(--sans)', fontSize: TYPE.body.size,
                 color: 'var(--ink-2)', whiteSpace: 'nowrap',
-                opacity: t * sectionVis, pointerEvents: 'none',
+                opacity: axisOpacity * sectionVis, pointerEvents: 'none',
                 zIndex: 34,
               }}>Creating</div>
             </>
           );
         })()}
 
-        {/* ——— Dashed cross ——— End-fan: the cross axes sweep out of the
-            ring center to the four edge dots. Each arm fades in with fanT. */}
+        {/* ——— Dashed cross ——— Four arms drawing from the center outward
+            during the fan phase. Each arm's far endpoint is lerp(center, dot,
+            axisDrawT), so the arms LITERALLY GROW from the convergence point
+            toward each dot — the axis is *created by* the expansion, not
+            faded in alongside it. After axisDrawT hits 1, the endpoint stays
+            anchored to the dot, so the arms naturally extend with the dots
+            as they continue their flight to the viewport edges. */}
         {fanCrossVis > 0 && (() => {
-          const { pos: qpos } = dotState('qiyu',   progress, viewportW, viewportH, activeSection, pillAnchor);
-          const { pos: opos } = dotState('other',  progress, viewportW, viewportH, activeSection, pillAnchor);
-          const { pos: npos } = dotState('notice', progress, viewportW, viewportH, activeSection, pillAnchor);
-          const { pos: mpos } = dotState('make',   progress, viewportW, viewportH, activeSection, pillAnchor);
+          const cx = viewportW / 2, cy = viewportH / 2;
+          const { pos: qpos } = dotState('qiyu',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const { pos: opos } = dotState('other',  progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const { pos: npos } = dotState('notice', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const { pos: mpos } = dotState('make',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const arms: { x: number; y: number }[] = [
+            { x: lerp(cx, qpos.x, axisDrawT), y: lerp(cy, qpos.y, axisDrawT) },
+            { x: lerp(cx, mpos.x, axisDrawT), y: lerp(cy, mpos.y, axisDrawT) },
+            { x: lerp(cx, opos.x, axisDrawT), y: lerp(cy, opos.y, axisDrawT) },
+            { x: lerp(cx, npos.x, axisDrawT), y: lerp(cy, npos.y, axisDrawT) },
+          ];
           return (
             <svg style={{
               position: 'absolute', inset: 0, width: '100%', height: '100%',
               pointerEvents: 'none', zIndex: 33,
-              opacity: fanCrossVis,
             }}>
-              {/* Vertical axis: qiyu (top) ↔ other (bottom) through center */}
-              <line x1={qpos.x} y1={qpos.y} x2={opos.x} y2={opos.y}
-                stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 5" />
-              {/* Horizontal axis: notice (left) ↔ make (right) through center */}
-              <line x1={npos.x} y1={npos.y} x2={mpos.x} y2={mpos.y}
-                stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 5" />
+              {arms.map((end, i) => (
+                <line key={i}
+                  x1={cx} y1={cy} x2={end.x} y2={end.y}
+                  stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 5" />
+              ))}
             </svg>
           );
         })()}
@@ -1182,7 +1437,7 @@ export function Home({ onNav }: Props) {
               opacity: cellLabelVis,
             }}>
               {labels.map((l) => {
-                const { pos } = dotState(l.id, progress, viewportW, viewportH, activeSection, pillAnchor);
+                const { pos } = dotState(l.id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
                 return (
                   <div key={l.id} style={{
                     position: 'absolute',
@@ -1203,7 +1458,7 @@ export function Home({ onNav }: Props) {
             position interpolated by progress. Color/opacity dim when in the
             corner-nav phase and the dot isn't part of the active arc. */}
         {DOT_IDS.map((id) => {
-          const baseState = dotState(id, progress, viewportW, viewportH, activeSection, pillAnchor);
+          const baseState = dotState(id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
           let pos = baseState.pos;
           let size = baseState.size;
           const inHero = progress < HERO_END * 0.95;
@@ -1211,6 +1466,18 @@ export function Home({ onNav }: Props) {
           // During corner phase: inactive dots dim to grey-ish so the active
           // pair reads as the current section. Smoothly fades on entry/exit.
           const cornerPhase = cornerT * (1 - returnT);
+          // During corner phase, only the two active dots remain visible —
+          // they sit at the endpoints of the visible arc (the "lens onto
+          // the bigger circle"). Inactive dots fade out entirely so the
+          // arc reads as a discrete segment, not a + cluster.
+          // Also hide the four main dots during hub-fade and hub-hold so
+          // the cropped-quarter view (with its own 2 dedicated endpoint
+          // dots) is the only thing visible at the hub. They fade back in
+          // during corner-settle as ringOutT releases hubLabelVis.
+          // During corner phase: inactive dots dim to grey-ish so the active
+          // pair reads as the current section. In hub-hold all four dots
+          // stay full opacity — the ring + four cardinal nodes is the whole
+          // composition we want to read.
           const dotOpacity = lerp(1, isActive ? 1 : 0.32, cornerPhase);
           const isHovered = hoveredDot === id;
           // Click animation override: when the user clicked "connect the
@@ -1253,6 +1520,14 @@ export function Home({ onNav }: Props) {
                 // click animation, we drive pos directly via left/top, so the
                 // transform transition is suppressed to prevent it from
                 // smearing the JS lerp.
+                // In stable corner phase (dots settled in cluster, no
+                // hub→corner motion in flight), enable a left/top transition
+                // so the dots smoothly ROTATE around the cluster center
+                // when activeSection changes. Outside corner phase, scroll
+                // updates left/top per frame so a transition would lag.
+                // No CSS transition on left/top: the cluster-rotation rAF
+                // tween updates dot positions every frame along the circular
+                // path, so a CSS lerp would smear the per-frame motion.
                 transition: isClickAnim
                   ? 'opacity .25s ease'
                   : 'opacity .25s ease, transform .45s cubic-bezier(.2,.7,.2,1)',
@@ -1293,6 +1568,134 @@ export function Home({ onNav }: Props) {
             </div>
           );
         })}
+
+        {/* ——— Corner-nav arc ——— A 90° segment fixed in the upper-right
+            quadrant of the cluster. The conceptual full circle rotates as
+            the user scrolls between sections (see SECTION_CLUSTER_ROTATION),
+            so the active node pair always lands at top + right of the
+            cluster — the visible arc never moves on screen, only the labels
+            and identities do. Image #23. */}
+        {cornerNavVis > 0 && (() => {
+          // Read the unified ring's current (cx, cy, r). During section view
+          // this equals CORNER; during the corner-settle / end-return phases
+          // the value is interpolated, so this SVG draws at the SAME position
+          // as the hub render above — making the cross-fade between the two
+          // invisible to the eye.
+          const ring = ringStateAt(progress, viewportW, viewportH);
+          const cx = ring.cx, cy = ring.cy, r = ring.r;
+          // SVG canvas spans the whole viewport now (since the ring can be at
+          // hub OR corner OR end-hub positions, we can't size it to one).
+          // Arc endpoints are derived from the LIVE positions of the active
+          // pair — the colored band rides the dots around the conceptual
+          // circle as clusterRotationDeg interpolates. At rest in any section
+          // the active pair sits at top+right of the cluster, so the arc
+          // resolves to the same upper-right quadrant as before. Mid-rotation,
+          // arc + dots travel together (connected motion).
+          const [aId, bId] = SECTION_BY_ID[activeSection].activeDots;
+          const aAngle = DOT_ANGLE[aId] + clusterRotationDeg;
+          const bAngle = DOT_ANGLE[bId] + clusterRotationDeg;
+          const ptOf = (deg: number) => ({
+            x: cx + r * Math.cos((deg * Math.PI) / 180),
+            y: cy + r * Math.sin((deg * Math.PI) / 180),
+          });
+          const aPt = ptOf(aAngle);
+          const bPt = ptOf(bAngle);
+          // Always the SHORT 90° arc between adjacent cardinals. Normalize
+          // delta to (-180, 180] then pick SVG sweep flag from its sign.
+          let delta = bAngle - aAngle;
+          while (delta > 180)  delta -= 360;
+          while (delta < -180) delta += 360;
+          const sweep = delta > 0 ? 1 : 0;
+          const arcD = `M ${aPt.x},${aPt.y} A ${r},${r} 0 0 ${sweep} ${bPt.x},${bPt.y}`;
+          const tint = SECTION_BY_ID[activeSection].tint;
+          const DOT_LABEL = { qiyu: 'Qiyu', make: 'Making', other: 'Others', notice: 'Noticing' } as const;
+          // Label sits outboard of each active dot along the same angle.
+          // textAnchor adapts to which screen quadrant the angle is in so
+          // labels never crash into the dot they describe.
+          const labelOf = (deg: number, off = 18) => {
+            const c = Math.cos((deg * Math.PI) / 180);
+            const s = Math.sin((deg * Math.PI) / 180);
+            return {
+              x: cx + (r + off) * c,
+              y: cy + (r + off) * s + 4, // small optical drop for baseline
+              anchor: (c >  0.3 ? 'start' : c < -0.3 ? 'end' : 'middle') as 'start' | 'middle' | 'end',
+            };
+          };
+          const aLab = labelOf(aAngle);
+          const bLab = labelOf(bAngle);
+          return (
+            <svg
+              width="100%"
+              height="100%"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: cornerNavVis,
+                pointerEvents: 'none',
+                // Below the dots (zIndex 35) so the dots sit ON the arc
+                // endpoints visually — arc terminates at dot edges.
+                zIndex: 33,
+                overflow: 'visible',
+              }}
+            >
+              {/* Faint backing ring — the rest of the conceptual circle.
+                  Dotted, very low opacity so it doesn't compete. */}
+              <circle
+                cx={cx} cy={cy} r={r}
+                fill="none"
+                stroke="var(--ink-4)"
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeDasharray="1 5"
+                opacity={0.4}
+              />
+              {/* Active 90° arc — endpoints follow the live active-pair
+                  positions on the ring, so the colored band rides the dots
+                  through rotation. At rest the active pair sits at top+right,
+                  so this resolves to the same upper-right quadrant as before. */}
+              <path
+                d={arcD}
+                fill="none"
+                stroke={tint}
+                strokeWidth={3}
+                strokeLinecap="round"
+                style={{ transition: 'stroke .35s ease' }}
+              />
+              {/* Labels follow the active dots through rotation — each sits
+                  outboard of its dot along the same angle, so the pairing
+                  between dot and name never breaks. textAnchor flips with
+                  the screen quadrant so the label never crashes the dot. */}
+              <text
+                key={`a-${aId}`}
+                x={aLab.x} y={aLab.y}
+                textAnchor={aLab.anchor}
+                dominantBaseline="middle"
+                fill="var(--ink-2)"
+                style={{
+                  fontFamily: 'var(--sans)',
+                  fontSize: 14, fontWeight: 500,
+                  animation: 'statusFade .35s ease',
+                }}
+              >
+                {DOT_LABEL[aId]}
+              </text>
+              <text
+                key={`b-${bId}`}
+                x={bLab.x} y={bLab.y}
+                textAnchor={bLab.anchor}
+                dominantBaseline="middle"
+                fill="var(--ink-2)"
+                style={{
+                  fontFamily: 'var(--sans)',
+                  fontSize: 14, fontWeight: 500,
+                  animation: 'statusFade .35s ease',
+                }}
+              >
+                {DOT_LABEL[bId]}
+              </text>
+            </svg>
+          );
+        })()}
 
         {/* ——— Corner nav ——— Visible during section view. The dot cluster
             stays put in the corner (rendered in the global dot layer);
@@ -1559,7 +1962,7 @@ function SectionView({
   switch (section.id) {
     case 'mirror':    return <ReflectionView q={q} onNav={onNav} />;
     case 'practice':  return <CreateScatter q={q} onNav={onNav} onSectionJump={onSectionJump} />;
-    case 'attention': return <LearnQuotes />;
+    case 'attention': return <LearnQuotes onNav={onNav} />;
     case 'work':      return <WorkGrid q={q} onNav={onNav} />;
   }
 }
@@ -1788,7 +2191,17 @@ function CreateScatter({
 // eye than centered for multi-line text), with the attribution underneath
 // in a quieter sans treatment. The center-line gap pattern (image #9) reads
 // like a manuscript page rather than a card layout.
-const LEARN_QUOTES: { quote: string; who: string }[] = [
+//
+// Optional `articleSlug` + `sectionId` link a quote to the article (and
+// specific section) it came from. When present, the whole blockquote becomes
+// a button — clicking opens the article scrolled to that section.
+type LearnQuote = {
+  quote: string;
+  who: string;
+  articleSlug?: string;
+  sectionId?: string;
+};
+const LEARN_QUOTES: LearnQuote[] = [
   { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.', who: 'a designer at IDEO' },
   { quote: 'The questions someone asks reveal more than the answers they give.',                       who: 'a senior PM, on hiring' },
   { quote: 'When a teammate gets quiet, that’s usually the most important thing said all meeting.',     who: 'a research lead' },
@@ -1796,7 +2209,7 @@ const LEARN_QUOTES: { quote: string; who: string }[] = [
   { quote: 'You’re describing a feedback loop but you’re acting like it’s a process.',                  who: 'a PM over zoom' },
   { quote: 'You keep saying “I think” — but that’s the whole point, isn’t it?',                          who: 'a designer at a coffee shop' },
 ];
-function LearnQuotes() {
+function LearnQuotes({ onNav }: { onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -1812,32 +2225,67 @@ function LearnQuotes() {
         maxWidth: 1080,
         width: '100%',
       }}>
-        {LEARN_QUOTES.map((q, i) => (
-          <blockquote key={i} style={{
-            margin: 0,
-            display: 'flex', flexDirection: 'column', gap: SPACE.sm,
-          }}>
-            <p style={{
-              margin: 0,
-              fontFamily: 'var(--serif)', fontWeight: 400,
-              fontSize: 'clamp(18px, 1.4vw, 22px)',
-              lineHeight: 1.45,
-              color: 'var(--ink)',
-              textWrap: 'pretty',
-            }}>
-              &ldquo;{q.quote}&rdquo;
-            </p>
-            <cite style={{
-              fontFamily: 'var(--sans)',
-              fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-              letterSpacing: TYPE.kicker.tracking,
-              textTransform: 'uppercase', fontStyle: 'normal',
-              color: 'var(--ink-3)',
-            }}>
-              {q.who}
-            </cite>
-          </blockquote>
-        ))}
+        {LEARN_QUOTES.map((q, i) => {
+          const linked = !!q.articleSlug;
+          const onClick = linked
+            ? () => onNav(`article:${q.articleSlug}${q.sectionId ? `:${q.sectionId}` : ''}`)
+            : undefined;
+          return (
+            <blockquote
+              key={i}
+              onClick={onClick}
+              style={{
+                margin: 0,
+                display: 'flex', flexDirection: 'column', gap: SPACE.sm,
+                cursor: linked ? 'pointer' : 'default',
+                transition: 'transform .25s cubic-bezier(.2,.7,.2,1)',
+              }}
+              onMouseEnter={(e) => {
+                if (!linked) return;
+                const arrow = e.currentTarget.querySelector('[data-quote-arrow]') as HTMLElement | null;
+                if (arrow) arrow.style.transform = 'translateX(4px)';
+                const cite = e.currentTarget.querySelector('[data-quote-cite]') as HTMLElement | null;
+                if (cite) cite.style.color = 'var(--ink-2)';
+              }}
+              onMouseLeave={(e) => {
+                if (!linked) return;
+                const arrow = e.currentTarget.querySelector('[data-quote-arrow]') as HTMLElement | null;
+                if (arrow) arrow.style.transform = 'translateX(0)';
+                const cite = e.currentTarget.querySelector('[data-quote-cite]') as HTMLElement | null;
+                if (cite) cite.style.color = 'var(--ink-3)';
+              }}
+            >
+              <p style={{
+                margin: 0,
+                fontFamily: 'var(--reading)', fontWeight: 400,
+                fontSize: 'clamp(18px, 1.4vw, 22px)',
+                lineHeight: 1.45,
+                color: 'var(--ink)',
+                textWrap: 'pretty',
+              }}>
+                &ldquo;{q.quote}&rdquo;
+              </p>
+              <cite data-quote-cite style={{
+                fontFamily: 'var(--sans)',
+                fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
+                letterSpacing: TYPE.kicker.tracking,
+                textTransform: 'uppercase', fontStyle: 'normal',
+                color: 'var(--ink-3)',
+                transition: 'color .2s ease',
+                display: 'inline-flex', alignItems: 'baseline', gap: 8,
+              }}>
+                {q.who}
+                {linked && (
+                  <span data-quote-arrow style={{
+                    color: 'var(--ink-3)',
+                    transition: 'transform .2s ease',
+                    display: 'inline-block',
+                  }}>→</span>
+                )}
+              </cite>
+            </blockquote>
+          );
+        })}
       </div>
     </div>
   );

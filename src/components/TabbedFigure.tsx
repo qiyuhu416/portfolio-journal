@@ -1,20 +1,28 @@
 import { useState } from 'react';
 import { useArticle } from '@/routes/ArticleContext';
+import { WRAPPER_BY_SPAN, PARATEXT_MAX, type FigureSpan } from './figureLayout';
 
 type Item = {
   label: string;
   src?: string;
   alt?: string;
   caption?: string;
+  when?: string;   // when this model is the right tool
+  where?: string;  // where I actually used it
 };
 
 type Props = {
   fig?: string;
   items: Item[];
   height?: number;
+  // Mirrors Figure.tsx — 'text' (680, default) for chart-style figures,
+  // 'full' (1040) for diagrams with embedded text that need room to breathe,
+  // 'bleed' (100%) for atmospheric / hero. Caps at container width inside
+  // narrow surfaces (e.g. ArticleDrawer).
+  span?: FigureSpan;
 };
 
-export function TabbedFigure({ fig, items, height = 380 }: Props) {
+export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
   const article = useArticle();
   const tint = article?.tint ?? 'var(--ink-3)';
@@ -23,7 +31,7 @@ export function TabbedFigure({ fig, items, height = 380 }: Props) {
   const showPlaceholder = !active?.src;
 
   return (
-    <figure style={{ maxWidth: 680, margin: '40px auto', padding: '0 32px' }}>
+    <figure style={{ ...WRAPPER_BY_SPAN[span], padding: '0 32px' }}>
       <div
         role="tablist"
         style={{
@@ -128,7 +136,7 @@ export function TabbedFigure({ fig, items, height = 380 }: Props) {
       {(active?.caption || fig) && (
         <figcaption
           style={{
-            maxWidth: 680,
+            maxWidth: PARATEXT_MAX,
             margin: '14px auto 0',
             fontFamily: 'var(--mono)',
             fontSize: 11,
@@ -139,6 +147,73 @@ export function TabbedFigure({ fig, items, height = 380 }: Props) {
           {fig && <>Fig. {fig} · </>}
           {active?.caption}
         </figcaption>
+      )}
+
+      {(active?.when || active?.where) && (
+        <div
+          style={{
+            maxWidth: PARATEXT_MAX,
+            margin: '22px auto 0',
+            display: 'grid',
+            gridTemplateColumns: active?.when && active?.where ? '1fr 1fr' : '1fr',
+            gap: 32,
+            paddingTop: 20,
+            borderTop: '1px dashed var(--line)',
+          }}
+        >
+          {active?.when && (
+            <div>
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 10,
+                  letterSpacing: 1.4,
+                  textTransform: 'uppercase',
+                  color: tint,
+                  marginBottom: 8,
+                }}
+              >
+                When to use
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--reading, var(--serif))',
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: 'var(--ink)',
+                }}
+              >
+                {active.when}
+              </div>
+            </div>
+          )}
+          {active?.where && (
+            <div>
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 10,
+                  letterSpacing: 1.4,
+                  textTransform: 'uppercase',
+                  color: tint,
+                  marginBottom: 8,
+                }}
+              >
+                Where I used it
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--reading, var(--serif))',
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: 'var(--ink)',
+                }}
+              >
+                {active.where}
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </figure>
   );

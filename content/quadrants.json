@@ -10,9 +10,9 @@
     "layout": "statement",
     "statement": [
       { "type": "text",   "text": "I practice the mindset to " },
-      { "type": "phrase", "text": "think outside the box",          "href": "#article:thinking-outside-the-box", "tint": "var(--tint-tl)" },
+      { "type": "phrase", "text": "think outside the box",          "href": "#article:thinking-outside-the-box", "tint": "var(--tint-tr)" },
       { "type": "text",   "text": ", applying that to " },
-      { "type": "phrase", "text": "design human–AI interactions",   "href": "#article:designing-ai-products",    "tint": "var(--tint-bl)" },
+      { "type": "phrase", "text": "design human–AI interactions",   "href": "#article:designing-ai-products",    "tint": "var(--tint-plum)" },
       { "type": "text",   "text": ", with " },
       { "type": "phrase", "text": "AI as my prototyping tool",      "href": "#article:how-i-use-ai-to-create",   "tint": "var(--ink)" }
     ],
@@ -118,8 +118,54 @@
     "tint": "var(--tint-br)",
     "framing": "The finished, shipped, collaborative stuff. Where thinking has to become a decision and other people have to live with it.",
     "items": [
-      { "tag": "Teamwork", "title": "Collaboration: the good side and the annoying side", "dek": "Forthcoming.", "meta": "draft",                 "href": "#" },
-      { "tag": "Shipping", "title": "All the things we’ve shipped together",              "dek": "Forthcoming.", "meta": "gallery · forthcoming", "href": "#" }
+      {
+        "tag": "0 → 1",
+        "title": "Shopping doesn’t have to start with a search",
+        "dek": "Watch · create · purchase. Six business partners, one app.",
+        "meta": "Meetfood · Founding UX · 1.5y",
+        "href": "#",
+        "image": "/projects/meetfood.png"
+      },
+      {
+        "tag": "GenAI",
+        "title": "AI doesn’t have to be complex",
+        "dek": "Research-to-prototype. SUS 86.3.",
+        "meta": "Google Cloud · UX · 4mo",
+        "href": "#",
+        "image": "/projects/google-cloud.png"
+      },
+      {
+        "tag": "Conversational AI",
+        "title": "AI can be a design tool",
+        "dek": "A working call agent built in a week of prompt engineering.",
+        "meta": "The Mentoring Partnership · Solo AI · 1wk",
+        "href": "#",
+        "image": "/projects/call-agent.png"
+      },
+      {
+        "tag": "Service design",
+        "title": "Design can be a research tool",
+        "dek": "Hi-fi prototypes drove adoption. SUS 90.3.",
+        "meta": "Pittsburgh Parking Authority · Service design · 4mo",
+        "href": "#",
+        "image": "/projects/research-tool.png"
+      },
+      {
+        "tag": "Physical AI",
+        "title": "AI doesn’t have to stay on a screen",
+        "dek": "Embedding diagnostic AI into a clinical workflow.",
+        "meta": "Roche · Service design · 1mo",
+        "href": "#",
+        "image": "/projects/roche.png"
+      },
+      {
+        "tag": "Research",
+        "title": "AI can earn human trust",
+        "dek": "Two papers on language, affiliation, and care.",
+        "meta": "CMU / Cornell · Research Asst. · 1.5y",
+        "href": "#",
+        "image": "/projects/ai-trust.png"
+      }
     ]
   }
 ]

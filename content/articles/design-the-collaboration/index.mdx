@@ -15,6 +15,14 @@ sections:
 ---
 
 import { Figure } from '@/components/Figure'
+import { Gallery } from '@/components/Gallery'
+
+import meetfoodImg     from './images/meetfood.png'
+import googleCloudImg  from './images/google-cloud.png'
+import callAgentImg    from './images/call-agent.png'
+import rocheImg        from './images/roche.png'
+import researchToolImg from './images/research-tool.png'
+import aiTrustImg      from './images/ai-trust.png'
 
 UX isn&rsquo;t a job title. It&rsquo;s a mindset — and the mindset doesn&rsquo;t switch off when the work moves from *the product* to *the team making it.*
 
@@ -50,5 +58,16 @@ Two formats I keep reaching for:
 <Figure fig="03" placeholder alt="Workshop room: a mixed group seated in a loose circle, one person speaking" caption="Workshops like Role-Playing and Rose, Bud, Thorn — user-centered as a team." />
 
 ---
+
+### Where this has lived
+
+<Gallery columns={2}>
+  <Figure src={meetfoodImg}     alt="Meetfood — food exploration app"        caption="Shopping doesn’t have to start with a search · Meetfood · Founding UX Designer" />
+  <Figure src={googleCloudImg}  alt="Google Cloud — AI product comparison"   caption="AI doesn’t have to be complex · Google Cloud · UX Designer" />
+  <Figure src={callAgentImg}    alt="Conversational call agent project"      caption="Conversational AI · Call Agent" />
+  <Figure src={rocheImg}        alt="Roche physical AI project"              caption="Physical AI · Roche" />
+  <Figure src={researchToolImg} alt="Design as a research tool"              caption="Design as a research tool" />
+  <Figure src={aiTrustImg}      alt="AI trust research"                       caption="AI trust · research" />
+</Gallery>
 
 Three modes, three sets of frameworks. But the mindset underneath is the same: **look at your collaborators the way you look at your users. Notice what helps them think. Design for that.**

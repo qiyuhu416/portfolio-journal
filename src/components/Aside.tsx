@@ -1,21 +1,22 @@
 import type { ReactNode } from 'react';
-import { useArticle } from '@/routes/ArticleContext';
 
 type Props = { children: ReactNode };
 
+/**
+ * Aside — a quiet italic indent for short editorial commentary (offhand
+ * remarks, "lol I once said…", side notes). Deliberately NOT a card and
+ * NOT bordered: cards are reserved for Sidebar (structured content) and
+ * left-borders for blockquote (quoted speech). Aside earns its set-apart
+ * voice through italic + slightly smaller size + softer color.
+ */
 export function Aside({ children }: Props) {
-  const article = useArticle();
-  const tint = article?.tint ?? 'var(--ink-3)';
-  const surface = article?.surface ?? 'var(--surface)';
-
   return (
     <aside style={{
-      maxWidth: 680, margin: '32px auto',
-      padding: '18px 22px',
-      background: surface,
-      borderLeft: `3px solid ${tint}`,
-      fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 20,
-      lineHeight: 1.5, color: 'var(--ink-2)',
+      maxWidth: 680, margin: '28px auto',
+      paddingLeft: 28,
+      fontFamily: 'var(--reading)', fontStyle: 'italic',
+      fontSize: 17,
+      lineHeight: 1.55, color: 'var(--ink-3)',
     }}>
       {children}
     </aside>

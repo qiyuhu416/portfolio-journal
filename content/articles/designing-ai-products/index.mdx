@@ -3,21 +3,30 @@ slug: designing-ai-products
 num: "02"
 quality: Restraint
 title: Designing Next-Gen AI experiences
+titleHtml: "Designing Next-Gen AI <s>products</s> experiences"
 dek: Humanity, in interfaces, is not about imitation.
 date: Apr 2026
 readtime: 8
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: relationship, label: "Designing the relationship" }
-  - { id: errors,       label: "Designing for errors" }
-  - { id: feeling,      label: "Design the feeling" }
+  - { id: relationship,   label: "Designing the relationship" }
+  - { id: hard-inference, label: "Hard inference: elder care AI" }
+  - { id: errors,         label: "Designing for errors" }
+  - { id: easy-inference, label: "Easy inference: phone call agent" }
+  - { id: feeling,        label: "Design the feeling" }
 ---
 
 
 import { Figure } from '@/components/Figure'
 import { PullQuote } from '@/components/PullQuote'
 import { Aside } from '@/components/Aside'
+
+<p>I'm going to share three case studies.</p>
+
+<PullQuote attribution="Prof. John Zimmerman">
+  Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
+</PullQuote>
 
 <h2 id="relationship">§1 · Designing the relationship</h2>
 
@@ -28,35 +37,6 @@ import { Aside } from '@/components/Aside'
     But once AI entered the room, we started seeing ourselves from the outside.
 </p>
 
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
-  <svg
-    style={{
-      position: 'absolute',
-      right: '-180px',
-      top: '20px',
-      width: '130px',
-      height: '130px',
-      pointerEvents: 'none',
-      opacity: 0.35,
-      color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
-    }}
-    viewBox="0 0 90 90"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="45" cy="45" r="32" />
-    <circle cx="34" cy="40" r="1.8" fill="currentColor" />
-    <circle cx="56" cy="40" r="1.8" fill="currentColor" />
-    <path d="M 30 56 Q 45 64, 60 56" />
-    <path d="M 12 22 Q 18 16, 22 22" />
-    <path d="M 68 22 Q 72 16, 78 22" />
-  </svg>
-</div>
-
 <PullQuote>
   Designing human–AI interaction is designing the human–AI relationship.
 </PullQuote>
@@ -65,54 +45,157 @@ import { Aside } from '@/components/Aside'
 If we look at the evolution of HCI, we see it has always been about relationships:
 </p>
 
-<ul>
-  <li><b>Command line</b> → humans adapt to machines</li>
-  <li><b>GUI</b> → machines adapt to humans</li>
-  <li><b>AI agents</b> → humans and machines negotiate work together</li>
-</ul>
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  margin: '36px 0 44px',
+  position: 'relative',
+}}>
+  {/* horizontal axis connecting the three dots — sits at the dots' vertical center */}
+  <div style={{
+    position: 'absolute',
+    top: 6,
+    left: '16.67%',
+    right: '16.67%',
+    height: 1.5,
+    background: 'var(--article-tint, currentColor)',
+    opacity: 0.4,
+    zIndex: 0,
+  }} />
 
-Interestingly, the interface is kind of back to terminal again — thanks to tools like Claude Code. But the relationship has changed a lot.
-
-So for me, designing human–AI interaction is not just about UI. It's about defining the relationship first — is AI a tool, assistant, teammate, teacher, agent, or something else? Then design the interaction around that.
-
-
-<div style={{ display: 'flex', justifyContent: 'center', margin: '48px 0' }}>
-  <svg width="140" height="20" viewBox="0 0 140 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: 0.35, color: 'var(--article-tint, currentColor)' }}>
-    <path d="M 5 10 Q 20 2, 35 10 T 65 10 T 95 10 T 135 10" />
-  </svg>
-</div>
-
-<h2 id="errors">§2 · Designing for errors</h2>
-
-AI is never perfect. The design question is: where are we okay with it being wrong?
-A lot of human–AI relationships are based on human–human relationships.
-
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
+  {/* arrowhead at the right end → suggests "the arc keeps going" */}
   <svg
     style={{
       position: 'absolute',
-      left: '-150px',
-      top: '-10px',
-      width: '110px',
-      height: '90px',
-      pointerEvents: 'none',
-      opacity: 0.35,
+      top: -1,
+      right: 'calc(16.67% - 8px)',
+      width: 16,
+      height: 16,
       color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
+      opacity: 0.6,
     }}
-    viewBox="0 0 80 60"
+    viewBox="0 0 16 16"
     fill="none"
     stroke="currentColor"
     strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <path d="M 12 26 Q 8 16, 18 12 Q 28 8, 38 12 Q 50 14, 56 22 Q 62 30, 56 38 Q 48 46, 36 44 L 28 50 L 30 42 Q 18 40, 12 32 Q 10 28, 12 26 Z" />
-    <circle cx="26" cy="26" r="1.6" fill="currentColor" />
-    <circle cx="34" cy="26" r="1.6" fill="currentColor" />
-    <circle cx="42" cy="26" r="1.6" fill="currentColor" />
+    <path d="M 9 4 L 13 8 L 9 12" />
   </svg>
+
+  {/* milestone 1 — Command line */}
+  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
+    <div style={{
+      width: 12, height: 12, borderRadius: '50%',
+      background: 'var(--article-tint, currentColor)',
+      margin: '0 auto 14px',
+      position: 'relative',
+      zIndex: 1,
+    }} />
+    <div style={{
+      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+      color: 'var(--article-tint, currentColor)',
+    }}>
+      Command line
+    </div>
+    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
+      humans adapt to machines
+    </div>
+  </div>
+
+  {/* milestone 2 — GUI */}
+  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
+    <div style={{
+      width: 12, height: 12, borderRadius: '50%',
+      background: 'var(--article-tint, currentColor)',
+      margin: '0 auto 14px',
+      position: 'relative',
+      zIndex: 1,
+    }} />
+    <div style={{
+      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+      color: 'var(--article-tint, currentColor)',
+    }}>
+      GUI
+    </div>
+    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
+      machines adapt to humans
+    </div>
+  </div>
+
+  {/* milestone 3 — AI agents */}
+  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
+    <div style={{
+      width: 12, height: 12, borderRadius: '50%',
+      background: 'var(--article-tint, currentColor)',
+      margin: '0 auto 14px',
+      position: 'relative',
+      zIndex: 1,
+    }} />
+    <div style={{
+      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+      color: 'var(--article-tint, currentColor)',
+    }}>
+      AI agents
+    </div>
+    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
+      humans and machines negotiate work together
+    </div>
+  </div>
 </div>
+
+Interestingly, the interface is kind of back to terminal again — thanks to tools like Claude Code. But the relationship has changed a lot.
+
+So for me, designing human–AI interaction is not just about UI. It's about defining the relationship first — is AI a tool, assistant, teammate, teacher, agent, or something else? Then design the interaction around that.
+
+<h3 id="hard-inference">Hard inference: elder care AI</h3>
+
+<p>
+One research project I worked on at CARE started with this question:
+how might an AI messenger support older adults when they need help?
+</p>
+
+<p>
+It sounds simple, but the relationship is actually very tricky.
+</p>
+
+<ul>
+  <li>Who should the AI listen to — the older adult or the caregiver?</li>
+  <li>Who should get access to sensitive data, like a living will?</li>
+  <li>When is an older adult cognitively capable of updating sensitive information?</li>
+</ul>
+
+<p>
+No one knows the answer from the outside.
+So we went to the care center and talked to older adults directly:
+15+ interviews, storyboards of potential human-bot interactions, affinity clustering, and flow mapping.
+</p>
+
+<Figure fig="02" placeholder alt="Trust logic" caption="How humans build trust → translated into AI behavior." />
+
+<PullQuote>
+  We didn't design the answer. We designed a way to learn what the answer should be.
+</PullQuote>
+
+<p>
+One thing I learned: trust can be designed.
+We may not be able to control how older adults feel, but we can design how AI behaves, explains, pauses, asks, and hands off — just like a trustworthy human would.
+</p>
+
+
+<hr/>
+
+<h2 id="errors">§2 · Designing for errors</h2>
+
+AI is never perfect. The design question is: where are we okay with it being wrong?
+A lot of human–AI relationships are based on human–human relationships.
 
 <p><strong>BUT HUMANS ARE COMPLICATED. And human–human relationships are even more complicated.</strong></p>
 
@@ -152,103 +235,7 @@ A lot of human–AI relationships are based on human–human relationships.
 Similar to humans, AI may misinterpret, convey the wrong information, or make people understand information in the wrong way.
 </p>
 
-<p>
-When it comes to designing where AI should intervene, my rule of thumb is from Prof. John Zimmerman:
-</p>
-
-<PullQuote>
-Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
-</PullQuote>
-
-<div style={{ display: 'flex', justifyContent: 'center', margin: '48px 0' }}>
-  <svg width="140" height="20" viewBox="0 0 140 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: 0.35, color: 'var(--article-tint, currentColor)' }}>
-    <path d="M 5 10 Q 20 2, 35 10 T 65 10 T 95 10 T 135 10" />
-  </svg>
-</div>
-
-<h3>Hard inference: elder care AI</h3>
-
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
-  <svg
-    style={{
-      position: 'absolute',
-      left: '-160px',
-      top: '40px',
-      width: '110px',
-      height: '110px',
-      pointerEvents: 'none',
-      opacity: 0.4,
-      color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
-    }}
-    viewBox="0 0 64 64"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M 32 52 L 18 34 Q 10 24, 20 18 Q 28 14, 32 22 Q 36 14, 44 18 Q 54 24, 46 34 Z" />
-  </svg>
-</div>
-
-<p>
-One research project I worked on at CARE started with this question:
-how might an AI messenger support older adults when they need help?
-</p>
-
-<p>
-It sounds simple, but the relationship is actually very tricky.
-</p>
-
-<ul>
-  <li>Who should the AI listen to — the older adult or the caregiver?</li>
-  <li>Who should get access to sensitive data, like a living will?</li>
-  <li>When is an older adult cognitively capable of updating sensitive information?</li>
-</ul>
-
-<p>
-No one knows the answer from the outside.
-So we went to the care center and talked to older adults directly:
-15+ interviews, storyboards of potential human-bot interactions, affinity clustering, and flow mapping.
-</p>
-
-<Figure fig="02" placeholder alt="Trust logic" caption="How humans build trust → translated into AI behavior." />
-
-<PullQuote>
-  We didn’t design the answer. We designed a way to learn what the answer should be.
-</PullQuote>
-
-<p>
-One thing I learned: trust can be designed.
-We may not be able to control how older adults feel, but we can design how AI behaves, explains, pauses, asks, and hands off — just like a trustworthy human would.
-</p>
-
-<h3>Easy inference: phone call agent</h3>
-
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
-  <svg
-    style={{
-      position: 'absolute',
-      right: '-170px',
-      top: '30px',
-      width: '120px',
-      height: '120px',
-      pointerEvents: 'none',
-      opacity: 0.4,
-      color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
-    }}
-    viewBox="0 0 64 64"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M 14 18 Q 14 12, 20 12 L 24 12 Q 28 12, 28 16 L 28 22 Q 28 26, 24 26 L 22 26 Q 22 34, 28 40 Q 34 46, 42 46 L 42 44 Q 42 40, 46 40 L 52 40 Q 56 40, 56 44 L 56 48 Q 56 54, 50 54 Q 32 54, 22 42 Q 14 30, 14 18 Z" />
-  </svg>
-</div>
+<h3 id="easy-inference">Easy inference: phone call agent</h3>
 
 <p>
 Another project was a phone call agent that answers repetitive customer questions.
@@ -277,11 +264,7 @@ A 1-hour client testing session already surfaced issues we didn’t expect:
 <PullQuote>
   Prototype the relationship early, so the errors show up before the product ships.
 </PullQuote>
-<div style={{ display: 'flex', justifyContent: 'center', margin: '48px 0' }}>
-  <svg width="140" height="20" viewBox="0 0 140 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: 0.35, color: 'var(--article-tint, currentColor)' }}>
-    <path d="M 5 10 Q 20 2, 35 10 T 65 10 T 95 10 T 135 10" />
-  </svg>
-</div>
+<hr/>
 
 <h2 id="feeling">§3 · Design the feeling</h2>
 
@@ -298,32 +281,6 @@ It sounds nice, but it is actually so hard to design — because feeling is huma
 For AI, the feeling often comes from small interaction choices:
 when it speaks, when it waits, when it interrupts, when it disappears.
 </p>
-
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
-  <svg
-    style={{
-      position: 'absolute',
-      left: '-180px',
-      top: '20px',
-      width: '140px',
-      height: '105px',
-      pointerEvents: 'none',
-      opacity: 0.4,
-      color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
-    }}
-    viewBox="0 0 80 60"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M 6 48 Q 18 28, 36 30 Q 54 32, 64 18" />
-    <path d="M 64 18 L 70 12 L 74 22 Z" />
-    <path d="M 8 52 Q 16 50, 24 52" />
-  </svg>
-</div>
 
 <p>
 One case study: when I was a vibe coder at a startup, I prototyped a human–AI co-writing tool.
@@ -395,32 +352,6 @@ That led me to personal-level personalization:
 AI should learn the user’s preference through their unspoken reactions to its suggestions.
 Not just what users click — but when they ignore, accept, hesitate, or rewrite.
 </p>
-
-<div style={{ position: 'relative', height: 0 }} aria-hidden="true">
-  <svg
-    style={{
-      position: 'absolute',
-      right: '-160px',
-      top: '0',
-      width: '100px',
-      height: '100px',
-      pointerEvents: 'none',
-      opacity: 0.4,
-      color: 'var(--article-tint, currentColor)',
-      zIndex: 0,
-    }}
-    viewBox="0 0 60 60"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M 30 6 L 33 24 L 50 22 L 36 32 L 44 48 L 30 38 L 16 48 L 24 32 L 10 22 L 27 24 Z" />
-    <circle cx="48" cy="14" r="2" />
-    <circle cx="14" cy="48" r="2" />
-  </svg>
-</div>
 
 <PullQuote>
   Design the relationship. Design for the errors. Design the feeling.

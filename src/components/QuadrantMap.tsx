@@ -189,7 +189,10 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
  */
 function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: 'phrase' }>; onNav: NavFn }) {
   const [hover, setHover] = useState(false);
-  const restingBg = `color-mix(in srgb, ${seg.tint} 22%, transparent)`;
+  // Resting wash: 38% gives enough chroma that the highlight reads as a
+  // colored block on parchment, not a grey redaction — calm because it's
+  // still translucent, playful because the hue is unmistakable.
+  const restingBg = `color-mix(in srgb, ${seg.tint} 38%, transparent)`;
   return (
     <a
       href={seg.href}

@@ -24,6 +24,13 @@
   --tint-bl: #5A75A0; /* blueprint blue — Learn      (cool, deep)   */
   --tint-br: #80A07E; /* fresh sage     — Work       (cool, bright) */
 
+  /* A 5th tint for highlight rotation — sits OUTSIDE the 2×2 axis
+     (it's not anyone's quadrant), so reserve for statement-layout
+     phrase highlights, editorial accents, and any "this surprised me"
+     mark. The plum brings cool playfulness the warm/green/blue four
+     can't carry on their own. */
+  --tint-plum: #9C7AB5;
+
   /* Single signal — the only non-tint accent. Used ONLY for live state:
      pulsing dots, hovered cell labels, route arrows, "Open to work". */
   --signal: #C13D2F;

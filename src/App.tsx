@@ -55,7 +55,17 @@ export function App() {
     window.location.hash = r === 'home' ? '' : r;
   };
 
-  const articleSlug = route.startsWith('article:') ? route.slice(8) : null;
+  // Article route format: `article:slug` or `article:slug:sectionId`. The
+  // optional `:sectionId` suffix lets a caller deep-link into a specific
+  // section of an article (e.g. clicking a quote on the Learn page jumps to
+  // the source section in the original piece).
+  const articleRoute = route.startsWith('article:') ? route.slice(8) : null;
+  const [articleSlug, articleSection] = articleRoute
+    ? (() => {
+        const parts = articleRoute.split(':');
+        return [parts[0], parts[1] ?? null] as const;
+      })()
+    : [null, null];
 
   // Article route: render Home underneath + article overlay on top.
   // Keeps home's scroll position so closing the overlay returns you
@@ -64,7 +74,12 @@ export function App() {
     return (
       <>
         <Home onNav={nav} />
-        <JournalArticle slug={articleSlug} onClose={() => nav('home')} onNav={nav} />
+        <JournalArticle
+          slug={articleSlug}
+          initialSectionId={articleSection}
+          onClose={() => nav('home')}
+          onNav={nav}
+        />
       </>
     );
   }
