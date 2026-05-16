@@ -45,6 +45,18 @@
   padding: 0;
 }
 
+/* Peek mode (inside ArticleDrawer): when a home-page article is opened
+   in the side drawer, only the first section is shown — everything from
+   the SECOND <h2> onward is hidden, and a "Read the full article" CTA
+   sits at the end. The CTA is a sibling of `.article-body`, so it stays
+   visible. Articles that are NOT on the home page (inline-only side
+   articles) don't get the `peek-mode` class and render in full. */
+.article-body.peek-mode > h2:nth-of-type(n+2),
+.article-body.peek-mode > h2:nth-of-type(n+2) ~ *,
+.article-body.peek-mode > hr {
+  display: none;
+}
+
 .article-body p {
   margin: 0 0 1.4em;
   text-wrap: pretty;
@@ -67,11 +79,10 @@
 
 .article-body h3 {
   font-family: var(--serif);
-  font-size: 26px;
-  line-height: 1.2;
-  letter-spacing: -0.6px;
-  margin: 40px 0 14px;
-  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.25;
+  margin: 36px 0 10px;
+  font-weight: 600;
 }
 
 .article-body strong { font-weight: 500; color: var(--ink); }
@@ -117,15 +128,81 @@
   border-radius: 3px;
 }
 
-.article-body .dropcap::first-letter,
-.article-body > p:first-of-type::first-letter {
+/* Raw <table> — styled to match HMWTable's visual language so an article
+   that uses semantic <table> reads in the same vocabulary as one that
+   uses <HMWTable>. Card-shaped border + radius, surface-fill header row,
+   hairline row separators, hairline column separators. */
+.article-body table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 32px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--reading);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.article-body table th {
+  text-align: left;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.article-body table th + th {
+  border-left: 1px solid var(--line);
+}
+.article-body table td {
+  padding: 18px 20px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+.article-body table tbody tr:first-child td {
+  border-top: none;
+}
+.article-body table td + td {
+  border-left: 1px solid var(--line);
+  color: var(--ink-2);
+}
+.article-body table strong {
+  color: var(--ink);
+}
+
+/* Drop-cap is now opt-in only via class="dropcap" on a <p>. The default
+ * lead-paragraph treatment (below) replaces the auto-applied drop cap on
+ * the first paragraph, in favor of an italic editorial lede. */
+.article-body .dropcap::first-letter {
   font-size: 62px;
   float: left;
   line-height: 0.9;
   margin: 4px 10px 0 0;
   color: var(--article-tint, var(--ink));
-  /* Roman drop-cap, not italic — italic on a single 62px glyph at the
-     article opening reads as performance, not anchor. */
+}
+
+/* Lead paragraph: the opening paragraph of every article renders larger,
+ * italic, regular-weight serif — like a literary lede (NYT / Atlantic /
+ * The Verge style). Floats above the body register without competing with
+ * it. Override per article by wrapping the first <p> in a different element. */
+.article-body > p:first-of-type {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2vw, 26px);
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+  margin: 0 0 36px;
+  text-wrap: balance;
+}
+
+/* If the writer keeps <strong> inside the lead paragraph, downshift it so
+ * the lede stays italic-not-bold-italic. */
+.article-body > p:first-of-type strong {
+  font-weight: 400;
 }
 
 /* Strikethrough word in the article hero title (e.g. <s>products</s> in titleHtml).

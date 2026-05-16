@@ -1,7 +1,41 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { NavFn } from '@/App';
 import { quadrants, type Quadrant } from '@/content';
 import { QuadrantPanel } from '@/components/QuadrantMap';
+import backgroundData from '@content/background.json';
+
+type BackgroundItem = {
+  id: string;
+  weight: 'major' | 'normal' | 'minor';
+  kind: 'shipped' | 'research' | 'teaching' | 'coursework';
+  /** What kind of *muscle* this role built. The matrix paints each cell with
+   *  the dominant category's tint so the reader sees, at a glance, whether a
+   *  given period was technical-leaning, design-leaning, or research-leaning. */
+  category: 'technical' | 'design' | 'research';
+  start: string;
+  end: string | null;
+  role: string;
+  org: string;
+  blurb: string;
+  /** Optional thumbnail surfaced in the right-hand panel on hover. Roles
+   *  without an image render a placeholder swatch in the category tint. */
+  image?: string;
+};
+const BACKGROUND_ITEMS = backgroundData as BackgroundItem[];
+
+// Three category tints, drawn from the existing site palette so the matrix
+// stays in family with the rest of the home page (each quadrant already owns
+// one of these).
+const CATEGORY_TINT: Record<BackgroundItem['category'], string> = {
+  technical: 'var(--tint-bl)',  // attention quadrant blue — engineering blue
+  design:    'var(--tint-tl)',  // mirror quadrant warm — creative warm
+  research:  'var(--tint-br)',  // work quadrant plum — academic plum
+};
+const CATEGORY_LABEL: Record<BackgroundItem['category'], string> = {
+  technical: 'Technical',
+  design:    'Design',
+  research:  'Research',
+};
 
 type Props = { onNav: NavFn };
 
@@ -114,6 +148,12 @@ const SECTIONS: {
   id: SectionId;
   title: string;
   axisPair: [string, string];
+  /** Persona doing the activity (renders left of the kicker dot). */
+  persona: string;
+  /** Gerund phrase that names the *posture* of the section — what the
+   *  persona is actually doing on this page. Renders right of the dot in the
+   *  section's tint. Trailing ellipsis is part of the voice (in-progress). */
+  activity: string;
   activeDots: DotId[];
   cell: 'TL' | 'TR' | 'BL' | 'BR';
   /** Pigment for the section. Used as a quiet accent on the active corner
@@ -121,10 +161,10 @@ const SECTIONS: {
    *  up its own color without re-skinning the whole UI. */
   tint: string;
 }[] = [
-  { id: 'mirror',    title: 'to reflect',     axisPair: ['Qiyu',   'Noticing'], activeDots: ['qiyu', 'notice'], cell: 'TL', tint: 'var(--tint-tl)' },
-  { id: 'practice',  title: 'to experiment',  axisPair: ['Qiyu',   'Making'],   activeDots: ['qiyu', 'make'],   cell: 'TR', tint: 'var(--tint-tr)' },
-  { id: 'attention', title: 'to hear',        axisPair: ['Others', 'Noticing'], activeDots: ['other', 'notice'], cell: 'BL', tint: 'var(--tint-bl)' },
-  { id: 'work',      title: 'to collaborate', axisPair: ['Others', 'Making'],   activeDots: ['other', 'make'],  cell: 'BR', tint: 'var(--tint-br)' },
+  { id: 'mirror',    title: 'to reflect',     axisPair: ['Qiyu',   'Noticing'], persona: 'Qiyu',   activity: 'noticing things on my own…',     activeDots: ['qiyu', 'notice'],  cell: 'TL', tint: 'var(--tint-tl)' },
+  { id: 'practice',  title: 'to experiment',  axisPair: ['Qiyu',   'Making'],   persona: 'Qiyu',   activity: 'making things on my own…',       activeDots: ['qiyu', 'make'],    cell: 'TR', tint: 'var(--tint-tr)' },
+  { id: 'attention', title: 'to hear',        axisPair: ['Others', 'Noticing'], persona: 'Qiyu',   activity: 'noticing things with others…',   activeDots: ['other', 'notice'], cell: 'BL', tint: 'var(--tint-bl)' },
+  { id: 'work',      title: 'to collaborate', axisPair: ['Others', 'Making'],   persona: 'Qiyu',   activity: 'making things with others…',     activeDots: ['other', 'make'],   cell: 'BR', tint: 'var(--tint-br)' },
 ];
 
 const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEntries(
@@ -229,19 +269,7 @@ function previewLinePos(id: DotId, vw: number, vh: number): Pos {
 // visible. Larger radius gives the visible arc presence on the page.
 // Matches image #25.
 const CORNER_CX = 50;
-const CORNER_R = 180;
-function cornerPos(id: DotId, _vw: number, vh: number, rotationDeg: number): Pos {
-  const cx = CORNER_CX, cy = vh - CORNER_CX;
-  // The cluster rotates as a whole by `rotationDeg` around its center —
-  // animated continuously by the JS rAF loop in the Home component, so dots
-  // travel along the circle (not in a straight chord between section
-  // positions). Each section's "settled" rotation lands the active node
-  // pair at top + right (see SECTION_CLUSTER_ROTATION).
-  const baseAngle = DOT_ANGLE[id] + rotationDeg;
-  const a = (baseAngle * Math.PI) / 180;
-  return { x: cx + CORNER_R * Math.cos(a), y: cy + CORNER_R * Math.sin(a) };
-}
-
+const CORNER_R = 130;
 // Per-section rotation that lands the active node pair at top + right.
 // CW circle order: qiyu(top) → make(right) → other(bottom) → notice(left).
 // Practice (qiyu+make) is already top+right, so 0°. The other sections
@@ -283,20 +311,46 @@ function ringEndHub(vw: number, vh: number): RingState {
   // here — the four dots cluster nearly at a point.
   return { cx: vw / 2, cy: vh / 2, r: Math.min(vw, vh) * 0.03 };
 }
-function ringStateAt(p: number, vw: number, vh: number): RingState {
+// Bloom radius — much smaller than CORNER_R so when the cluster blooms,
+// it COMPRESSES into a tight 2×2-style cluster matching the end-reveal
+// dot density. Reading: "you're looking at a concentrated map of the
+// whole journey, not the same arc just relocated."
+const BLOOM_R = 50;
+// Bloom dot size — corner dots shrink alongside the cluster so dot density
+// matches end-reveal. CORNER_SIZE (18) reads as oversized in a 50-radius
+// cluster; 12 matches the end-hold cluster size.
+const BLOOM_DOT_SIZE = 12;
+// Expansion offset applied to the corner cluster when the user hovers it
+// (navMapT > 0). The cluster's center slides inward from the corner so the
+// full conceptual circle fits on screen, AND the radius shrinks from
+// CORNER_R → BLOOM_R so the four cardinal dots tuck close together — the
+// arc-as-peek transforms into a tight compass.
+function expandedCorner(corner: RingState, navMapT: number, vh: number): RingState {
+  if (navMapT <= 0) return corner;
+  const targetR  = BLOOM_R;
+  const targetCx = targetR + 110;
+  const targetCy = vh - targetR - 110;
+  return {
+    cx: lerp(corner.cx, targetCx, navMapT),
+    cy: lerp(corner.cy, targetCy, navMapT),
+    r:  lerp(corner.r,  targetR,  navMapT),
+  };
+}
+function ringStateAt(p: number, vw: number, vh: number, navMapT: number = 0): RingState {
   const HUB = ringHub(vw, vh);
   const CORNER = ringCorner(vw, vh);
   const END = ringEndHub(vw, vh);
   if (p <= HUB_HOLD_END) return HUB;
   if (p <= CORNER_SETTLE_END) {
     const t = smootherstep((p - HUB_HOLD_END) / (CORNER_SETTLE_END - HUB_HOLD_END));
+    const target = expandedCorner(CORNER, navMapT, vh);
     return {
-      cx: lerp(HUB.cx, CORNER.cx, t),
-      cy: lerp(HUB.cy, CORNER.cy, t),
-      r:  lerp(HUB.r,  CORNER.r,  t),
+      cx: lerp(HUB.cx, target.cx, t),
+      cy: lerp(HUB.cy, target.cy, t),
+      r:  lerp(HUB.r,  target.r,  t),
     };
   }
-  if (p <= SECTIONS_END) return CORNER;
+  if (p <= SECTIONS_END) return expandedCorner(CORNER, navMapT, vh);
   if (p <= END_CONVERGE_END) {
     const t = smootherstep((p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END));
     return {
@@ -325,7 +379,21 @@ function ringDotPos(id: DotId, ring: RingState, rotationDeg: number): Pos {
 // reaction to crossing a boundary.
 const SECTIONS_IN_ORDER: SectionId[] = ['mirror', 'practice', 'attention', 'work'];
 const ROTATION_TRANSITION_BAND = 0.025; // ±half-width of cross-fade around each boundary
-function clusterRotationAt(p: number, hoveredArc: SectionId | null): number {
+function clusterRotationAt(p: number, hoveredArc: SectionId | null, navMapT: number = 0): number {
+  // When the corner nav map is open (navMapT > 0), lerp the rotation to 0 so
+  // all four dots sit at their canonical cardinal positions on the expanded
+  // ring — letting the user see the FULL compass with each section's quadrant
+  // in its true place. At navMapT = 1, rotation is fully canonical regardless
+  // of activeSection or hoveredArc.
+  const baseRot = clusterRotationAtBase(p, hoveredArc);
+  if (navMapT <= 0) return baseRot;
+  // Shortest-arc interpolation toward 0.
+  let delta = -baseRot;
+  if (delta > 180)  delta -= 360;
+  if (delta < -180) delta += 360;
+  return baseRot + delta * navMapT;
+}
+function clusterRotationAtBase(p: number, hoveredArc: SectionId | null): number {
   // Hub & earlier: hovered arc rotates the WHOLE hub (dots + labels) so the
   // hovered pair sits at top + right — the same orientation it'll occupy in
   // the corner cluster. This way "hover an arc" already shows the user the
@@ -408,23 +476,23 @@ function sectionAxisPos(sectionId: SectionId, id: DotId, vw: number, vh: number)
 // the user enters a section's range, then retracts as they exit. Returns
 // 0 (fully in cluster) → 1 (fully extracted to axis).
 //
-// Practice gets a "stay" beat (0.015 progress) before extract begins: the
-// active dots sit at the cluster — already amber-tinted — long enough for
-// the user to register "these two are the actors" before they start moving
-// to the axis ends. Without it, the dots leave the cluster the moment the
-// section activates and the eye misses who's about to become the axis.
+// The practice section's resting state IS the extracted state — the page's
+// editorial conceit is "Qiyu × Making becomes the axis you read by." So
+// the dots should be at their axis ends for the *entire* time the user
+// holds in the section, not just the middle ~50%. We keep tight ease ramps
+// at both boundaries so the morph reads as motion rather than a snap, but
+// the plateau in between covers nearly the full range.
 function sectionExtractT(p: number, sectionId: SectionId): number {
   const [lo, hi] = SECTION_RANGES[sectionId];
-  const stayBeat = sectionId === 'practice' ? 0.015 : 0;
-  const easeRange = 0.04;
-  const enterT = clamp((p - (lo + stayBeat)) / easeRange, 0, 1);
+  const easeRange = 0.018;
+  const enterT = clamp((p - lo) / easeRange, 0, 1);
   const exitT  = clamp((hi - p) / easeRange, 0, 1);
   return smootherstep(Math.min(enterT, exitT));
 }
 
 // Corner-cluster size: all four dots are uniform — active vs inactive is
 // communicated by opacity alone.
-const CORNER_SIZE = 14;
+const CORNER_SIZE = 18;
 
 // Resolve a dot's current position + size given progress p. The active
 // section can override the corner-cluster resting state with an axis-end
@@ -437,11 +505,11 @@ function dotState(
   activeSection: SectionId,
   clusterRotationDeg: number,
   qiyuHeroOverride?: Pos | null,
+  navMapT: number = 0,
 ) {
   const hero = id === 'qiyu' && qiyuHeroOverride
     ? qiyuHeroOverride
     : heroPos(id, vw, vh);
-  const corner = cornerPos(id, vw, vh, clusterRotationDeg);
   const endHub = endHubPos(id, vw, vh);
   const fan = fanPos(id, vw, vh);
 
@@ -459,7 +527,7 @@ function dotState(
     // Lerp toward the rotated hub position so an in-progress hover (rare
     // but possible: cursor on an arc as scroll begins) doesn't snap when
     // the dots arrive.
-    const hubRotated = ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg);
+    const hubRotated = ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg);
     return {
       pos: { x: lerp(hero.x, hubRotated.x, t), y: lerp(hero.y, hubRotated.y, t) },
       size: lerp(10, HUB_DOT_SIZE, t),
@@ -471,7 +539,7 @@ function dotState(
   // (matching the corner-cluster orientation it'll occupy after settle).
   if (p <= HUB_HOLD_END) {
     return {
-      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      pos: ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg),
       size: HUB_DOT_SIZE,
     };
   }
@@ -482,20 +550,27 @@ function dotState(
     // not a straight chord. (Size still lerps independently for visual.)
     const t = easeOutBack(clamp((p - HUB_HOLD_END) / (CORNER_SETTLE_END - HUB_HOLD_END), 0, 1));
     return {
-      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      pos: ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg),
       size: lerp(HUB_DOT_SIZE, CORNER_SIZE, t),
     };
   }
   if (p <= SECTIONS_END) {
     // Within a section, an "active" dot may be extracted from the cluster
     // to its axis-end position (e.g. qiyu pulls up to the top-left for the
-    // Create section). Fully-blended interpolation between the two.
+    // Create section). Fully-blended interpolation between the two. The
+    // resting position is the live ring's dot position (so when the user
+    // hovers the corner nav and the cluster blooms outward, all dots ride
+    // the expanding ring). Dot size also shrinks with navMapT so the
+    // bloomed cluster reads as a tighter, smaller compass instead of a
+    // big ring of fat dots.
+    const ringPos = ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg);
+    const liveSize = lerp(CORNER_SIZE, BLOOM_DOT_SIZE, navMapT);
     const axis = sectionAxisPos(activeSection, id, vw, vh);
-    if (!axis) return { pos: corner, size: CORNER_SIZE };
+    if (!axis) return { pos: ringPos, size: liveSize };
     const t = sectionExtractT(p, activeSection);
     return {
-      pos: { x: lerp(corner.x, axis.x, t), y: lerp(corner.y, axis.y, t) },
-      size: CORNER_SIZE,
+      pos: { x: lerp(ringPos.x, axis.x, t), y: lerp(ringPos.y, axis.y, t) },
+      size: liveSize,
     };
   }
   if (p <= END_CONVERGE_END) {
@@ -503,14 +578,14 @@ function dotState(
     // tight center cluster. They follow the ring as it scales + moves.
     const t = smootherstep((p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END));
     return {
-      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      pos: ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg),
       size: lerp(CORNER_SIZE, 12, t),
     };
   }
   if (p <= END_HOLD_END) {
     // Phase 7 (hold): dots sit at the tight cluster — anticipation beat.
     return {
-      pos: ringDotPos(id, ringStateAt(p, vw, vh), clusterRotationDeg),
+      pos: ringDotPos(id, ringStateAt(p, vw, vh, navMapT), clusterRotationDeg),
       size: 12,
     };
   }
@@ -559,6 +634,34 @@ export function Home({ onNav }: Props) {
     requestAnimationFrame(tick);
   };
   const [cornerNavHover, setCornerNavHover] = useState(false);
+  // navMapT — rAF tween 0 ↔ 1 driven by cornerNavHover. When > 0, the
+  // corner cluster blooms outward (center slides inward, rotation lerps to
+  // canonical 0°), exposing the FULL conceptual circle as a navigable
+  // compass with all four cardinal dots and four section-arc hit-targets.
+  // Threaded through ringStateAt + clusterRotationAt + dotState so the
+  // entire visual system reacts coherently to the hover state.
+  const [navMapT, setNavMapT] = useState(0);
+  const navMapTRef = useRef(0);
+  useEffect(() => { navMapTRef.current = navMapT; }, [navMapT]);
+  useEffect(() => {
+    const target = cornerNavHover ? 1 : 0;
+    const startVal = navMapTRef.current;
+    let raf = 0;
+    let startTime = 0;
+    const tick = (now: number) => {
+      if (startTime === 0) startTime = now;
+      const elapsed = now - startTime;
+      // Open slower (320ms easeOutCubic — feels like an unfolding); close
+      // quicker (200ms — gets out of the way).
+      const duration = target === 1 ? 320 : 200;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = target === 1 ? 1 - Math.pow(1 - t, 3) : 1 - Math.pow(1 - t, 2);
+      setNavMapT(startVal + (target - startVal) * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [cornerNavHover]);
 
   // Cycle the rotating status text in the QIYU pill.
   useEffect(() => {
@@ -681,21 +784,43 @@ export function Home({ onNav }: Props) {
   // moving outward and the arm endpoints follow them to the edges.
   const axisDrawT = smootherstep(clamp((fanT - 0.30) / 0.55, 0, 1));
 
-  // Visibilities for non-dot scenery. Corner-settle is split into three
-  // sub-beats so each motion gets a clean canvas:
+  // Visibilities for non-dot scenery. Corner-settle is split into beats so
+  // each motion gets a clean canvas:
   //   cornerT 0.00 → 0.35  hub elements fade OUT (hubFadeOutT)
   //   cornerT 0.35 → 0.65  dots travel alone (no text)
-  //   cornerT 0.65 → 1.00  section content fades IN (sectionFadeInT)
-  // Without this, hub labels + dots-in-flight + section content all
-  // cross-fade together inside the same 4% scroll window.
+  //   cornerT 0.65 → 0.80  section header fades IN (kicker + italic title)
+  //   cornerT 0.80 → 0.85  HOLD — header readable, body not yet there
+  //   cornerT 0.85 → 1.00  section body fades IN (statement / scatter / etc.)
+  // The 5% hold is what makes the reveal feel deliberate: eye registers the
+  // page's *name* before the body asks for attention.
   const heroVis        = clamp(1 - heroT * 1.4, 0, 1);
   const hubFadeOutT    = smootherstep(clamp(cornerT / 0.35, 0, 1));
-  const sectionFadeInT = smootherstep(clamp((cornerT - 0.65) / 0.35, 0, 1));
   const ringVis      = hubFadeT * (1 - hubFadeOutT);
   const hubLabelVis  = hubFadeT * (1 - hubFadeOutT);
   const hubTitleVis  = hubLabelVis; // alias kept for any callers expecting the staggered name
-  const sectionVis   = sectionFadeInT * (1 - returnT);
-  const cornerNavVis = sectionVis;
+  // Section header is just the kicker line (persona · activity). The italic
+  // page-name title was removed — the activity phrase already names what
+  // this page is about, so a second title was redundant.
+  const sectionKickerVis = smootherstep(clamp((cornerT - 0.65) / 0.09, 0, 1)) * (1 - returnT);
+  const sectionHeaderVis = sectionKickerVis;
+  const sectionBodyVis   = smootherstep(clamp((cornerT - 0.85) / 0.15, 0, 1)) * (1 - returnT);
+  // sectionVis stays as a derived "either child is visible" gate, so existing
+  // `sectionVis > 0` checks still work without rewiring every call site.
+  const sectionVis   = Math.max(sectionHeaderVis, sectionBodyVis);
+  // Corner nav surfaces with the kicker (earliest piece of header) — once
+  // the user knows what page they're on, the nav is meaningful. This drives
+  // the dotted backing ring + the corner labels.
+  const cornerNavVis = sectionKickerVis;
+  // The colored arc itself appears EARLIER than the rest of the corner nav:
+  // it lights up between qiyu↔noticing on the still-canonical hub circle in
+  // the last beat of hub-hold (anticipation), then rides the dots through
+  // the morph + rotation into the corner. By the time the kicker arrives,
+  // the colored arc is already there waiting for it.
+  const ARC_PREVIEW_LENGTH = 0.02; // last ~50% of hub-hold reserved for preview
+  const arcPreviewVis = clamp((progress - (HUB_HOLD_END - ARC_PREVIEW_LENGTH)) / ARC_PREVIEW_LENGTH, 0, 1);
+  // Held at 1 from preview onward; drops only during end-return when the
+  // ring travels back to center for the 2×2 fan-out.
+  const arcLayerVis = arcPreviewVis * (1 - returnT);
   const endHubVis    = returnT * (1 - fanT);
   // Cross-axis visibility uses axisDrawT (delayed reveal) instead of fanT,
   // so the axis is invisible during the first 30% of the fan expansion —
@@ -727,7 +852,7 @@ export function Home({ onNav }: Props) {
   // a section boundary, rotation interpolates along the shortest arc within
   // a small transition band; everywhere else it's pinned at the current
   // section's target. Result: dots' angular positions track scroll directly.
-  const clusterRotationDeg = clusterRotationAt(progress, hoveredArc);
+  const clusterRotationDeg = clusterRotationAt(progress, hoveredArc, navMapT);
 
   // Hub centered title — pairs the two cardinal nodes joined by the
   // currently visible arc (hover overrides; otherwise mirror by default).
@@ -753,6 +878,25 @@ export function Home({ onNav }: Props) {
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '100vh', zIndex: 10, overflow: 'hidden' }}>
+        {/* ——— Dark-mode scrim ——— Fades in when the corner nav blooms,
+            painting the whole viewport black so the cluster reads as the
+            ONLY thing on the page. Sits at z-32: above the hero h1 (z-30)
+            and any other page content, but below the visual SVG (z-33),
+            cardinal labels (z-34), dots (z-35), and the corner-nav
+            interactive layer (z-40) — so the cluster sits cleanly on top.
+            Driven by navMapT (the rAF tween of cornerNavHover) so the fade
+            in/out matches the bloom timing exactly. */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0,
+            background: '#0e0d0b',
+            opacity: navMapT * 0.96,
+            pointerEvents: 'none',
+            zIndex: 32,
+            transition: 'opacity .35s ease',
+          }}
+        />
         {/* ——— Hero tagline ——— Sits as the ground line of the dot scatter
             during hero, fades out as we converge to the ring. The phrase
             "connect the dots?" is its own button: hover triggers a preview
@@ -924,7 +1068,7 @@ export function Home({ onNav }: Props) {
           // corner SVG below also reads ringStateAt(progress), so during the
           // overlap window both renders draw at the identical (cx, cy, r)
           // and the cross-fade is invisible to the eye.
-          const ring = ringStateAt(progress, viewportW, viewportH);
+          const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const cStart = ringDotPos('qiyu', ring, 0);
           const cEnd   = ringDotPos('make', ring, 0);
           const canonicalD = `M ${cStart.x},${cStart.y} A ${ring.r},${ring.r} 0 0 1 ${cEnd.x},${cEnd.y}`;
@@ -1016,7 +1160,7 @@ export function Home({ onNav }: Props) {
             and label. Anchor is derived from the dot's current angle on the
             ring (snapped to the nearest cardinal: top/right/bottom/left). */}
         {hubLabelVis > 0 && (() => {
-          const ring = ringStateAt(progress, viewportW, viewportH);
+          const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const labels: { id: DotId; text: string }[] = [
             { id: 'qiyu',   text: 'Qiyu' },
             { id: 'make',   text: 'Making' },
@@ -1134,19 +1278,18 @@ export function Home({ onNav }: Props) {
           return (
             <div style={{
               position: 'absolute', inset: 0,
-              opacity: sectionVis,
-              pointerEvents: sectionVis > 0.5 ? 'auto' : 'none',
+              // Wrapper stays at full opacity so the staggered children's
+              // opacities aren't compounded. Pointer-events tracks the body
+              // appearance — the page is interactive once the body is in.
+              pointerEvents: sectionBodyVis > 0.5 ? 'auto' : 'none',
               zIndex: 36,
             }}>
               {/* Subheading block: kicker (axis pair) above section title.
-                  Title is a short infinitive verb phrase — "to reflect" /
-                  "to experiment" / "to hear" / "to collaborate" — naming the
-                  intent of the page in two words. */}
-              {/* Subheading block — keyed by section.id so React remounts it
-                  on every section change, triggering the `titleEnter`
-                  keyframe (slide-up + fade-in). The active section's tint
-                  also colors the kicker dot, so the page picks up its hue
-                  the moment you arrive. */}
+                  Each child carries its own opacity so the kicker fades in
+                  FIRST (sectionKickerVis), then the italic title follows
+                  ~80ms behind (sectionTitleVis) — category labels itself,
+                  then the page names itself. The wrapper stays at opacity 1
+                  so the children's opacities aren't compounded. */}
               <div key={section.id} style={{
                 position: 'absolute',
                 top: SPACE.xxxl, left: 0, right: 0,
@@ -1164,11 +1307,16 @@ export function Home({ onNav }: Props) {
                   letterSpacing: TYPE.kicker.tracking,
                   textTransform: 'uppercase',
                   color: 'var(--ink-3)',
-                  display: 'inline-flex', alignItems: 'center', gap: SPACE.sm,
+                  display: 'inline-flex', alignItems: 'center', gap: SPACE.md,
+                  opacity: sectionKickerVis,
                 }}>
-                  <span>{section.axisPair[0]}</span>
-                  <span style={{ color: 'var(--ink-4)' }}>×</span>
-                  <span>{section.axisPair[1]}</span>
+                  <span>{section.persona}</span>
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: section.tint,
+                    display: 'inline-block',
+                  }} aria-hidden />
+                  <span style={{ color: section.tint }}>{section.activity}</span>
                 </div>
                 <div style={{
                   fontFamily: 'var(--serif)',
@@ -1178,91 +1326,97 @@ export function Home({ onNav }: Props) {
                   letterSpacing: TYPE.sectionH1.tracking,
                   lineHeight: TYPE.sectionH1.lineHeight,
                   color: 'var(--ink)',
+                  opacity: sectionTitleVis,
                 }}>
                   {section.title}
                 </div>
               </div>
-              <SectionView section={section} q={targetQ} onNav={onNav} onSectionJump={scrollToSection} />
+              {/* Body wrapper — fades in AFTER the header. The 5% gap
+                  between sectionHeaderVis maxing out and sectionBodyVis
+                  starting is what makes "header, then content" land as
+                  two separate beats instead of one cross-fade. */}
+              <div style={{ position: 'absolute', inset: 0, opacity: sectionBodyVis }}>
+                <SectionView section={section} q={targetQ} onNav={onNav} onSectionJump={scrollToSection} />
+              </div>
             </div>
           );
         })()}
 
-        {/* ——— Practice-section axis ——— Two-part motion in amber:
-              1. Arc (visible during expand): a quadratic curve hangs between
-                 the two dots and stretches with them as they pull apart.
-                 Reads as "these two are connected, and the connection is
-                 the thing that's becoming the axis."
-              2. Axis L (snaps in at the END of expand): two perpendicular
-                 amber segments meeting at the corner bend (CORNER_CX, vh-…).
-                 Arc fades in the last 25% of expand while the axis fades in
-                 — same color, same endpoints, so the eye reads the swap as
-                 the arc *snapping* into the axis, not a cut.
-            Both stroke `--tint-tr` (the practice section's amber/honey),
-            so the page picks up its hue alongside the dots. */}
+        {/* ——— Practice-section axis ——— ONE colored polyline that IS the
+            corner arc unfolding into a true orthogonal L (so the legs
+            become real x/y chart axes for the scatter, with the existing
+            hover-crosshair projection lines landing on them).
+
+            Why a polyline and not a single arc-or-fillet path: a corner arc
+            (centered at cl, radius r) and a fillet arc (centered at cl+(r,-r),
+            radius r) are TWO DIFFERENT 90° arcs through the same endpoints.
+            The corner arc bulges through cl + 0.707r upper-right; the fillet
+            bulges through only cl + 0.29r — much flatter. Cross-fading them
+            ghosts visibly. To guarantee shape continuity at t=0, every sample
+            point on this polyline sits ON the corner arc at t=0 and ON the L
+            at t=1, with a per-point lerp in between. The path overlays the
+            corner arc exactly during the cross-fade window — no ghosting.
+
+            At t=0 → 48-segment polyline approximates the corner arc.
+            At t=1 → first 24 segments along Y-leg (qLive→cl), next 24 along
+                     X-leg (cl→mLive). Sharp 90° corner at u=0.5 (which lands
+                     at cl). */}
         {sectionVis > 0 && activeSection === 'practice' && (() => {
           const t = sectionExtractT(progress, 'practice');
           if (t <= 0) return null;
           const cl = { x: CORNER_CX, y: viewportH - CORNER_CX };
-          // Live dot positions — match exactly what dotState renders, so the
-          // arc/axis endpoints stay glued to the dots through the lerp.
-          const qStart = cornerPos('qiyu', viewportW, viewportH, clusterRotationDeg);
-          const mStart = cornerPos('make', viewportW, viewportH, clusterRotationDeg);
-          const qEnd = sectionAxisPos('practice', 'qiyu', viewportW, viewportH)!;
-          const mEnd = sectionAxisPos('practice', 'make', viewportW, viewportH)!;
-          const qpos = { x: lerp(qStart.x, qEnd.x, t), y: lerp(qStart.y, qEnd.y, t) };
-          const mpos = { x: lerp(mStart.x, mEnd.x, t), y: lerp(mStart.y, mEnd.y, t) };
-          // Crossfade window — last 25% of expand. Arc fades out as axis
-          // fades in over the same band, anchored to the dot endpoints
-          // so the visual continuity is "the arc snaps inward to the bend."
-          const swapT = smootherstep(clamp((t - 0.75) / 0.25, 0, 1));
-          const arcOpacity  = 1 - swapT;
-          const axisOpacity = swapT;
-          // Arc control point — bowed OUTWARD (away from the corner bend),
-          // so the swap reads as "the curve relaxes toward the corner."
-          // Push factor 0.25 of the chord — gentle bow, not a balloon.
-          const mx = (qpos.x + mpos.x) / 2;
-          const my = (qpos.y + mpos.y) / 2;
-          const dx = mx - cl.x, dy = my - cl.y;
-          const ctrl = { x: mx + dx * 0.25, y: my + dy * 0.25 };
+          const qLive = dotState('qiyu', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
+          const mLive = dotState('make', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
+          const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
+          const morph = smootherstep(t);
+          const STEPS = 48;
+          const seg: string[] = [];
+          for (let i = 0; i <= STEPS; i++) {
+            const u = i / STEPS;
+            // Arc position: u-th point on the 90° corner arc from qiyu's
+            // canonical angle (-90°) to make's (0°), plus live cluster rotation.
+            const angle = ((-90 + u * 90 + clusterRotationDeg) * Math.PI) / 180;
+            const arcX = ring.cx + ring.r * Math.cos(angle);
+            const arcY = ring.cy + ring.r * Math.sin(angle);
+            // L position: first half along Y-leg (qLive → cl), second half
+            // along X-leg (cl → mLive). The two halves meet at u=0.5 which
+            // lands at cl, creating the sharp corner.
+            let lX: number, lY: number;
+            if (u <= 0.5) {
+              const s = u * 2;
+              lX = lerp(qLive.x, cl.x, s);
+              lY = lerp(qLive.y, cl.y, s);
+            } else {
+              const s = (u - 0.5) * 2;
+              lX = lerp(cl.x, mLive.x, s);
+              lY = lerp(cl.y, mLive.y, s);
+            }
+            const x = lerp(arcX, lX, morph);
+            const y = lerp(arcY, lY, morph);
+            seg.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`);
+          }
+          const axisD = seg.join(' ');
+          const tint = SECTION_BY_ID.practice.tint;
+          // Opacity ramps up as the corner arc's arcFade ramps down (same
+          // smootherstep(extractT * 2) curve, mirrored). Now that the polyline
+          // matches the corner arc geometrically at t=0, the cross-fade is
+          // truly invisible.
+          const handoff = smootherstep(clamp(t * 2, 0, 1));
           return (
-            <>
-              <svg style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%',
-                pointerEvents: 'none', zIndex: 33,
-              }}>
-                <path d={`M ${qpos.x},${qpos.y} Q ${ctrl.x},${ctrl.y} ${mpos.x},${mpos.y}`}
-                  stroke="var(--tint-tr)" strokeWidth="1.5" fill="none"
-                  strokeLinecap="round"
-                  opacity={arcOpacity * sectionVis} />
-                <g opacity={axisOpacity * sectionVis}>
-                  <line x1={qpos.x} y1={qpos.y} x2={cl.x} y2={cl.y}
-                    stroke="var(--tint-tr)" strokeWidth="1" />
-                  <line x1={cl.x} y1={cl.y} x2={mpos.x} y2={mpos.y}
-                    stroke="var(--tint-tr)" strokeWidth="1" />
-                </g>
-              </svg>
-              {/* Axis-end labels — appear with the axis (last 25% of expand),
-                  not with the arc. Until the L settles, the labels would be
-                  attached to a curve that doesn't read as an axis yet. */}
-              <div style={{
-                position: 'absolute',
-                left: qpos.x, top: qpos.y - SPACE.md,
-                transform: 'translate(-50%, -100%)',
-                fontFamily: 'var(--sans)', fontSize: TYPE.body.size,
-                color: 'var(--ink-2)', whiteSpace: 'nowrap',
-                opacity: axisOpacity * sectionVis, pointerEvents: 'none',
-                zIndex: 34,
-              }}>Qiyu</div>
-              <div style={{
-                position: 'absolute',
-                left: mpos.x + SPACE.md, top: mpos.y,
-                transform: 'translateY(-50%)',
-                fontFamily: 'var(--sans)', fontSize: TYPE.body.size,
-                color: 'var(--ink-2)', whiteSpace: 'nowrap',
-                opacity: axisOpacity * sectionVis, pointerEvents: 'none',
-                zIndex: 34,
-              }}>Creating</div>
-            </>
+            <svg style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              pointerEvents: 'none', zIndex: 33,
+              opacity: handoff * sectionVis,
+            }}>
+              <path
+                d={axisD}
+                fill="none"
+                stroke={tint}
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           );
         })()}
 
@@ -1275,10 +1429,10 @@ export function Home({ onNav }: Props) {
             as they continue their flight to the viewport edges. */}
         {fanCrossVis > 0 && (() => {
           const cx = viewportW / 2, cy = viewportH / 2;
-          const { pos: qpos } = dotState('qiyu',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
-          const { pos: opos } = dotState('other',  progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
-          const { pos: npos } = dotState('notice', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
-          const { pos: mpos } = dotState('make',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const { pos: qpos } = dotState('qiyu',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
+          const { pos: opos } = dotState('other',  progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
+          const { pos: npos } = dotState('notice', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
+          const { pos: mpos } = dotState('make',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
           const arms: { x: number; y: number }[] = [
             { x: lerp(cx, qpos.x, axisDrawT), y: lerp(cy, qpos.y, axisDrawT) },
             { x: lerp(cx, mpos.x, axisDrawT), y: lerp(cy, mpos.y, axisDrawT) },
@@ -1300,11 +1454,9 @@ export function Home({ onNav }: Props) {
         })()}
 
         {/* ——— 2×2 cell labels ——— Final reveal: each section's name fades
-            into its cell. On hover, the label crossfades into a dark mini
-            2×2 card showing the whole axis system, with the section's two
-            active cardinal nodes lit and a dot dropped in the matching
-            quadrant — so the user sees, at a glance, where this cell sits
-            on the larger map. Click → that section. */}
+            into its cell. On hover, a small dot in the cell's tint appears
+            before the label and the label flips to that tint — the standard
+            "live now" treatment, mirroring the QIYU pill. Click → that section. */}
         {cellLabelVis > 0 && SECTIONS.map((s) => {
           const cellPos = (() => {
             switch (s.cell) {
@@ -1314,26 +1466,13 @@ export function Home({ onNav }: Props) {
               case 'BR': return { left: '75%', top: '68%' };
             }
           })();
+          const tint = (
+            s.cell === 'TL' ? 'var(--tint-tl)' :
+            s.cell === 'TR' ? 'var(--tint-tr)' :
+            s.cell === 'BL' ? 'var(--tint-bl)' :
+            'var(--tint-br)'
+          );
           const isHovered = hoveredCell === s.id;
-          const activeSet = new Set<DotId>(s.activeDots);
-          // Dot position inside the mini card mirrors the section's
-          // quadrant on the larger 2×2.
-          const dotInCard = (() => {
-            switch (s.cell) {
-              case 'TL': return { left: '28%', top: '32%' };
-              case 'TR': return { right: '28%', top: '32%' };
-              case 'BL': return { left: '28%', bottom: '32%' };
-              case 'BR': return { right: '28%', bottom: '32%' };
-            }
-          })();
-          const labelStyle = (active: boolean): React.CSSProperties => ({
-            position: 'absolute',
-            fontFamily: 'var(--sans)',
-            fontSize: 14, fontWeight: 600,
-            letterSpacing: -0.1,
-            color: active ? 'var(--bg)' : 'var(--ink-3)',
-            transition: 'color .2s ease',
-          });
           return (
             <button key={s.id}
               onClick={() => scrollToSection(s.id)}
@@ -1343,80 +1482,32 @@ export function Home({ onNav }: Props) {
                 position: 'absolute',
                 left: cellPos.left, top: cellPos.top,
                 transform: 'translate(-50%, -50%)',
-                background: 'transparent', border: 'none', padding: 0,
-                opacity: cellLabelVis,
-                cursor: cellLabelVis > 0.5 ? 'pointer' : 'default',
-                pointerEvents: cellLabelVis > 0.5 ? 'auto' : 'none',
-                zIndex: 38,
-              }}>
-              {/* Resting label — fades out as the card fades in. */}
-              <span style={{
-                display: 'block',
+                background: 'transparent', border: 'none',
+                padding: `${SPACE.sm}px ${SPACE.lg}px`,
                 fontFamily: 'var(--serif)',
                 fontSize: TYPE.cellLabel.size,
                 fontWeight: TYPE.cellLabel.weight,
                 letterSpacing: TYPE.cellLabel.tracking,
                 lineHeight: TYPE.cellLabel.lineHeight,
-                color: 'var(--ink)',
-                padding: `${SPACE.sm}px ${SPACE.lg}px`,
-                opacity: isHovered ? 0 : 1,
-                transition: 'opacity .15s ease',
-              }}>{s.title}</span>
-
-              {/* Hover card — mini 2×2 axis. Centered on the same anchor
-                  as the resting label, scales up from 88% as it fades in
-                  so the appearance reads as "expanding from the label". */}
-              <span aria-hidden="true" style={{
-                position: 'absolute',
-                left: '50%', top: '50%',
-                width: 280, height: 200,
-                transform: isHovered
-                  ? 'translate(-50%, -50%) scale(1)'
-                  : 'translate(-50%, -50%) scale(0.88)',
-                opacity: isHovered ? 1 : 0,
-                transition: 'opacity .22s ease, transform .28s cubic-bezier(.4,.2,.2,1)',
-                pointerEvents: 'none',
+                color: isHovered ? tint : 'var(--ink)',
+                opacity: cellLabelVis,
+                cursor: cellLabelVis > 0.5 ? 'pointer' : 'default',
+                pointerEvents: cellLabelVis > 0.5 ? 'auto' : 'none',
+                zIndex: 38,
+                display: 'inline-flex', alignItems: 'center',
+                gap: SPACE.md,
+                transition: 'color .2s ease',
               }}>
-                <span style={{
-                  position: 'relative',
-                  display: 'block',
-                  width: '100%', height: '100%',
-                  background: 'var(--ink)',
-                  borderRadius: 28,
-                }}>
-                  {/* Cardinal labels — the section's two active nodes are
-                      lit (--bg); the other two read as muted grey. */}
-                  <span style={{ ...labelStyle(activeSet.has('qiyu')),
-                    top: 22, left: '50%', transform: 'translateX(-50%)' }}>Qiyu</span>
-                  <span style={{ ...labelStyle(activeSet.has('notice')),
-                    left: 22, top: '50%', transform: 'translateY(-50%)' }}>Notice</span>
-                  <span style={{ ...labelStyle(activeSet.has('make')),
-                    right: 22, top: '50%', transform: 'translateY(-50%)' }}>Make</span>
-                  <span style={{ ...labelStyle(activeSet.has('other')),
-                    bottom: 22, left: '50%', transform: 'translateX(-50%)' }}>Others</span>
-                  {/* Axis cross — muted, sits at the card's center. */}
-                  <svg style={{
-                    position: 'absolute',
-                    left: '50%', top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 28, height: 28,
-                    opacity: 0.5,
-                  }}>
-                    <line x1="14" y1="2"  x2="14" y2="26" stroke="var(--ink-3)" strokeWidth="1" />
-                    <line x1="2"  y1="14" x2="26" y2="14" stroke="var(--ink-3)" strokeWidth="1" />
-                  </svg>
-                  {/* Quadrant dot — placed in this section's cell so the
-                      hover state reads as "you are here". */}
-                  <span style={{
-                    position: 'absolute',
-                    ...dotInCard,
-                    width: 12, height: 12,
-                    borderRadius: '50%',
-                    background: 'var(--bg)',
-                    opacity: 0.9,
-                  }} />
-                </span>
-              </span>
+              <span aria-hidden="true" style={{
+                width: 10, height: 10, borderRadius: '50%',
+                background: tint,
+                opacity: isHovered ? 1 : 0,
+                transform: isHovered ? 'scale(1)' : 'scale(0.5)',
+                transition: 'opacity .25s ease, transform .25s ease',
+                animation: isHovered ? 'livePulse 2s ease-in-out infinite' : 'none',
+                flexShrink: 0,
+              }} />
+              {s.title}
             </button>
           );
         })}
@@ -1437,7 +1528,7 @@ export function Home({ onNav }: Props) {
               opacity: cellLabelVis,
             }}>
               {labels.map((l) => {
-                const { pos } = dotState(l.id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+                const { pos } = dotState(l.id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
                 return (
                   <div key={l.id} style={{
                     position: 'absolute',
@@ -1445,8 +1536,17 @@ export function Home({ onNav }: Props) {
                     transform:
                       l.anchor === 'middle' ? 'translateX(-50%)' :
                       l.anchor === 'end' ? 'translateX(-100%)' : 'none',
-                    fontFamily: 'var(--sans)', fontSize: TYPE.body.size,
-                    color: 'var(--ink-3)', whiteSpace: 'nowrap',
+                    fontFamily: 'var(--sans)',
+                    // Bump the cardinal label up from 14 → 17px as the corner
+                    // nav blooms (navMapT 0 → 1) so the labels read as nav
+                    // affordances, not faint captions, in dark mode.
+                    fontSize: lerp(14, 17, navMapT),
+                    fontWeight: 400 + navMapT * 100,
+                    // Dark-mode flip: cardinal labels go from ink-3 (dim on
+                    // cream bg) to off-white (legible on the black scrim).
+                    color: navMapT > 0.5 ? 'rgba(250,248,243,0.92)' : 'var(--ink-3)',
+                    whiteSpace: 'nowrap',
+                    transition: 'color .25s ease, font-size .25s ease, font-weight .25s ease',
                   }}>{l.text}</div>
                 );
               })}
@@ -1458,7 +1558,7 @@ export function Home({ onNav }: Props) {
             position interpolated by progress. Color/opacity dim when in the
             corner-nav phase and the dot isn't part of the active arc. */}
         {DOT_IDS.map((id) => {
-          const baseState = dotState(id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor);
+          const baseState = dotState(id, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
           let pos = baseState.pos;
           let size = baseState.size;
           const inHero = progress < HERO_END * 0.95;
@@ -1478,7 +1578,10 @@ export function Home({ onNav }: Props) {
           // pair reads as the current section. In hub-hold all four dots
           // stay full opacity — the ring + four cardinal nodes is the whole
           // composition we want to read.
-          const dotOpacity = lerp(1, isActive ? 1 : 0.32, cornerPhase);
+          // When the nav map is open (navMapT > 0), inactive dots brighten
+          // back to full opacity — all four become equally navigable cardinal
+          // markers in the bloom view.
+          const dotOpacity = lerp(1, isActive ? 1 : 0.32, cornerPhase * (1 - navMapT));
           const isHovered = hoveredDot === id;
           // Click animation override: when the user clicked "connect the
           // dots?", drive the dot directly from preview line → hub circle
@@ -1549,6 +1652,10 @@ export function Home({ onNav }: Props) {
                     ? `color-mix(in srgb, ${SECTION_BY_ID[activeSection].tint} ${cornerPhase * 100}%, var(--ink))`
                     : 'var(--ink)',
                   transition: 'width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1), box-shadow .2s, background .35s ease',
+                  // Subtle hover ring (per-dot focus state). No always-on
+                  // tinted halo — the active arc + colored dot fill already
+                  // do the "live target" work; an additional glow stacks
+                  // and reads as decorative noise.
                   boxShadow: isHovered ? '0 0 0 6px rgba(20,19,15,.08)' : 'none',
                   // During hero, qiyu pulses in place (AI-loading indicator);
                   // the other three drift with their float animations. When
@@ -1575,13 +1682,13 @@ export function Home({ onNav }: Props) {
             so the active node pair always lands at top + right of the
             cluster — the visible arc never moves on screen, only the labels
             and identities do. Image #23. */}
-        {cornerNavVis > 0 && (() => {
-          // Read the unified ring's current (cx, cy, r). During section view
-          // this equals CORNER; during the corner-settle / end-return phases
-          // the value is interpolated, so this SVG draws at the SAME position
-          // as the hub render above — making the cross-fade between the two
-          // invisible to the eye.
-          const ring = ringStateAt(progress, viewportW, viewportH);
+        {(arcLayerVis > 0 || sectionVis > 0) && (() => {
+          // Read the unified ring's current (cx, cy, r). During hub-hold +
+          // preview this equals HUB; during the corner-settle / end-return
+          // phases the value is interpolated, so this SVG draws at the SAME
+          // position as the hub render above — making the cross-fade
+          // between the two invisible to the eye.
+          const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const cx = ring.cx, cy = ring.cy, r = ring.r;
           // SVG canvas spans the whole viewport now (since the ring can be at
           // hub OR corner OR end-hub positions, we can't size it to one).
@@ -1591,7 +1698,13 @@ export function Home({ onNav }: Props) {
           // the active pair sits at top+right of the cluster, so the arc
           // resolves to the same upper-right quadrant as before. Mid-rotation,
           // arc + dots travel together (connected motion).
-          const [aId, bId] = SECTION_BY_ID[activeSection].activeDots;
+          // When navMap is open AND a section arc is hovered, the colored
+          // arc previews the hovered section's pair instead of the current
+          // active one. Lets the user "feel" what each section looks like
+          // before clicking. Falls back to activeSection when nothing is
+          // hovered (so the current section still reads as "you are here").
+          const arcSection = (navMapT > 0.3 && hoveredArc) ? hoveredArc : activeSection;
+          const [aId, bId] = SECTION_BY_ID[arcSection].activeDots;
           const aAngle = DOT_ANGLE[aId] + clusterRotationDeg;
           const bAngle = DOT_ANGLE[bId] + clusterRotationDeg;
           const ptOf = (deg: number) => ({
@@ -1607,22 +1720,43 @@ export function Home({ onNav }: Props) {
           while (delta < -180) delta += 360;
           const sweep = delta > 0 ? 1 : 0;
           const arcD = `M ${aPt.x},${aPt.y} A ${r},${r} 0 0 ${sweep} ${bPt.x},${bPt.y}`;
-          const tint = SECTION_BY_ID[activeSection].tint;
+          const tint = SECTION_BY_ID[arcSection].tint;
           const DOT_LABEL = { qiyu: 'Qiyu', make: 'Making', other: 'Others', notice: 'Noticing' } as const;
-          // Label sits outboard of each active dot along the same angle.
-          // textAnchor adapts to which screen quadrant the angle is in so
-          // labels never crash into the dot they describe.
-          const labelOf = (deg: number, off = 18) => {
+          // Live dot positions — for sections that EXTRACT dots (currently
+          // just practice), these diverge from aPt/bPt as extractT grows.
+          // Labels read these so they ride the dots out of the cluster
+          // instead of being orphaned at the resting anchors.
+          // In navMap mode, lerp toward the canonical ring positions so a
+          // hover-preview of a different section shows that section's pair
+          // at its TRUE position on the (expanded) ring, not at the active
+          // section's extracted positions.
+          const aDS = dotState(aId, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
+          const bDS = dotState(bId, progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
+          const aLive = { x: lerp(aDS.x, aPt.x, smootherstep(navMapT)), y: lerp(aDS.y, aPt.y, smootherstep(navMapT)) };
+          const bLive = { x: lerp(bDS.x, bPt.x, smootherstep(navMapT)), y: lerp(bDS.y, bPt.y, smootherstep(navMapT)) };
+          // Arc-fade for sections with extraction: the arc connects the
+          // RESTING positions, so once the dots leave it's an orphan visual.
+          // Fade it as extract begins — gone by extractT≈0.5 (~50% of dot
+          // travel). For sections without extraction this is always 1.
+          const extractT = sectionExtractT(progress, activeSection);
+          const arcFade = sectionAxisPos(activeSection, aId, viewportW, viewportH)
+            ? 1 - smootherstep(clamp(extractT * 2, 0, 1))
+            : 1;
+          // Label sits outboard of the LIVE dot along the dot's resting
+          // angle direction. Same offset whether the dot is at cluster or
+          // extracted — the dot's identity follows it. textAnchor adapts
+          // to which screen quadrant the angle is in.
+          const labelOf = (deg: number, anchor: Pos, off = 18) => {
             const c = Math.cos((deg * Math.PI) / 180);
             const s = Math.sin((deg * Math.PI) / 180);
             return {
-              x: cx + (r + off) * c,
-              y: cy + (r + off) * s + 4, // small optical drop for baseline
+              x: anchor.x + off * c,
+              y: anchor.y + off * s + 4, // small optical drop for baseline
               anchor: (c >  0.3 ? 'start' : c < -0.3 ? 'end' : 'middle') as 'start' | 'middle' | 'end',
             };
           };
-          const aLab = labelOf(aAngle);
-          const bLab = labelOf(bAngle);
+          void labelOf(aAngle, aLive);
+          void labelOf(bAngle, bLive);
           return (
             <svg
               width="100%"
@@ -1630,141 +1764,226 @@ export function Home({ onNav }: Props) {
               style={{
                 position: 'absolute',
                 inset: 0,
-                opacity: cornerNavVis,
                 pointerEvents: 'none',
                 // Below the dots (zIndex 35) so the dots sit ON the arc
-                // endpoints visually — arc terminates at dot edges.
+                // endpoints visually — arc terminates at dot edges. Hover
+                // detection + hit-targets live in a separate layer below
+                // (the corner-nav interactive div), so this SVG is purely
+                // visual and never intercepts events.
                 zIndex: 33,
                 overflow: 'visible',
               }}
             >
               {/* Faint backing ring — the rest of the conceptual circle.
-                  Dotted, very low opacity so it doesn't compete. */}
+                  Dotted, very low opacity so it doesn't compete. Only
+                  appears once the corner-nav is meaningful (with the kicker)
+                  — during the arc-preview anticipation beat the hub's solid
+                  faint ring is still on screen, so this would just stack. */}
               <circle
                 cx={cx} cy={cy} r={r}
                 fill="none"
-                stroke="var(--ink-4)"
-                strokeWidth={1}
+                // Light-up the backing ring on dark mode so it stays visible
+                // when the black scrim is over the page; otherwise it'd
+                // disappear into the background.
+                stroke={navMapT > 0.5 ? 'rgba(250,248,243,0.45)' : 'var(--ink-4)'}
+                // Brighten + thicken the backing ring as the nav map opens —
+                // it stops being a faint hint and becomes the visible compass
+                // outline. strokeDasharray switches from dotted (1 5) to a
+                // continuous solid feel as navMapT grows.
+                strokeWidth={1 + navMapT * 0.5}
                 strokeLinecap="round"
-                strokeDasharray="1 5"
-                opacity={0.4}
+                strokeDasharray={`${1 + navMapT * 4} ${5 - navMapT * 3}`}
+                opacity={lerp(0.4 * cornerNavVis, 0.9, navMapT)}
+                style={{ transition: 'stroke .25s ease' }}
               />
               {/* Active 90° arc — endpoints follow the live active-pair
                   positions on the ring, so the colored band rides the dots
-                  through rotation. At rest the active pair sits at top+right,
-                  so this resolves to the same upper-right quadrant as before. */}
+                  through rotation. Visible from the preview beat onward so
+                  the user sees "this pair is the protagonist" before motion
+                  begins, then watches the band travel as rotation happens.
+                  Fades out for sections that EXTRACT dots (practice) so the
+                  arc doesn't sit orphaned at the cluster after the dots
+                  leave for their axis ends. */}
               <path
                 d={arcD}
                 fill="none"
                 stroke={tint}
-                strokeWidth={3}
+                strokeWidth={cornerNavHover ? 4.5 : 3}
                 strokeLinecap="round"
-                style={{ transition: 'stroke .35s ease' }}
+                opacity={arcLayerVis * arcFade}
+                style={{ transition: 'stroke .35s ease, stroke-width .25s ease' }}
               />
-              {/* Labels follow the active dots through rotation — each sits
-                  outboard of its dot along the same angle, so the pairing
-                  between dot and name never breaks. textAnchor flips with
-                  the screen quadrant so the label never crashes the dot. */}
-              <text
-                key={`a-${aId}`}
-                x={aLab.x} y={aLab.y}
-                textAnchor={aLab.anchor}
-                dominantBaseline="middle"
-                fill="var(--ink-2)"
-                style={{
-                  fontFamily: 'var(--sans)',
-                  fontSize: 14, fontWeight: 500,
-                  animation: 'statusFade .35s ease',
-                }}
-              >
-                {DOT_LABEL[aId]}
-              </text>
-              <text
-                key={`b-${bId}`}
-                x={bLab.x} y={bLab.y}
-                textAnchor={bLab.anchor}
-                dominantBaseline="middle"
-                fill="var(--ink-2)"
-                style={{
-                  fontFamily: 'var(--sans)',
-                  fontSize: 14, fontWeight: 500,
-                  animation: 'statusFade .35s ease',
-                }}
-              >
-                {DOT_LABEL[bId]}
-              </text>
+              {/* Labels for all four cardinals. The active pair sits at the
+                  live extracted positions (so labels ride the dots if the
+                  section extracts them); inactive cardinals sit at their
+                  canonical resting positions on the ring. Inactive labels
+                  read at lower opacity so the active pair still pops as
+                  the section's protagonists. textAnchor flips with the
+                  screen quadrant so labels never crash their dots. */}
+              {(['qiyu', 'make', 'other', 'notice'] as const).map((id) => {
+                const isActive = id === aId || id === bId;
+                const angle = DOT_ANGLE[id] + clusterRotationDeg;
+                const anchor = isActive
+                  ? (id === aId ? aLive : bLive)
+                  : ptOf(angle);
+                const lab = labelOf(angle, anchor);
+                return (
+                  <text
+                    key={`label-${id}`}
+                    x={lab.x} y={lab.y}
+                    textAnchor={lab.anchor}
+                    dominantBaseline="middle"
+                    fill={navMapT > 0.5 ? 'rgba(250,248,243,0.96)' : 'var(--ink-2)'}
+                    opacity={Math.max(cornerNavVis, sectionVis) * (isActive ? 1 : 0.55)}
+                    style={{
+                      fontFamily: 'var(--sans)',
+                      fontSize: lerp(14, 17, navMapT),
+                      fontWeight: isActive ? 500 : 400,
+                      animation: 'statusFade .35s ease',
+                      transition: 'fill .25s ease, font-size .25s ease, opacity .25s ease',
+                    }}
+                  >
+                    {DOT_LABEL[id]}
+                  </text>
+                );
+              })}
+
+              {/* ——— navMap mode ——— When the user hovers the corner area,
+                  navMapT grows and the cluster blooms outward. All four
+                  cardinal labels are already rendered above (with active
+                  pair full-opacity, inactive pair softer); this block now
+                  only handles the hovered-section title chip. */}
+              {navMapT > 0.01 && (() => {
+                return (
+                  <>
+                    {/* Hit-targets live in the corner-nav interactive div
+                        below (separate layer at z-40 so they receive clicks
+                        without z-index gymnastics). */}
+                    {/* Hovered-section title chip — italic serif, sits at
+                        the midpoint of the hovered arc, slightly outside
+                        the ring (so the arc + dot pair still read clearly).
+                        Tells the user what they're about to navigate to. */}
+                    {hoveredArc && (() => {
+                      const [sa, sb] = SECTION_BY_ID[hoveredArc].activeDots;
+                      const midDeg = (DOT_ANGLE[sa] + DOT_ANGLE[sb]) / 2 + clusterRotationDeg;
+                      // Handle the wrap (notice 180 + qiyu -90 → midpoint should
+                      // be on the SHORT arc side, i.e. -135 not +45).
+                      let normalizedMid = midDeg;
+                      const dAng = DOT_ANGLE[sb] - DOT_ANGLE[sa];
+                      if (Math.abs(dAng) > 180) normalizedMid += 180;
+                      const midRad = (normalizedMid * Math.PI) / 180;
+                      const titlePt = {
+                        x: cx + (r + 36) * Math.cos(midRad),
+                        y: cy + (r + 36) * Math.sin(midRad),
+                      };
+                      const c = Math.cos(midRad);
+                      const ta = c > 0.3 ? 'start' : c < -0.3 ? 'end' : 'middle';
+                      return (
+                        <text
+                          x={titlePt.x} y={titlePt.y}
+                          textAnchor={ta}
+                          dominantBaseline="middle"
+                          fill="var(--ink)"
+                          style={{
+                            fontFamily: 'var(--serif)',
+                            fontStyle: 'italic',
+                            fontSize: 18,
+                            animation: 'statusFade .25s ease',
+                          }}
+                        >
+                          {SECTION_BY_ID[hoveredArc].title}
+                        </text>
+                      );
+                    })()}
+                  </>
+                );
+              })()}
             </svg>
           );
         })()}
 
-        {/* ——— Corner nav ——— Visible during section view. The dot cluster
-            stays put in the corner (rendered in the global dot layer);
-            hovering the area around it expands a horizontal pill of four
-            tabs to the right — one per section, current section highlighted.
-            The wrapper widens on hover so the cursor can travel from the
-            cluster to a tab without losing hover. */}
+        {/* ——— Corner-nav interactive layer ——— A dedicated div at z-40
+            (above dots z-35, above visual SVG z-33) that handles ALL of:
+              1. Hover detection — onMouseEnter/Leave on the wrapper div
+                 sets cornerNavHover, which drives the navMapT bloom tween.
+              2. Per-section hit-targets — an inner SVG with four 36px-stroke
+                 arc paths (one per section), enabled only when the bloom is
+                 open (navMapT > 0.5). Each catches mouseenter for hoveredArc
+                 (preview the section's tint) and click for navigation.
+            Putting hit-targets INSIDE the wrapper div means cursor moves
+            between the wrapper background and a hit-target without firing
+            the wrapper's mouseLeave — cornerNavHover stays true. */}
         {cornerNavVis > 0 && (() => {
-          const cx = CORNER_CX, cy = viewportH - CORNER_CX;
-          const collapsedWidth = 80;
-          const expandedWidth  = 520;
-          const wrapperHeight  = 64;
-          const expanded = cornerNavHover;
+          // Hit area covers the EXPANDED bloom radius + label margin. At
+          // rest, the bloom isn't open so most of this area is empty space
+          // around the cluster — hovering anywhere triggers the bloom open.
+          const HIT = (CORNER_R + 50) * 2 + 40;
+          // Inner SVG covers the entire viewport (so we can use absolute
+          // viewport coords for the hit-target arcs without re-mapping).
+          // The SVG itself has pointer-events:none so empty areas pass
+          // hover through to the wrapper div; only the hit-target paths
+          // catch events (via pointer-events:stroke).
+          const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           return (
             <div
               onMouseEnter={() => setCornerNavHover(true)}
-              onMouseLeave={() => setCornerNavHover(false)}
+              onMouseLeave={() => { setCornerNavHover(false); setHoveredArc(null); }}
               style={{
                 position: 'absolute',
-                left: cx - collapsedWidth / 2,
-                top: cy - wrapperHeight / 2,
-                width: expanded ? expandedWidth : collapsedWidth,
-                height: wrapperHeight,
-                opacity: cornerNavVis,
+                left: 0,
+                top: viewportH - HIT,
+                width: HIT,
+                height: HIT,
                 pointerEvents: cornerNavVis > 0.5 ? 'auto' : 'none',
                 zIndex: 40,
-                transition: 'width .25s ease',
-              }}>
-              {/* Pill — rounded-rectangle of four tabs, anchored just to the
-                  right of the cluster. Slides in from the cluster on hover. */}
-              <div style={{
-                position: 'absolute',
-                left: collapsedWidth, top: '50%',
-                transform: expanded
-                  ? 'translateY(-50%) translateX(0)'
-                  : 'translateY(-50%) translateX(-12px)',
-                display: 'flex', alignItems: 'stretch',
-                background: 'var(--bg)',
-                border: '1px solid var(--line)',
-                borderRadius: 999,
-                overflow: 'hidden',
-                boxShadow: '0 4px 16px rgba(20,19,15,0.06)',
-                opacity: expanded ? 1 : 0,
-                pointerEvents: expanded ? 'auto' : 'none',
-                transition: 'opacity .2s ease, transform .25s ease',
-              }}>
-                {SECTIONS.map((s) => {
-                  const isCurrent = s.id === activeSection;
-                  return (
-                    <button key={s.id}
-                      onClick={() => scrollToSection(s.id)}
-                      style={{
-                        background: isCurrent ? 'var(--ink)' : 'transparent',
-                        color: isCurrent ? 'var(--bg)' : 'var(--ink-2)',
-                        border: 'none',
-                        padding: `${SPACE.sm + 2}px ${SPACE.md}px`,
-                        fontFamily: 'var(--serif)',
-                        fontStyle: 'italic',
-                        fontSize: 14,
-                        lineHeight: 1.2,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        transition: 'background .15s ease, color .15s ease',
-                      }}>
-                      {s.title}
-                    </button>
-                  );
-                })}
-              </div>
+              }}
+            >
+              {/* Hit-target arcs — only enabled once the bloom is mostly open
+                  (navMapT > 0.5) so accidental clicks during the open animation
+                  don't fire navigation. */}
+              {navMapT > 0.5 && (
+                <svg
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    width: '100vw', height: '100vh',
+                    pointerEvents: 'none',
+                    overflow: 'visible',
+                  }}
+                >
+                  {SECTIONS.map((s) => {
+                    const [sa, sb] = s.activeDots;
+                    const saAng = DOT_ANGLE[sa] + clusterRotationDeg;
+                    const sbAng = DOT_ANGLE[sb] + clusterRotationDeg;
+                    const sap = {
+                      x: ring.cx + ring.r * Math.cos((saAng * Math.PI) / 180),
+                      y: ring.cy + ring.r * Math.sin((saAng * Math.PI) / 180),
+                    };
+                    const sbp = {
+                      x: ring.cx + ring.r * Math.cos((sbAng * Math.PI) / 180),
+                      y: ring.cy + ring.r * Math.sin((sbAng * Math.PI) / 180),
+                    };
+                    let d = sbAng - saAng;
+                    while (d > 180) d -= 360;
+                    while (d < -180) d += 360;
+                    const sw = d > 0 ? 1 : 0;
+                    const hitD = `M ${sap.x},${sap.y} A ${ring.r},${ring.r} 0 0 ${sw} ${sbp.x},${sbp.y}`;
+                    return (
+                      <path
+                        key={`hit-${s.id}`}
+                        d={hitD}
+                        fill="none"
+                        stroke="transparent"
+                        strokeWidth={40}
+                        style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                        onMouseEnter={() => setHoveredArc(s.id)}
+                        onMouseLeave={() => setHoveredArc(null)}
+                        onClick={() => scrollToSection(s.id)}
+                      />
+                    );
+                  })}
+                </svg>
+              )}
             </div>
           );
         })()}
@@ -2021,43 +2240,148 @@ function CreateScatter({
   // Plot interior insets — far enough from the axis lines that the circles
   // breathe without overlapping the axis dots themselves.
   const inset = { top: 120, right: 120, bottom: 100, left: 100 };
+
+  // Crosshair draw-in animation. drawProgress 0 → 1 over ~280ms when hover
+  // begins; back to 0 over ~180ms when hover ends. Lines lerp their far
+  // endpoint from the dot toward the axis based on this value, so the
+  // crosshair *projects* outward from the dot rather than just appearing.
+  // Labels at each axis end fade in during the last 30% of the draw, so
+  // the user reads "value lands HERE on this axis" as a sequence:
+  // line projects → label arrives.
+  const [drawProgress, setDrawProgress] = useState(0);
+  const drawRef = useRef(0);
+  useEffect(() => { drawRef.current = drawProgress; }, [drawProgress]);
+  useEffect(() => {
+    const target = hoverIdx !== null ? 1 : 0;
+    const startVal = drawRef.current;
+    let raf = 0;
+    let startTime = 0;
+    const tick = (now: number) => {
+      if (startTime === 0) startTime = now;
+      const elapsed = now - startTime;
+      const duration = target === 1 ? 280 : 180;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = target === 1 ? 1 - Math.pow(1 - t, 3) : t;
+      setDrawProgress(startVal + (target - startVal) * eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [hoverIdx]);
+
+  // Container size — needed to convert dot fractional positions (0..1) into
+  // pixel coords for the SVG, so we can lerp endpoints toward off-container
+  // axis positions cleanly. ResizeObserver keeps it in sync on viewport changes.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(([e]) => {
+      setDims({ w: e.contentRect.width, h: e.contentRect.height });
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div style={{
+    <div ref={containerRef} style={{
       position: 'absolute',
       top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left,
     }}>
-      {/* Hover crosshair — dashed lines from the hovered circle's center
-          extending leftward to the qiyu vertical axis (x=56 in viewport
-          coords) and downward to the make horizontal axis (y=vh-56). The
-          SVG covers from viewport (0, inset.top) to (vw, vh) so we can
-          reach the axis lines that live OUTSIDE the scatter interior. */}
-      {hoverIdx !== null && (() => {
+      {/* Hover crosshair — dashed projection lines that PROJECT outward from
+          the hovered dot toward the two axes, animated over ~280ms with an
+          easeOutCubic curve. Once the lines reach the axes, two labels fade
+          in: the spectrum endpoint (e.g. "comfort zone" / "stretch") that
+          the dot's value sits closer to on each axis. Reads as: "this dot's
+          x value is on the [stretch] side of the axis; its y value is on the
+          [within myself] side." */}
+      {hoverIdx !== null && drawProgress > 0 && dims.w > 0 && (() => {
         const it = plotItems[hoverIdx];
-        const yPct = it.y! * 100;
-        const xCalc = `calc(${inset.left}px + (100% - ${inset.left + inset.right}px) * ${it.x})`;
+        // Dot position in container-local pixel coords.
+        const dotX = dims.w * it.x!;
+        const dotY = dims.h * it.y!;
+        // Axis line positions in container-local coords. Y-axis (vertical
+        // qiyu axis) sits at viewport x = CORNER_CX, which is to the LEFT
+        // of the container by (inset.left - CORNER_CX). X-axis (horizontal
+        // make axis) sits at viewport y = vh - CORNER_CX, which is BELOW
+        // the container by (inset.bottom - CORNER_CX).
+        const yAxisX = -(inset.left - CORNER_CX);
+        const xAxisY = dims.h + (inset.bottom - CORNER_CX);
+        // Lerp the FAR endpoint of each line from the dot toward the axis.
+        const horizFarX = lerp(dotX, yAxisX, drawProgress);
+        const vertFarY  = lerp(dotY, xAxisY, drawProgress);
+        // Labels fade in during the last 30% of the draw. Use smootherstep
+        // so the fade itself eases (no sudden pop after the line arrives).
+        const labelOpacity = smootherstep(clamp((drawProgress - 0.7) / 0.3, 0, 1));
+        // Pick the spectrum endpoint label closer to the dot's value.
+        // Without axes data, fall back to no labels.
+        const xLabel = q.axes ? (it.x! < 0.5 ? q.axes.x[0] : q.axes.x[1]) : '';
+        const yLabel = q.axes ? (it.y! < 0.5 ? q.axes.y[0] : q.axes.y[1]) : '';
+        const tint = q.tint;
         return (
           <svg style={{
-            position: 'absolute',
-            top: 0, left: -inset.left, bottom: 0,
-            // Width must be explicit so the SVG's internal coords match the
-            // viewport (otherwise it falls back to the 300×150 default and the
-            // lines render invisibly small). Height resolves from top+bottom,
-            // so 100% = scatter interior height H, which makes y1=`${yPct}%`
-            // line up with the dot center exactly. overflow:visible lets y2
-            // extend past the SVG bottom down to the make horizontal axis.
-            width: `calc(100% + ${inset.left + inset.right}px)`,
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
             pointerEvents: 'none', overflow: 'visible',
           }}>
-            {/* Horizontal: from qiyu axis (viewport x=CORNER_CX) across to circle. */}
+            {/* Horizontal projection line: from dot leftward toward Y-axis */}
             <line
-              x1={CORNER_CX}  y1={`${yPct}%`}
-              x2={xCalc}      y2={`${yPct}%`}
-              stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
-            {/* Vertical: from circle downward to make axis (viewport y=vh-CORNER_CX). */}
+              x1={dotX} y1={dotY}
+              x2={horizFarX} y2={dotY}
+              stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="2 6" />
+            {/* Vertical projection line: from dot downward toward X-axis */}
             <line
-              x1={xCalc} y1={`${yPct}%`}
-              x2={xCalc} y2={`calc(100% + ${inset.bottom - CORNER_CX}px)`}
-              stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 6" />
+              x1={dotX} y1={dotY}
+              x2={dotX} y2={vertFarY}
+              stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="2 6" />
+            {/* Tick markers at the projection points (where the lines meet
+                the axes). Small filled circles in the section's tint, so
+                the user sees exactly WHERE the value lands. */}
+            <circle cx={yAxisX} cy={dotY} r={3.5}
+              fill={tint} opacity={labelOpacity} />
+            <circle cx={dotX} cy={xAxisY} r={3.5}
+              fill={tint} opacity={labelOpacity} />
+            {/* Y-axis label — at the Y-axis projection point. Sits INSIDE
+                the chart (right of the axis line) instead of in the left
+                gutter, because the gutter is ~72px wide and labels like
+                "GATHERS A ROOM" need ~180px. dy lifts it just above the
+                horizontal crosshair line so the label doesn't sit on top
+                of the line. */}
+            {yLabel && (
+              <text
+                x={yAxisX} y={dotY}
+                textAnchor="start"
+                dominantBaseline="alphabetic"
+                dx={10} dy={-6}
+                fill="var(--ink-2)"
+                opacity={labelOpacity}
+                style={{
+                  fontFamily: 'var(--mono)', fontSize: 10,
+                  letterSpacing: 1.4, textTransform: 'uppercase',
+                }}
+              >
+                {yLabel}
+              </text>
+            )}
+            {/* X-axis label — at the X-axis projection point. Sits BELOW
+                the tick (textAnchor=middle, dy=18), centered on the vertical
+                projection line. */}
+            {xLabel && (
+              <text
+                x={dotX} y={xAxisY}
+                textAnchor="middle"
+                dominantBaseline="hanging"
+                dy={10}
+                fill="var(--ink-2)"
+                opacity={labelOpacity}
+                style={{
+                  fontFamily: 'var(--mono)', fontSize: 10,
+                  letterSpacing: 1.4, textTransform: 'uppercase',
+                }}
+              >
+                {xLabel}
+              </text>
+            )}
           </svg>
         );
       })()}
@@ -2186,104 +2510,435 @@ function CreateScatter({
   );
 }
 
-// Learn — two-column grid of quotes pulled from a curated list. Each quote
-// reads as an editorial pull-quote: serif body, left-aligned (easier on the
-// eye than centered for multi-line text), with the attribution underneath
-// in a quieter sans treatment. The center-line gap pattern (image #9) reads
-// like a manuscript page rather than a card layout.
+// Learn — knowledge-graph layout. Multiple "value" hubs each anchor a small
+// cluster of quotes that taught me that value. Thin lines connect every
+// quote to ITS hub, so the page reads as: "here are the values I've learned,
+// and the inputs each one came from."
+//
+// To re-group: change a quote's `value` to a different LEARN_VALUES.id, and
+// (optionally) move its `pos` so it sits near the new hub.
 //
 // Optional `articleSlug` + `sectionId` link a quote to the article (and
-// specific section) it came from. When present, the whole blockquote becomes
-// a button — clicking opens the article scrolled to that section.
+// specific section) it came from. When present, the whole quote-node
+// becomes a button — clicking opens the article scrolled to that section.
+type LearnValue = {
+  id: string;
+  label: string;
+  pos: { x: number; y: number };
+};
 type LearnQuote = {
   quote: string;
   who: string;
+  /** id of the LEARN_VALUES entry this quote clusters with. */
+  value: string;
+  pos: { x: number; y: number };
   articleSlug?: string;
   sectionId?: string;
 };
+const LEARN_VALUES: LearnValue[] = [
+  { id: 'listen',     label: 'Listening',  pos: { x: 0.42, y: 0.50 } },
+  { id: 'underneath', label: 'Underneath', pos: { x: 0.58, y: 0.50 } },
+];
+// Value ↔ value links — each tuple draws a line between the two value
+// hubs. Without this the values feel like isolated planets; with it the
+// whole graph reads as one knowledge web.
+const LEARN_VALUE_LINKS: [string, string][] = [
+  ['listen', 'underneath'],
+];
 const LEARN_QUOTES: LearnQuote[] = [
-  { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.', who: 'a designer at IDEO' },
-  { quote: 'The questions someone asks reveal more than the answers they give.',                       who: 'a senior PM, on hiring' },
-  { quote: 'When a teammate gets quiet, that’s usually the most important thing said all meeting.',     who: 'a research lead' },
-  { quote: 'The best research is just listening with slightly better manners.',                         who: 'a UX lead at dinner' },
-  { quote: 'You’re describing a feedback loop but you’re acting like it’s a process.',                  who: 'a PM over zoom' },
-  { quote: 'You keep saying “I think” — but that’s the whole point, isn’t it?',                          who: 'a designer at a coffee shop' },
+  { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.',
+    who: 'a designer at IDEO',          value: 'listen',     pos: { x: 0.30, y: 0.20 } },
+  { quote: 'When a teammate gets quiet, that’s usually the most important thing said all meeting.',
+    who: 'a research lead',             value: 'listen',     pos: { x: 0.27, y: 0.50 } },
+  { quote: 'The best research is just listening with slightly better manners.',
+    who: 'a UX lead at dinner',         value: 'listen',     pos: { x: 0.30, y: 0.80 } },
+  { quote: 'The questions someone asks reveal more than the answers they give.',
+    who: 'a senior PM, on hiring',      value: 'underneath', pos: { x: 0.70, y: 0.20 } },
+  { quote: 'You’re describing a feedback loop but you’re acting like it’s a process.',
+    who: 'a PM over zoom',              value: 'underneath', pos: { x: 0.73, y: 0.50 } },
+  { quote: 'You keep saying “I think” — but that’s the whole point, isn’t it?',
+    who: 'a designer at a coffee shop', value: 'underneath', pos: { x: 0.70, y: 0.80 } },
 ];
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
+  // Mutable position state — keyed by node id (`q:${i}` or `v:${id}`).
+  // Initialized from LEARN_*.pos; drag updates these in place.
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(() => {
+    const out: Record<string, { x: number; y: number }> = {};
+    LEARN_QUOTES.forEach((q, i) => { out[`q:${i}`] = { ...q.pos }; });
+    LEARN_VALUES.forEach((v) => { out[`v:${v.id}`] = { ...v.pos }; });
+    return out;
+  });
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  // Distinguishes a click (small movement) from a drag (large movement) so
+  // tapping a linked quote still navigates while a real drag repositions.
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const dragMovedRef = useRef(false);
+  // Live container width — used to clamp quote text width to the actual
+  // space available between each dot and the container edge, so text can't
+  // overflow regardless of viewport size or where the dot is dragged to.
+  const [containerW, setContainerW] = useState(0);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    setContainerW(el.getBoundingClientRect().width);
+    const ro = new ResizeObserver((entries) => {
+      setContainerW(entries[0].contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Floating motion — gentle sine drift on every node, suspended for the one
+  // currently being dragged so the cursor stays planted on the dot.
+  const [floatTick, setFloatTick] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      setFloatTick((t) => t + 1);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // Drag lifecycle — pointer events at the window level so the drag survives
+  // the cursor leaving the small dot hit-target. Position is clamped to the
+  // container so a node can't be flung off-screen.
+  useEffect(() => {
+    if (!draggedId) return;
+    const onMove = (e: PointerEvent) => {
+      const start = dragStartRef.current;
+      if (start) {
+        const dx = e.clientX - start.x;
+        const dy = e.clientY - start.y;
+        if (dx * dx + dy * dy > 25) dragMovedRef.current = true;
+      }
+      if (!dragMovedRef.current) return;
+      const c = containerRef.current;
+      if (!c) return;
+      const rect = c.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      setPositions((prev) => ({
+        ...prev,
+        [draggedId]: {
+          x: Math.max(0.05, Math.min(0.95, x)),
+          y: Math.max(0.06, Math.min(0.94, y)),
+        },
+      }));
+    };
+    const onUp = () => {
+      // Pointer barely moved → treat as click; fire navigation for linked
+      // quotes. Otherwise the new dragged position sticks.
+      if (!dragMovedRef.current && draggedId.startsWith('q:')) {
+        const idx = parseInt(draggedId.slice(2), 10);
+        const q = LEARN_QUOTES[idx];
+        if (q?.articleSlug) {
+          onNav(`article:${q.articleSlug}${q.sectionId ? `:${q.sectionId}` : ''}`);
+        }
+      }
+      setDraggedId(null);
+      dragStartRef.current = null;
+      dragMovedRef.current = false;
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [draggedId, onNav]);
+
+  const startDrag = (id: string) => (e: React.PointerEvent) => {
+    e.stopPropagation();
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    dragMovedRef.current = false;
+    setDraggedId(id);
+  };
+
+  // Display position = state position + a tiny sine drift. Drift is
+  // suppressed for the dragged node (cursor stays planted) and for the
+  // hub-of-the-dragged-quote case (so connected lines don't visibly jitter
+  // around the cursor anchor).
+  const t = floatTick * 0.012;
+  const driftFor = (id: string, idx: number) => {
+    if (draggedId === id) return { dx: 0, dy: 0 };
+    return {
+      dx: Math.sin(t + idx * 1.3) * 0.005,
+      dy: Math.cos(t * 0.85 + idx * 1.7) * 0.004,
+    };
+  };
+  const displayPos = (id: string, idx: number) => {
+    const base = positions[id] ?? { x: 0.5, y: 0.5 };
+    const { dx, dy } = driftFor(id, idx);
+    return { x: base.x + dx, y: base.y + dy };
+  };
+
+  // Hover spotlight (one-degree). Hovering a hub also lights the values it
+  // links to via LEARN_VALUE_LINKS so the whole web is readable.
+  const isQuoteLit = (i: number, q: LearnQuote) => {
+    if (!hoveredId) return null;
+    if (hoveredId === `q:${i}`) return true;
+    if (hoveredId === `v:${q.value}`) return true;
+    return false;
+  };
+  const isHubLit = (v: LearnValue) => {
+    if (!hoveredId) return null;
+    if (hoveredId === `v:${v.id}`) return true;
+    if (hoveredId.startsWith('q:')) {
+      const idx = parseInt(hoveredId.slice(2), 10);
+      if (LEARN_QUOTES[idx]?.value === v.id) return true;
+    }
+    if (hoveredId.startsWith('v:')) {
+      const otherId = hoveredId.slice(2);
+      if (LEARN_VALUE_LINKS.some(([a, b]) =>
+        (a === otherId && b === v.id) || (b === otherId && a === v.id))) return true;
+    }
+    return false;
+  };
+  const isQuoteLineLit = (i: number, q: LearnQuote) => {
+    if (!hoveredId) return null;
+    if (hoveredId === `q:${i}`) return true;
+    if (hoveredId === `v:${q.value}`) return true;
+    return false;
+  };
+  const isValueLineLit = ([a, b]: [string, string]) => {
+    if (!hoveredId) return null;
+    if (hoveredId === `v:${a}` || hoveredId === `v:${b}`) return true;
+    if (hoveredId.startsWith('q:')) {
+      const idx = parseInt(hoveredId.slice(2), 10);
+      const qv = LEARN_QUOTES[idx]?.value;
+      if (qv === a || qv === b) return true;
+    }
+    return false;
+  };
+
+  const opacityFor = (lit: boolean | null, idle: number) =>
+    lit === null ? idle : lit ? 1 : 0.12;
+
+  const HUB_DOT = 14;
+  const QUOTE_DOT = 8;
+  const HIT_PAD = 14;
+
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      overflowY: 'auto',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: `${SPACE.xxxl + SPACE.lg}px ${SPACE.xxxl}px ${SPACE.xxl}px`,
+      // Clip so a dragged node can't visually escape the viewport even
+      // mid-gesture; the inner clamp also enforces this in coords.
+      overflow: 'hidden',
     }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        columnGap: SPACE.xxl,
-        rowGap: SPACE.xxxl,
-        maxWidth: 1080,
-        width: '100%',
-      }}>
-        {LEARN_QUOTES.map((q, i) => {
-          const linked = !!q.articleSlug;
-          const onClick = linked
-            ? () => onNav(`article:${q.articleSlug}${q.sectionId ? `:${q.sectionId}` : ''}`)
-            : undefined;
+      <div
+        ref={containerRef}
+        style={{
+          position: 'relative',
+          width: '100%', height: '100%',
+          maxWidth: 1280, margin: '0 auto',
+          touchAction: 'none', // pointer events drive drag, not native scroll
+        }}
+      >
+        {/* Connection lines — quote↔value AND value↔value. Computed from
+            displayPos each frame so they track drift + drag exactly. */}
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            pointerEvents: 'none', zIndex: 0,
+          }}
+        >
+          {LEARN_QUOTES.map((q, i) => {
+            const v = LEARN_VALUES.find((lv) => lv.id === q.value);
+            if (!v) return null;
+            const a = displayPos(`q:${i}`, i);
+            const b = displayPos(`v:${v.id}`, LEARN_QUOTES.length + LEARN_VALUES.indexOf(v));
+            const lit = isQuoteLineLit(i, q);
+            return (
+              <line key={`q-line-${i}`}
+                x1={a.x * 100} y1={a.y * 100}
+                x2={b.x * 100} y2={b.y * 100}
+                stroke={lit === true ? 'var(--ink-2)' : 'var(--ink-4)'}
+                strokeWidth={lit === true ? 1 : 0.5}
+                vectorEffect="non-scaling-stroke"
+                style={{
+                  opacity: opacityFor(lit, 0.4),
+                  transition: 'opacity .25s ease, stroke-width .25s ease',
+                }} />
+            );
+          })}
+          {LEARN_VALUE_LINKS.map(([aId, bId], i) => {
+            const aIdx = LEARN_QUOTES.length + LEARN_VALUES.findIndex((v) => v.id === aId);
+            const bIdx = LEARN_QUOTES.length + LEARN_VALUES.findIndex((v) => v.id === bId);
+            const a = displayPos(`v:${aId}`, aIdx);
+            const b = displayPos(`v:${bId}`, bIdx);
+            const lit = isValueLineLit([aId, bId]);
+            return (
+              <line key={`v-line-${i}`}
+                x1={a.x * 100} y1={a.y * 100}
+                x2={b.x * 100} y2={b.y * 100}
+                stroke={lit === true ? 'var(--ink-2)' : 'var(--ink-4)'}
+                strokeWidth={lit === true ? 1 : 0.5}
+                vectorEffect="non-scaling-stroke"
+                style={{
+                  opacity: opacityFor(lit, 0.4),
+                  transition: 'opacity .25s ease, stroke-width .25s ease',
+                }} />
+            );
+          })}
+        </svg>
+
+        {/* Value hubs — labeled, draggable. The dot sits exactly at
+            (p.x, p.y) so converging lines hit its center; the label is a
+            separate sibling positioned below the dot. Hovering a hub
+            lights its cluster + linked hubs (one degree of the web). */}
+        {LEARN_VALUES.map((v, vi) => {
+          const id = `v:${v.id}`;
+          const lit = isHubLit(v);
+          const p = displayPos(id, LEARN_QUOTES.length + vi);
           return (
-            <blockquote
-              key={i}
-              onClick={onClick}
+            <div
+              key={v.id}
               style={{
-                margin: 0,
-                display: 'flex', flexDirection: 'column', gap: SPACE.sm,
-                cursor: linked ? 'pointer' : 'default',
-                transition: 'transform .25s cubic-bezier(.2,.7,.2,1)',
-              }}
-              onMouseEnter={(e) => {
-                if (!linked) return;
-                const arrow = e.currentTarget.querySelector('[data-quote-arrow]') as HTMLElement | null;
-                if (arrow) arrow.style.transform = 'translateX(4px)';
-                const cite = e.currentTarget.querySelector('[data-quote-cite]') as HTMLElement | null;
-                if (cite) cite.style.color = 'var(--ink-2)';
-              }}
-              onMouseLeave={(e) => {
-                if (!linked) return;
-                const arrow = e.currentTarget.querySelector('[data-quote-arrow]') as HTMLElement | null;
-                if (arrow) arrow.style.transform = 'translateX(0)';
-                const cite = e.currentTarget.querySelector('[data-quote-cite]') as HTMLElement | null;
-                if (cite) cite.style.color = 'var(--ink-3)';
+                position: 'absolute',
+                left: `${p.x * 100}%`, top: `${p.y * 100}%`,
+                zIndex: 2,
+                opacity: opacityFor(lit, 1),
+                transition: 'opacity .25s ease',
+                userSelect: 'none',
               }}
             >
-              <p style={{
-                margin: 0,
-                fontFamily: 'var(--reading)', fontWeight: 400,
-                fontSize: 'clamp(18px, 1.4vw, 22px)',
-                lineHeight: 1.45,
-                color: 'var(--ink)',
-                textWrap: 'pretty',
+              {/* Dot + hit target — anchored exactly at (p.x, p.y). */}
+              <span
+                onPointerDown={startDrag(id)}
+                onMouseEnter={() => setHoveredId(id)}
+                onMouseLeave={() => setHoveredId(null)}
+                style={{
+                  position: 'absolute', left: 0, top: 0,
+                  transform: 'translate(-50%, -50%)',
+                  padding: HIT_PAD,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: draggedId === id ? 'grabbing' : 'grab',
+                }}
+              >
+                <span style={{
+                  width: HUB_DOT, height: HUB_DOT, borderRadius: '50%',
+                  background: 'var(--ink)',
+                  display: 'block',
+                }} />
+              </span>
+              {/* Label — sits below the dot, centered horizontally on the anchor. */}
+              <span style={{
+                position: 'absolute',
+                left: 0, top: HUB_DOT / 2 + 14,
+                transform: 'translateX(-50%)',
+                fontFamily: 'var(--serif)', fontStyle: 'italic',
+                fontSize: 'clamp(20px, 1.6vw, 26px)',
+                color: 'var(--ink)', whiteSpace: 'nowrap',
+                pointerEvents: 'none',
               }}>
-                &ldquo;{q.quote}&rdquo;
-              </p>
-              <cite data-quote-cite style={{
-                fontFamily: 'var(--sans)',
-                fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-                letterSpacing: TYPE.kicker.tracking,
-                textTransform: 'uppercase', fontStyle: 'normal',
-                color: 'var(--ink-3)',
-                transition: 'color .2s ease',
-                display: 'inline-flex', alignItems: 'baseline', gap: 8,
+                {v.label}
+              </span>
+            </div>
+          );
+        })}
+
+        {/* Quote nodes — draggable; tap-without-drag navigates to the source
+            article. Quote text appears only when its cluster is lit. */}
+        {LEARN_QUOTES.map((q, i) => {
+          const id = `q:${i}`;
+          const linked = !!q.articleSlug;
+          const lit = isQuoteLit(i, q);
+          const dotOpacity = opacityFor(lit, 0.7);
+          const showText = lit === true;
+          const p = displayPos(id, i);
+          const isLeft = (positions[id]?.x ?? q.pos.x) < 0.5;
+          return (
+            <div
+              key={i}
+              onPointerDown={startDrag(id)}
+              onMouseEnter={() => setHoveredId(id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{
+                position: 'absolute',
+                left: `${p.x * 100}%`, top: `${p.y * 100}%`,
+                cursor: draggedId === id
+                  ? 'grabbing'
+                  : linked ? 'grab' : 'default',
+                zIndex: draggedId === id ? 3 : 1,
+                userSelect: 'none',
+              }}
+            >
+              <span style={{
+                position: 'absolute', left: 0, top: 0,
+                transform: 'translate(-50%, -50%)',
+                padding: HIT_PAD,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                {q.who}
-                {linked && (
-                  <span data-quote-arrow style={{
-                    color: 'var(--ink-3)',
-                    transition: 'transform .2s ease',
-                    display: 'inline-block',
-                  }}>→</span>
-                )}
-              </cite>
-            </blockquote>
+                <span style={{
+                  width: QUOTE_DOT, height: QUOTE_DOT, borderRadius: '50%',
+                  background: 'var(--ink)',
+                  opacity: dotOpacity,
+                  transform: lit === true ? 'scale(1.4)' : 'scale(1)',
+                  transition: 'opacity .25s ease, transform .25s cubic-bezier(.2,.7,.2,1)',
+                }} />
+              </span>
+              {(() => {
+                // Available horizontal room from this dot to the container
+                // edge it floats toward, minus the 18px gap. Clamped to a
+                // readable range so very narrow viewports don't squeeze the
+                // text into a single-column wall.
+                const dotX = p.x * containerW;
+                const avail = isLeft ? dotX - 18 : containerW - dotX - 18;
+                const textWidth = containerW > 0
+                  ? Math.max(160, Math.min(280, avail - 8))
+                  : 240;
+                return (
+              <div style={{
+                position: 'absolute', top: 0,
+                transform: 'translateY(-50%)',
+                ...(isLeft
+                  ? { right: 18, textAlign: 'right' }
+                  : { left: 18, textAlign: 'left' }),
+                width: textWidth,
+                opacity: showText ? 1 : 0,
+                transition: 'opacity .25s ease',
+                pointerEvents: showText ? 'auto' : 'none',
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontFamily: 'var(--reading)', fontWeight: 400,
+                  fontSize: 'clamp(15px, 1.15vw, 18px)',
+                  lineHeight: 1.4,
+                  color: 'var(--ink)',
+                  textWrap: 'pretty',
+                }}>
+                  &ldquo;{q.quote}&rdquo;
+                </p>
+                <cite style={{
+                  display: 'inline-flex', alignItems: 'baseline', gap: 8,
+                  marginTop: SPACE.sm,
+                  flexDirection: isLeft ? 'row-reverse' : 'row',
+                  fontFamily: 'var(--sans)',
+                  fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
+                  letterSpacing: TYPE.kicker.tracking,
+                  textTransform: 'uppercase', fontStyle: 'normal',
+                  color: 'var(--ink-3)',
+                }}>
+                  <span>{q.who}</span>
+                  {linked && (
+                    <span style={{
+                      color: 'var(--ink-3)',
+                      display: 'inline-block',
+                    }}>{isLeft ? '←' : '→'}</span>
+                  )}
+                </cite>
+              </div>
+                );
+              })()}
+            </div>
           );
         })}
       </div>
@@ -2291,93 +2946,366 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
   );
 }
 
-// Work — 2×3 grid of project tiles. Real items render with title + tag in
-// the bottom-left corner; empty slots get a diagonal-hatch placeholder so
-// they read as "intentionally blank, more coming" rather than a broken image.
-const HATCH_BG = 'repeating-linear-gradient(45deg, transparent 0 8px, rgba(20,19,15,0.05) 8px 9px)';
-function WorkGrid({ q, onNav }: { q: Quadrant; onNav: NavFn }) {
-  const slots = 6;
-  const items = Array.from({ length: slots }, (_, i) => q.items[i] ?? null);
+// Work — year × month activity matrix as the entire view. Every role from
+// background.json maps to a circular node; cell intensity is the weighted sum
+// of roles active that month. The featured projects (Meetfood, Apple, etc.)
+// are not separate cards anymore — they live as the brightest cells in the
+// grid. Click "what I made" out of the picture; let the arc speak.
+function WorkGrid({ q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: SPACE.xxxl + SPACE.md,
+      padding: `${SPACE.xxxl}px ${SPACE.xl}px`,
+      overflowY: 'auto',
     }}>
+      <BackgroundMatrix tint={q.tint as string} />
+    </div>
+  );
+}
+
+// ─── Year × month activity matrix ────────────────────────────────────────────
+//
+// Rows: years (oldest at top). Cols: Jan→Dec. Each cell is colored by the
+// dominant *category* (technical / design / research) of roles active that
+// month — so the matrix tells, at a glance, "what kind of muscle Qiyu was
+// building when" rather than "how many things stacked up." Hover any cell to
+// see the actual roles.
+
+const WEIGHT_SCORE: Record<BackgroundItem['weight'], number> = {
+  major: 3,
+  normal: 2,
+  minor: 1,
+};
+
+// Find the category with the most weighted score in a cell. Ties go to the
+// first-listed item in the data, which is a stable order from the JSON.
+function dominantCategory(items: BackgroundItem[]): BackgroundItem['category'] | null {
+  if (items.length === 0) return null;
+  const totals: Record<BackgroundItem['category'], number> = { technical: 0, design: 0, research: 0 };
+  for (const it of items) totals[it.category] += WEIGHT_SCORE[it.weight];
+  let best: BackgroundItem['category'] = items[0].category;
+  let bestScore = -Infinity;
+  (Object.keys(totals) as BackgroundItem['category'][]).forEach((k) => {
+    if (totals[k] > bestScore) { bestScore = totals[k]; best = k; }
+  });
+  return best;
+}
+// Convert "YYYY-MM" → month-since-epoch (year * 12 + monthIndex). Used to
+// answer "is this role active in this cell?" with a single integer compare
+// per item, per cell.
+function monthIndex(s: string): number {
+  const [y, m] = s.split('-').map(Number);
+  return y * 12 + (m - 1);
+}
+function itemsActiveIn(year: number, month: number): BackgroundItem[] {
+  const target = year * 12 + month;
+  return BACKGROUND_ITEMS.filter((it) => {
+    const startIdx = monthIndex(it.start);
+    // Treat ongoing roles as continuing through the current month so the
+    // current cell stays lit until the role visibly ends.
+    const endStr = it.end ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const endIdx = monthIndex(endStr);
+    return target >= startIdx && target <= endIdx;
+  });
+}
+
+function BackgroundMatrix({ tint: _tint }: { tint: string }) {
+  void _tint; // The matrix paints with three category-tints, not the section tint.
+  const [hover, setHover] = useState<{ year: number; month: number } | null>(null);
+
+  // Year range derived from the data so it expands automatically as new
+  // entries are added; bounded to the earliest start and the latest end (or
+  // current year if any role is ongoing).
+  const { minYear, maxYear } = useMemo(() => {
+    let min = Infinity, max = -Infinity;
+    for (const it of BACKGROUND_ITEMS) {
+      const sy = parseInt(it.start.split('-')[0], 10);
+      const ey = it.end ? parseInt(it.end.split('-')[0], 10) : new Date().getFullYear();
+      if (sy < min) min = sy;
+      if (ey > max) max = ey;
+    }
+    return { minYear: min, maxYear: max };
+  }, []);
+
+  type Cell = {
+    year: number;
+    month: number;
+    items: BackgroundItem[];
+    category: BackgroundItem['category'] | null;
+  };
+  const cellRows = useMemo(() => {
+    const out: Cell[][] = [];
+    for (let year = minYear; year <= maxYear; year++) {
+      const row: Cell[] = [];
+      for (let month = 0; month < 12; month++) {
+        const items = itemsActiveIn(year, month);
+        row.push({ year, month, items, category: dominantCategory(items) });
+      }
+      out.push(row);
+    }
+    return out;
+  }, [minYear, maxYear]);
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const cellSize = 26;
+  // Wider gap spreads the year rows across the same width as the thumbnail
+  // strip above, so the matrix and the thumbnails read as one block.
+  const cellGap = 30;
+  const yearLabelW = 56;
+  // Total matrix width = year-label gutter + 12 cells + 11 inter-cell gaps.
+  // The thumbnail row uses this same value so both align.
+  const matrixW = yearLabelW + 12 * cellSize + 11 * cellGap;
+  // Active cells fill at this opacity so the three tints stay readable
+  // side-by-side without one dominating purely by saturation.
+  const ACTIVE_FILL_PCT = 70;
+
+  const hoveredCell = hover ? cellRows[hover.year - minYear]?.[hover.month] ?? null : null;
+  const hoveredItems = hoveredCell?.items ?? [];
+
+  // Reserve a slot count for the thumbnail strip so the layout doesn't jump
+  // between months with 0, 1, 2, or 4 concurrent roles. 4 fits the busiest
+  // months in the data (Spring 2023); 0-item months show an empty quiet row.
+  const THUMB_SLOTS = 4;
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: SPACE.xl,
+      width: matrixW,
+      alignItems: 'stretch',
+    }}>
+      {/* Thumbnails strip — sits above the matrix, same width. When hovering
+          a cell with N active roles, the first N slots fade in with that
+          role's thumbnail; remaining slots stay quiet placeholders so the
+          row stays one consistent shape. */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: SPACE.xl,
-        maxWidth: 960,
-        width: '100%',
+        gridTemplateColumns: `repeat(${THUMB_SLOTS}, 1fr)`,
+        gap: SPACE.md,
       }}>
-        {items.map((it, i) => {
+        {Array.from({ length: THUMB_SLOTS }, (_, i) => {
+          const it = hoveredItems[i];
           if (!it) {
             return (
               <div key={i} style={{
-                aspectRatio: '1 / 1',
-                background: `${HATCH_BG}, var(--surface)`,
-                border: '1px solid var(--line)',
-                borderRadius: SPACE.sm,
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute', left: SPACE.md, bottom: SPACE.md,
-                  fontFamily: 'var(--sans)',
-                  fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-                  letterSpacing: TYPE.kicker.tracking,
-                  textTransform: 'uppercase', color: 'var(--ink-4)',
-                }}>
-                  Forthcoming
-                </div>
-              </div>
+                aspectRatio: '4 / 3',
+                background: 'rgba(31,30,27,0.03)',
+                border: '1px dashed rgba(31,30,27,0.08)',
+                borderRadius: 8,
+              }} />
             );
           }
           return (
-            <a key={i}
-              href={it.href}
-              onClick={clickHandler(it.href, onNav)}
-              style={{
-                display: 'block',
-                aspectRatio: '1 / 1',
-                background: 'var(--surface)',
-                border: '1px solid var(--line)',
-                borderRadius: SPACE.sm,
-                position: 'relative',
-                color: 'var(--ink)',
-                textDecoration: 'none',
-                overflow: 'hidden',
-                transition: 'transform .2s, border-color .2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.borderColor = 'var(--ink-3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = 'var(--line)';
-              }}
-            >
+            <div key={it.id} style={{
+              aspectRatio: '4 / 3',
+              borderRadius: 8, overflow: 'hidden',
+              border: `1px solid color-mix(in srgb, ${CATEGORY_TINT[it.category]} 40%, transparent)`,
+              background: it.image
+                ? `url(${it.image}) center/cover no-repeat var(--surface)`
+                : `linear-gradient(135deg, color-mix(in srgb, ${CATEGORY_TINT[it.category]} 30%, transparent), color-mix(in srgb, ${CATEGORY_TINT[it.category]} 8%, transparent))`,
+              position: 'relative',
+              transition: 'opacity .2s',
+            }}>
+              {!it.image && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
+                }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ position: 'relative' }}>
+        {/* Month labels — sit above the cell columns, aligned via left padding
+            equal to the year-label gutter. */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `${yearLabelW}px repeat(12, ${cellSize}px)`,
+          columnGap: cellGap,
+          alignItems: 'center',
+          marginBottom: 6,
+          fontFamily: 'var(--sans)', fontSize: 9, letterSpacing: 0.4,
+          color: 'var(--ink-4)', textTransform: 'uppercase',
+        }}>
+          <span />
+          {months.map((m) => (
+            <span key={m} style={{ textAlign: 'center' }}>{m}</span>
+          ))}
+        </div>
+
+        {/* Year rows — one per year in range. Each row: year label + 12 cells. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: cellGap }}>
+          {cellRows.map((row) => (
+            <div key={row[0].year} style={{
+              display: 'grid',
+              gridTemplateColumns: `${yearLabelW}px repeat(12, ${cellSize}px)`,
+              columnGap: cellGap,
+              alignItems: 'center',
+            }}>
+              <span style={{
+                fontFamily: 'var(--sans)', fontSize: 11,
+                color: 'var(--ink-3)', textAlign: 'right', paddingRight: 4,
+              }}>
+                {row[0].year}
+              </span>
+              {row.map((cell) => {
+                const isHovered = hover && hover.year === cell.year && hover.month === cell.month;
+                const onlyMinor = cell.items.length > 0 && cell.items.every((it) => it.weight === 'minor');
+                const cellTint = cell.category ? CATEGORY_TINT[cell.category] : null;
+                return (
+                  <div
+                    key={cell.month}
+                    onMouseEnter={() => setHover({ year: cell.year, month: cell.month })}
+                    onMouseLeave={() => setHover(null)}
+                    style={{
+                      width: cellSize, height: cellSize, borderRadius: '50%',
+                      background: !cellTint
+                        ? 'rgba(31,30,27,0.05)'
+                        : onlyMinor
+                          ? 'transparent'
+                          : `color-mix(in srgb, ${cellTint} ${ACTIVE_FILL_PCT}%, transparent)`,
+                      // Coursework-only months get a dashed outline in the
+                      // category color rather than a solid fill — same
+                      // category cue, lighter visual weight.
+                      border: !cellTint
+                        ? '1px solid rgba(31,30,27,0.06)'
+                        : onlyMinor
+                          ? `1px dashed ${cellTint}`
+                          : 'none',
+                      boxShadow: isHovered && cellTint
+                        ? `0 0 0 2px color-mix(in srgb, ${cellTint} 50%, transparent)`
+                        : 'none',
+                      transition: 'box-shadow .15s',
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Hover panel — pinned below the grid so cells don't shift. Each
+            role is tagged with its category color so the link between cell
+            and list reads instantly. */}
+        {hover && (() => {
+          const cell = cellRows[hover.year - minYear]?.[hover.month];
+          if (!cell || cell.items.length === 0) return (
+            <div style={{
+              marginTop: 14, minHeight: 48,
+              fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-4)',
+              fontStyle: 'italic',
+            }}>
+              {months[hover.month]} {hover.year} · nothing logged
+            </div>
+          );
+          return (
+            <div style={{
+              marginTop: 14, minHeight: 48,
+              display: 'flex', flexDirection: 'column', gap: 6,
+            }}>
               <div style={{
-                position: 'absolute', left: SPACE.md, top: SPACE.md,
                 fontFamily: 'var(--sans)',
                 fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
                 letterSpacing: TYPE.kicker.tracking,
                 textTransform: 'uppercase', color: 'var(--ink-3)',
               }}>
-                {it.tag}
+                {months[hover.month]} {hover.year} · {cell.items.length} active
               </div>
-              <div style={{
-                position: 'absolute', left: SPACE.md, right: SPACE.md, bottom: SPACE.md,
-                fontFamily: 'var(--sans)',
-                fontSize: TYPE.body.size, fontWeight: 500,
-                lineHeight: 1.3,
-              }}>
-                {it.title}
-              </div>
-            </a>
+              {cell.items.map((it) => (
+                <div key={it.id} style={{
+                  fontFamily: 'var(--serif)', fontSize: 13, lineHeight: 1.4,
+                  color: 'var(--ink-2)',
+                  opacity: it.weight === 'minor' ? 0.7 : 1,
+                }}>
+                  <span style={{ color: CATEGORY_TINT[it.category], fontStyle: 'italic' }}>
+                    {CATEGORY_LABEL[it.category].toLowerCase()}
+                  </span>
+                  {' · '}
+                  <span>{it.role}</span>
+                  <span style={{ color: 'var(--ink-3)' }}>{' · '}{it.org}</span>
+                </div>
+              ))}
+            </div>
           );
-        })}
+        })()}
+        {!hover && (
+          <div style={{
+            marginTop: 14, minHeight: 48,
+            fontFamily: 'var(--serif)', fontStyle: 'italic',
+            fontSize: 13, lineHeight: 1.4, color: 'var(--ink-4)',
+          }}>
+            Hover a cell to see what was active that month.
+          </div>
+        )}
+      </div>
+
+      {/* Category legend — moved below the chart. The only key the matrix
+          needs now: which color means which kind of work. */}
+      <div style={{
+        display: 'inline-flex', alignItems: 'center',
+        gap: SPACE.lg, marginTop: SPACE.md,
+        fontFamily: 'var(--sans)',
+        fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
+        letterSpacing: TYPE.kicker.tracking,
+        textTransform: 'uppercase',
+        color: 'var(--ink-3)',
+      }}>
+        {(['technical','design','research'] as BackgroundItem['category'][]).map((cat) => (
+          <span key={cat} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              width: 12, height: 12, borderRadius: '50%',
+              background: `color-mix(in srgb, ${CATEGORY_TINT[cat]} ${ACTIVE_FILL_PCT}%, transparent)`,
+            }} />
+            <span>{CATEGORY_LABEL[cat]}</span>
+          </span>
+        ))}
+      </div>
+      </div>
+
+      {/* Right column: thumbnails of the roles active in the hovered cell.
+          Reserves a fixed width so the matrix doesn't shift when nothing is
+          hovered. Items without an image render a tinted placeholder swatch
+          in their category color. */}
+      <div style={{
+        flex: '0 0 280px',
+        minHeight: 220,
+        display: 'flex', flexDirection: 'column', gap: SPACE.md,
+        opacity: hoveredItems.length > 0 ? 1 : 0,
+        transition: 'opacity .2s',
+        pointerEvents: 'none',
+      }}>
+        {hoveredItems.map((it) => (
+          <div key={it.id} style={{
+            display: 'flex', flexDirection: 'column', gap: 6,
+          }}>
+            <div style={{
+              width: '100%', aspectRatio: '4 / 3',
+              borderRadius: 8, overflow: 'hidden',
+              border: `1px solid color-mix(in srgb, ${CATEGORY_TINT[it.category]} 40%, transparent)`,
+              background: it.image
+                ? `url(${it.image}) center/cover no-repeat var(--surface)`
+                : `linear-gradient(135deg, color-mix(in srgb, ${CATEGORY_TINT[it.category]} 30%, transparent), color-mix(in srgb, ${CATEGORY_TINT[it.category]} 8%, transparent))`,
+              position: 'relative',
+            }}>
+              {!it.image && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
+                }} />
+              )}
+            </div>
+            <div style={{
+              fontFamily: 'var(--sans)', fontSize: 11,
+              color: 'var(--ink-3)', textAlign: 'left',
+              lineHeight: 1.3,
+            }}>
+              <span style={{ color: CATEGORY_TINT[it.category] }}>● </span>
+              {it.role} <span style={{ color: 'var(--ink-4)' }}>· {it.org}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

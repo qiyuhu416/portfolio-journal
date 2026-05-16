@@ -157,7 +157,15 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
   return (
     <div style={{
       opacity: itemsOpacity, transition: 'opacity .3s',
-      maxWidth: 1100,
+      // Responsive max-width: at wide viewports the cap is 1100px (same as
+      // before); at narrow viewports the column tightens so visible gutter
+      // remains on each side and the block reads as *centered* rather than
+      // flush-against-the-edge. clamp's 75vw track keeps the column 75% of
+      // the viewport (~12.5% gutter on each side) until 1100px takes over.
+      maxWidth: 'min(1100px, 75vw)',
+      // margin: 0 auto is redundant under flex-center but harmless; explicit
+      // here so the block also self-centers if rendered outside a flex parent.
+      margin: '0 auto',
     }}>
       {/* The italic "The mirror." label that used to render here was
           duplicating the section subheading shown at the top of the viewport
@@ -165,10 +173,10 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           label appearing twice on the same page. */}
       <p style={{
         fontFamily: 'var(--sans)', fontWeight: 500,
-        fontSize: 'clamp(28px, 3.6vw, 56px)',
-        lineHeight: 1.22, letterSpacing: '-0.015em',
+        fontSize: 'clamp(24px, 3.2vw, 56px)',
+        lineHeight: 1.25, letterSpacing: '-0.015em',
         margin: 0,
-        color: 'var(--ink)', textAlign: 'left',
+        color: 'var(--ink)', textAlign: 'center',
         textWrap: 'balance',
       }}>
         {q.statement.map((seg, i) =>
@@ -329,104 +337,145 @@ function ListLayout({ q, onNav, itemsOpacity }: LayoutProps) {
 }
 
 /**
- * Visual contact sheet — for quadrants where the items *are* the experience
- * and each one has a photo, screenshot, or artifact worth seeing up front.
- * Image leads, tag overlays top-left, title/dek underneath.
+ * Knowledge-graph cluster — each item is a circular node. Image-clipped when
+ * available, soft-textured placeholder when not. Hairline connectors between
+ * adjacent nodes in the same row hint at the graph; hover lifts a node and
+ * reveals its dek.
+ *
+ * Visual logic: rows of 4 (max), with a small per-item y-jitter so nodes don't
+ * sit on a strict grid line. Title/meta read below the circle, tag floats top
+ * of the circle as a small mono caps ribbon.
  */
 function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const n = q.items.length;
-  const cols =
-    n === 2 ? 'repeat(2, minmax(0, 1fr))' :
-    n === 3 ? 'repeat(3, minmax(0, 1fr))' :
-    n === 4 ? 'repeat(2, minmax(0, 1fr))' :
-              'repeat(auto-fill, minmax(300px, 1fr))';
-  const rows = n <= 3 ? 1 : Math.ceil(n / (n === 4 ? 2 : 3));
-  const rowGap = 24;
-  const cardTextH = 90;
-  const headerReserve = 340;
-  const imageMaxH = `calc((100vh - ${headerReserve}px - ${rows * cardTextH}px - ${(rows - 1) * rowGap}px) / ${rows})`;
+  const cols = Math.min(4, n);
+  // Deterministic vertical jitter so the row doesn't read as a strict grid.
+  const yOffsets = [0, 18, -8, 12, -4, 22, 6, -14];
+
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: cols,
-      gap: `${rowGap}px 24px`,
-      opacity: itemsOpacity, transition: 'opacity .3s',
-    }}>
-      {q.items.map((it, i) => (
-        <a key={i} href={it.href}
-           onClick={(e) => dispatchItemClick(e, it.href, onNav)}
-           style={{
-             display: 'flex', flexDirection: 'column', gap: 12,
-             textDecoration: 'none', color: 'var(--ink)', cursor: 'pointer',
-             transition: 'transform .2s cubic-bezier(.2,.7,.2,1)',
-           }}
-           onMouseEnter={(e) => {
-             e.currentTarget.style.transform = 'translateY(-4px)';
-             const img = e.currentTarget.querySelector('[data-card-media]') as HTMLElement | null;
-             if (img) img.style.transform = 'scale(1.03)';
-           }}
-           onMouseLeave={(e) => {
-             e.currentTarget.style.transform = 'translateY(0)';
-             const img = e.currentTarget.querySelector('[data-card-media]') as HTMLElement | null;
-             if (img) img.style.transform = 'scale(1)';
-           }}>
-          <div style={{
-            position: 'relative',
-            width: '100%', aspectRatio: '16 / 10',
-            maxHeight: imageMaxH,
-            borderRadius: 10, overflow: 'hidden',
-            border: '1px solid var(--line)',
-            background: 'var(--surface)',
-          }}>
-            <div data-card-media style={{
-              position: 'absolute', inset: 0,
-              background: it.image
-                ? `url(${it.image}) center/cover no-repeat`
-                : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 22%, transparent), color-mix(in srgb, ${q.tint} 6%, transparent))`,
-              transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
-            }} />
-            {!it.image && (
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.14) 18px 19px)',
-                pointerEvents: 'none',
-              }} />
-            )}
-            <div style={{
-              position: 'absolute', top: 14, left: 14,
-              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: q.tint, fontWeight: 500,
-              padding: '4px 9px',
-              background: 'rgba(250,248,243,0.92)',
-              borderRadius: 3,
-              backdropFilter: 'blur(4px)',
-            }}>
-              {it.tag}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        columnGap: 28,
+        rowGap: 56,
+        opacity: itemsOpacity,
+        transition: 'opacity .3s',
+        position: 'relative',
+        paddingTop: 12,
+      }}
+    >
+      {q.items.map((it, i) => {
+        const hovered = hoverIdx === i;
+        const dimmed = hoverIdx !== null && !hovered;
+        const yShift = yOffsets[i % yOffsets.length];
+
+        return (
+          <a
+            key={i}
+            href={it.href}
+            onClick={(e) => dispatchItemClick(e, it.href, onNav)}
+            onMouseEnter={() => setHoverIdx(i)}
+            onMouseLeave={() => setHoverIdx(null)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 14,
+              textDecoration: 'none',
+              color: 'var(--ink)',
+              cursor: 'pointer',
+              transform: `translateY(${yShift + (hovered ? -6 : 0)}px)`,
+              opacity: dimmed ? 0.55 : 1,
+              transition:
+                'transform .25s cubic-bezier(.2,.7,.2,1), opacity .2s',
+            }}
+          >
+            {/* Circular node */}
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: 180,
+                aspectRatio: '1 / 1',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '1px solid var(--line)',
+                background: 'var(--surface)',
+                boxShadow: hovered
+                  ? `0 0 0 6px color-mix(in srgb, ${q.tint} 14%, transparent), 0 14px 36px rgba(31,30,27,0.10)`
+                  : '0 6px 18px rgba(31,30,27,0.06)',
+                transition: 'box-shadow .25s cubic-bezier(.2,.7,.2,1)',
+              }}
+            >
+              <div
+                data-card-media
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: it.image
+                    ? `url(${it.image}) center/cover no-repeat`
+                    : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 26%, transparent), color-mix(in srgb, ${q.tint} 6%, transparent))`,
+                  transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
+                  transform: hovered ? 'scale(1.05)' : 'scale(1)',
+                }}
+              />
+              {!it.image && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background:
+                      'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
             </div>
-          </div>
-          <div>
-            <div style={{
-              fontFamily: 'var(--serif)', fontSize: 19, lineHeight: 1.22,
-              letterSpacing: -0.3, color: 'var(--ink)', textWrap: 'balance',
-            }}>
-              {it.title}
+
+            {/* Title block */}
+            <div style={{ textAlign: 'center', maxWidth: 220 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 9,
+                  letterSpacing: 1.4,
+                  textTransform: 'uppercase',
+                  color: q.tint,
+                  marginBottom: 6,
+                }}
+              >
+                {it.tag}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--serif)',
+                  fontSize: 16,
+                  lineHeight: 1.2,
+                  letterSpacing: -0.2,
+                  color: 'var(--ink)',
+                  textWrap: 'balance',
+                }}
+              >
+                {it.title}
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 9,
+                  letterSpacing: 0.4,
+                  color: 'var(--ink-4)',
+                  marginTop: 6,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {it.meta}
+              </div>
             </div>
-            <div style={{
-              fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14,
-              lineHeight: 1.4, color: 'var(--ink-3)', marginTop: 3,
-              textWrap: 'pretty',
-            }}>
-              {it.dek}
-            </div>
-            <div style={{
-              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
-              color: 'var(--ink-4)', marginTop: 8, textTransform: 'uppercase',
-            }}>
-              {it.meta}
-            </div>
-          </div>
-        </a>
-      ))}
+          </a>
+        );
+      })}
     </div>
   );
 }
@@ -496,8 +545,12 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           const dimmed = hoverIdx !== null && !hovered;
           const isCta = it.kind === 'cta';
           const external = it.external === true;
+          // Article dots grow more on hover so the longer "question" dek
+          // (revealed by the swipe) has room to breathe at a smaller font
+          // without overflowing the circle. CTA dots keep the modest grow
+          // since their content doesn't change.
           const baseSize = 140;
-          const size = hovered ? baseSize + 12 : baseSize;
+          const size = hovered ? baseSize + (isCta ? 12 : 40) : baseSize;
 
           return (
             <a key={i} href={it.href}
@@ -526,8 +579,15 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                    : 'none',
                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                  padding: 18, boxSizing: 'border-box',
+                 // Clip the swiping title/dek so the upward exit + downward
+                 // entrance never bleed past the circle edge.
+                 overflow: 'hidden',
                }}>
+              {/* Title (rest state) — swipes UP on hover. */}
               <span style={{
+                position: 'absolute',
+                left: 0, right: 0,
+                padding: '0 18px',
                 fontFamily: 'var(--sans)',
                 fontWeight: 400,
                 fontSize: 14, lineHeight: 1.25,
@@ -535,12 +595,37 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                 textAlign: 'center',
                 textWrap: 'balance',
                 pointerEvents: 'none',
+                opacity: hovered && !isCta ? 0 : 1,
+                transform: hovered && !isCta ? 'translateY(-14px)' : 'translateY(0)',
+                transition: 'opacity .2s ease, transform .28s cubic-bezier(.2,.7,.2,1)',
               }}>
                 {it.title}
                 {isCta && external && (
                   <span style={{ marginLeft: 4, fontFamily: 'var(--mono)' }}>↗</span>
                 )}
               </span>
+              {/* Dek (the question) — swipes UP into view on hover. Italic
+                  serif so the question reads as a thought, not a label. */}
+              {it.dek && !isCta && (
+                <span style={{
+                  position: 'absolute',
+                  left: 0, right: 0,
+                  padding: '0 16px',
+                  fontFamily: 'var(--reading)',
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                  fontSize: 13, lineHeight: 1.32,
+                  color: '#fff',
+                  textAlign: 'center',
+                  textWrap: 'balance',
+                  pointerEvents: 'none',
+                  opacity: hovered ? 1 : 0,
+                  transform: hovered ? 'translateY(0)' : 'translateY(14px)',
+                  transition: 'opacity .22s ease .04s, transform .3s cubic-bezier(.2,.7,.2,1) .04s',
+                }}>
+                  {it.dek}
+                </span>
+              )}
               {it.previews && it.previews.length > 0 && (
                 <div style={{
                   position: 'absolute',

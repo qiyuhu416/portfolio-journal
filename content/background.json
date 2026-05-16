@@ -1,0 +1,162 @@
+[
+  {
+    "id": "bci",
+    "weight": "normal",
+    "kind": "research",
+    "category": "research",
+    "start": "2019-11",
+    "end": "2020-12",
+    "role": "BCI Data Analyst",
+    "org": "Brandeis × Harvard Medical",
+    "blurb": "EEG classification across deep-learning and classical ML — invited by Prof. Qu (top 3% from a CS lecture)."
+  },
+  {
+    "id": "piejob",
+    "weight": "normal",
+    "kind": "teaching",
+    "category": "technical",
+    "start": "2019-12",
+    "end": "2020-08",
+    "role": "Java TA",
+    "org": "PieJob",
+    "blurb": "Designed course materials and taught Java beginners object-oriented programming."
+  },
+  {
+    "id": "elphi",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "technical",
+    "start": "2020-12",
+    "end": "2021-01",
+    "role": "Full-stack Developer",
+    "org": "elphi",
+    "blurb": "Designed and shipped the progress-tracking feature of a mortgage-loan dashboard in HTML/CSS/React."
+  },
+  {
+    "id": "brandeis-python",
+    "weight": "normal",
+    "kind": "teaching",
+    "category": "technical",
+    "start": "2021-01",
+    "end": "2021-05",
+    "role": "Python TA",
+    "org": "Brandeis (Cosi 10a)",
+    "blurb": "Weekly discussion sessions; redesigned future syllabus from student feedback with Prof. Hickey."
+  },
+  {
+    "id": "meetfood",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "design",
+    "start": "2021-03",
+    "end": "2022-12",
+    "role": "Founding Product Designer",
+    "org": "Meetfood",
+    "blurb": "Shipped an AI-driven food-exploration app to the App Store — 150+ DAUs, 3 major versions, 1 pivot.",
+    "image": "/projects/meetfood.png"
+  },
+  {
+    "id": "cornell-conv-ai",
+    "weight": "normal",
+    "kind": "research",
+    "category": "research",
+    "start": "2022-02",
+    "end": "2023-05",
+    "role": "Conversational AI Prototyper",
+    "org": "Cornell (Jung + Fussell labs)",
+    "blurb": "Paper submitted to Transactions on Human-Robot Interaction on sequential timing of expressive robot behavior."
+  },
+  {
+    "id": "cornell-ta",
+    "weight": "normal",
+    "kind": "teaching",
+    "category": "research",
+    "start": "2022-08",
+    "end": "2023-05",
+    "role": "HCI TA · Head TA Spring '23",
+    "org": "Cornell (INFO 3450)",
+    "blurb": "Led 25+ TAs for a 100+ student lecture course; applied affinity clustering to student feedback."
+  },
+  {
+    "id": "physical-computing",
+    "weight": "minor",
+    "kind": "coursework",
+    "category": "technical",
+    "start": "2023-01",
+    "end": "2023-05",
+    "role": "Physical Computing",
+    "org": "Cornell (coursework, senior year)",
+    "blurb": "Created a vending-machine prototype. (haha)"
+  },
+  {
+    "id": "google",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "design",
+    "start": "2023-02",
+    "end": "2023-05",
+    "role": "UX Designer",
+    "org": "Google × Cornell",
+    "blurb": "High-fidelity AI-integrated prototypes for Google Cloud (NDA) — chatbot to enhance product discoverability for startup users.",
+    "image": "/projects/google-cloud.png"
+  },
+  {
+    "id": "ai-caring",
+    "weight": "normal",
+    "kind": "research",
+    "category": "research",
+    "start": "2023-08",
+    "end": "2024-08",
+    "role": "Conversational AI Researcher",
+    "org": "CMU AI-CARING (Chang + Zimmerman)",
+    "blurb": "Affiliation and trust in AI-supported care coordination for older adults with dementia. Two papers in progress.",
+    "image": "/projects/ai-trust.png"
+  },
+  {
+    "id": "pittsburgh-parking",
+    "weight": "minor",
+    "kind": "coursework",
+    "category": "design",
+    "start": "2023-09",
+    "end": "2023-12",
+    "role": "Smart Loading Zone",
+    "org": "Pittsburgh Parking Authority (CMU coursework)",
+    "blurb": "Hi-fi service-design prototypes drove real adoption. SUS 90.3.",
+    "image": "/projects/research-tool.png"
+  },
+  {
+    "id": "mentoring-partnership",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "technical",
+    "start": "2024-02",
+    "end": "2024-08",
+    "role": "Conversational AI",
+    "org": "The Mentoring Partnership",
+    "blurb": "Built a working call agent in a week of prompt engineering.",
+    "image": "/projects/call-agent.png"
+  },
+  {
+    "id": "strange-ventures",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "design",
+    "start": "2024-07",
+    "end": "2024-08",
+    "role": "Multimodal AI Design Fellow",
+    "org": "Strange Ventures (Roche + Archetype AI)",
+    "blurb": "Prototyped multimodal AI for Roche using Archetype AI's Newton model — reducing diagnostic blood-collection error.",
+    "image": "/projects/roche.png"
+  },
+  {
+    "id": "apple",
+    "weight": "major",
+    "kind": "shipped",
+    "category": "design",
+    "start": "2025-05",
+    "end": null,
+    "role": "GenAI Prototyper",
+    "org": "Apple WWDS AIML",
+    "blurb": "Scrappy-but-functional PoCs connected to AIML for sellers and customers. Presented Content Gen at the AIML Summit (Feb 2026, 250+ Apple)."
+  }
+]

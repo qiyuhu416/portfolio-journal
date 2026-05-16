@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDrawer } from '@/routes/DrawerContext';
 import { ArticleProvider } from '@/routes/ArticleContext';
-import { bySlug } from '@/content';
+import { bySlug, findQuadrantBySlug } from '@/content';
 
 export function ArticleDrawer() {
   const { openSlug, close } = useDrawer();
@@ -20,6 +20,18 @@ export function ArticleDrawer() {
   if (!target) return null;
 
   const { meta, Body } = target;
+  // "Home-page articles" — those listed under any quadrant in
+  // quadrants.json (Reflection / Create / Learn / Work) — render in PEEK
+  // mode inside the drawer: only the first section is visible, with a
+  // CTA at the bottom that takes the user to the full article view.
+  // Inline-only side articles (not on the home page) render in full,
+  // because the drawer IS their primary surface.
+  const isHomePageArticle = !!findQuadrantBySlug(openSlug);
+
+  const openFullArticle = () => {
+    close();
+    window.location.hash = `#article:${openSlug}`;
+  };
 
   return (
     <>
@@ -105,9 +117,43 @@ export function ArticleDrawer() {
             >
               {meta.dek}
             </p>
-            <div className="article-body" style={{ marginTop: 28 }}>
+            <div
+              className={`article-body${isHomePageArticle ? ' peek-mode' : ''}`}
+              style={{ marginTop: 28 }}
+            >
               <Body />
             </div>
+            {isHomePageArticle && (
+              <button
+                type="button"
+                onClick={openFullArticle}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  marginTop: 28,
+                  padding: '18px 22px',
+                  background: 'transparent',
+                  border: `1px solid ${meta.tint}`,
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--reading)',
+                  fontStyle: 'italic',
+                  fontSize: 17,
+                  lineHeight: 1.4,
+                  color: meta.tint,
+                  textAlign: 'left',
+                  transition: 'background .15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = `color-mix(in srgb, ${meta.tint} 8%, transparent)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                Read the full article →
+              </button>
+            )}
           </article>
         </ArticleProvider>
       </div>

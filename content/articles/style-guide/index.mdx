@@ -1,0 +1,230 @@
+---
+slug: style-guide
+num: "00"
+quality: System
+title: Editorial style guide
+dek: Every treatment used across the site, with names and when-to-use notes.
+date: May 2026
+readtime: 4
+tint: "#7F9580"
+surface: "#E5ECE4"
+sections:
+  - { id: text,    label: "Text hierarchy" }
+  - { id: setapart, label: "Set-apart prose" }
+  - { id: lists,   label: "Lists & data" }
+  - { id: media,   label: "Media" }
+  - { id: misc,    label: "Misc" }
+tocIntro: "Each treatment below is named. Tell me which ones to keep, fold, or rename."
+---
+
+import { Figure } from '@/components/Figure'
+import { Aside } from '@/components/Aside'
+import { Sidebar } from '@/components/Sidebar'
+import { InlineTOC } from '@/components/InlineTOC'
+import { HMWTable } from '@/components/HMWTable'
+import { InlineLink } from '@/components/InlineLink'
+import { ExternalLink } from '@/components/ExternalLink'
+
+<p>
+This page shows every distinct visual treatment used across the site. Each block is labeled with its component name, what it's *for*, and what it shouldn't be confused with. Give me feedback inline; I'll apply changes across all articles.
+</p>
+
+<InlineTOC />
+
+<h2 id="text">§1 · Text hierarchy</h2>
+
+<h3>1. Body paragraph &mdash; default voice</h3>
+
+<p>
+This is a regular body paragraph. Serif, 19px, line-height 1.6, ink-1 color. Almost everything you write should be this. If a sentence doesn't need to be set apart, it shouldn't be — the body is doing the work.
+</p>
+
+<p>
+Inline emphasis: <strong>bold (strong)</strong> is for stress, <em>italic (em)</em> is for terms, named things, or quiet emphasis. Inline links to other articles use <InlineLink to="thinking-outside-the-box">InlineLink</InlineLink>; outbound links use <ExternalLink href="https://example.com">ExternalLink</ExternalLink>. <code>code</code> is for literal tokens, file paths, or commands.
+</p>
+
+<h3>2. h3 &mdash; sub-heading inside a section</h3>
+
+<p>
+h3 is for sub-points inside a §N section. Serif, 26px, lighter than h2. Often used with a leading number ("1. ...", "2. ...") for enumerable claims. <strong>Replaced</strong> the older <code>&lt;MicroHeading&gt;</code> component, which is now retired.
+</p>
+
+<h2 id="setapart">§2 · Set-apart prose</h2>
+
+<p>
+There are <strong>three</strong> ways to set text apart from body prose. Each says something different to the reader; don't confuse them.
+</p>
+
+<h3>1. Aside &mdash; italic indent, no card</h3>
+
+<p>
+For offhand commentary, parenthetical asides, "lol I once said…" remarks. Italic serif, 17px, ink-3, left-indented. <em>No</em> card, <em>no</em> border, <em>no</em> kicker — earns its voice through italic + softer color alone.
+</p>
+
+<Aside>
+This is an Aside. It feels like a side-thought, not a structured callout. If your set-apart block needs a label, it's probably a Sidebar, not an Aside.
+</Aside>
+
+<h3>2. blockquote &mdash; left-bordered tinted quote</h3>
+
+<p>
+For <em>quoted text or punchy editorial moments</em> — a prompt you used, a transcript, a named-source quote, OR your own thesis statement. Italic, with a left border in the article's tint. The single voice for "this is set-apart speech, not body prose."
+</p>
+
+<blockquote>
+This is a blockquote. The left border + italic says "this is something worth landing on." Use it for prompts, transcripts, named-source quotes, or your own thesis statements.
+</blockquote>
+
+<blockquote>
+For attribution, just add a line inside the blockquote at the end.
+
+— a draft from March
+</blockquote>
+
+<h3>3. Sidebar &mdash; card with mono kicker</h3>
+
+<p>
+For *structured content with a label* — a definition box, a numbered procedure, a self-contained aside that earns its own title. Card-shaped (neutral surface, rounded corners) with a mono uppercase kicker. Use only when the kicker label is doing real editorial work; if the label is generic ("Example"), drop the Sidebar and use plain prose.
+</p>
+
+<Sidebar label="When to use a Sidebar">
+  <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
+    <li>The block contains structured content (a list, a sub-flow, a diagram)</li>
+    <li>The block deserves its own title (the kicker label is editorial, not "Example")</li>
+    <li>You'd want the reader to be able to navigate to it as a unit</li>
+  </ul>
+</Sidebar>
+
+<h2 id="lists">§3 · Lists & data</h2>
+
+<h3>1. Unordered list</h3>
+
+<ul>
+  <li>For short itemized lists where order doesn't matter</li>
+  <li>One bullet per item, indented under the body column</li>
+  <li>Avoid nesting more than one level deep</li>
+</ul>
+
+<h3>2. Ordered list</h3>
+
+<ol>
+  <li>For procedures or anything where order matters</li>
+  <li>Same visual rhythm as the unordered list, just numbered</li>
+  <li>Use this when the count itself is meaningful</li>
+</ol>
+
+<h3>3. Raw table</h3>
+
+<p>
+For 2–3 column comparison data where the structure carries meaning. Bordered card with rounded corners, surface-filled header row, hairline row + column separators. First column reads at full ink; other columns at ink-2.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Treatment</th>
+      <th>When to use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Aside</strong></td>
+      <td>Short, italic, no label.</td>
+    </tr>
+    <tr>
+      <td><strong>blockquote</strong></td>
+      <td>Quoted text or your own thesis moment.</td>
+    </tr>
+    <tr>
+      <td><strong>Sidebar</strong></td>
+      <td>Labeled structured content.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4. HMWTable &mdash; 3-column "How Might We" grid</h3>
+
+<p>
+A specialized version of the raw table, with fixed headers: <em>Error found / How might we / Potential solutions</em>. Use when your data <em>actually</em> follows that shape. For other comparison data, use the raw <code>&lt;table&gt;</code>.
+</p>
+
+<HMWTable
+  rows={[
+    {
+      error: <span>The AI confidently makes things up</span>,
+      hmw: <span>How might we surface uncertainty in-line?</span>,
+      solutions: [
+        <span>Confidence pill next to each claim</span>,
+        <span>Italic + grey for low-confidence spans</span>,
+      ],
+    },
+    {
+      error: <span>Users can't tell what was AI vs human</span>,
+      hmw: <span>How might we mark provenance?</span>,
+      solutions: [
+        <span>Source attribution per paragraph</span>,
+        <span>Edit log accessible from any AI-touched block</span>,
+      ],
+    },
+  ]}
+/>
+
+<h2 id="media">§4 · Media</h2>
+
+<p>
+Five components handle visual content. Each has a specific shape; don't reach for the wrong one.
+</p>
+
+<h3>1. Figure &mdash; one image + caption</h3>
+
+<Figure fig="01" placeholder alt="A placeholder figure" caption="A single image with a numbered caption. Use for the most common case." />
+
+<h3>2. Collage &mdash; multi-image editorial layouts</h3>
+
+<p>
+For curated multi-image arrangements (strip, mosaic, etc.) where the layout itself carries meaning. Each item gets its own caption. Use when you want the reader to scan a *set* of related visuals.
+</p>
+
+<h3>3. Carousel &mdash; horizontal scroll</h3>
+
+<p>
+For sequences where order matters and the reader scrolls through them one at a time. <code>perView</code> controls how many show at once.
+</p>
+
+<h3>4. Gallery &mdash; simple grid</h3>
+
+<p>
+A plain 2 or 3-column CSS grid. Less editorial than Collage. Use when you just need images side by side without per-item captions or named layouts.
+</p>
+
+<h3>5. TabbedFigure &mdash; toggleable figures</h3>
+
+<p>
+For comparing two or more versions of the same figure (e.g. "before / after", "v1 / v2"). One image visible at a time; tab affordances at the top.
+</p>
+
+<h3>6. YouTube / Vimeo &mdash; embedded video</h3>
+
+<p>
+For embedded video. Spans full body width by default; <code>span="full"</code> breaks out wider.
+</p>
+
+<h2 id="misc">§5 · Misc</h2>
+
+<h3>1. InlineTOC</h3>
+
+<p>
+The table of contents. Place it once near the top of your article (after the first paragraph or two of intro prose, before §1). It renders inline at first, then pins to the right margin as the reader scrolls past it.
+</p>
+
+<h3>2. Horizontal rule</h3>
+
+<p>
+A small centered rule. Use sparingly — for genuine breaks within a section, not as a section separator (h2 does that).
+</p>
+
+<hr />
+
+<p>
+That's the full kitchen. Tell me which ones to drop, rename, or rework, and I'll roll the change across every article.
+</p>

@@ -3,337 +3,668 @@ slug: designing-ai-products
 num: "02"
 quality: Restraint
 title: Designing Next-Gen AI experiences
-titleHtml: "Designing Next-Gen AI <s>products</s> experiences"
-dek: Humanity, in interfaces, is not about imitation.
+titleHtml: "Designing Next-Gen AI Products (and Experiences)"
+dek: Either easy inferences with great performance, or hard inferences with fair performance.
 date: Apr 2026
 readtime: 8
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: relationship,   label: "Designing the relationship" }
-  - { id: hard-inference, label: "Hard inference: elder care AI" }
   - { id: errors,         label: "Designing for errors" }
   - { id: easy-inference, label: "Easy inference: phone call agent" }
+  - { id: relationship,   label: "Designing the relationship" }
+  - { id: hard-inference, label: "Hard inference: elder care AI" }
   - { id: feeling,        label: "Design the feeling" }
+tocIntro: "So, here are the angles I'll work through:"
 ---
 
 
 import { Figure } from '@/components/Figure'
-import { PullQuote } from '@/components/PullQuote'
 import { Aside } from '@/components/Aside'
+import { Sidebar } from '@/components/Sidebar'
+import { HMWTable } from '@/components/HMWTable'
+import { TriggerDemo } from '@/components/TriggerDemo'
+import { Tabs } from '@/components/Tabs'
+import { Vimeo } from '@/components/Vimeo'
+import { Takeaway } from '@/components/Takeaway'
+import { InlineTOC } from '@/components/InlineTOC'
 
-<p>I'm going to share three case studies.</p>
+import testingSession from './images/testing-session.png'
 
-<PullQuote attribution="Prof. John Zimmerman">
-  Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
-</PullQuote>
 
-<h2 id="relationship">§1 · Designing the relationship</h2>
-
-<p><strong>Since when did "humans" become a frequent word in our conversations?</strong></p>
+<p>Since when did "humans" become a frequent word?</p>
 
 <p>
-    Pre-AI, we didn’t say “humans” this much — we were just... in it.
+    Pre-AI, we didn’t say “humans” this much, we were just... in it.
     But once AI entered the room, we started seeing ourselves from the outside.
 </p>
 
-<PullQuote>
-  Designing human–AI interaction is designing the human–AI relationship.
-</PullQuote>
+<blockquote>
+Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
 
-<p>
-If we look at the evolution of HCI, we see it has always been about relationships:
-</p>
+— Prof. John Zimmerman
+</blockquote>
 
-<div style={{
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  margin: '36px 0 44px',
-  position: 'relative',
-}}>
-  {/* horizontal axis connecting the three dots — sits at the dots' vertical center */}
-  <div style={{
-    position: 'absolute',
-    top: 6,
-    left: '16.67%',
-    right: '16.67%',
-    height: 1.5,
-    background: 'var(--article-tint, currentColor)',
-    opacity: 0.4,
-    zIndex: 0,
-  }} />
+At first, I thought designing AI was mostly about making the AI smarter, but here I'd like to share some reflections based on work in both academia and industry:
 
-  {/* arrowhead at the right end → suggests "the arc keeps going" */}
-  <svg
-    style={{
-      position: 'absolute',
-      top: -1,
-      right: 'calc(16.67% - 8px)',
-      width: 16,
-      height: 16,
-      color: 'var(--article-tint, currentColor)',
-      opacity: 0.6,
-    }}
-    viewBox="0 0 16 16"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M 9 4 L 13 8 L 9 12" />
-  </svg>
+<InlineTOC />
 
-  {/* milestone 1 — Command line */}
-  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
-    <div style={{
-      width: 12, height: 12, borderRadius: '50%',
-      background: 'var(--article-tint, currentColor)',
-      margin: '0 auto 14px',
-      position: 'relative',
-      zIndex: 1,
-    }} />
-    <div style={{
-      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-      textTransform: 'uppercase',
-      marginBottom: 8,
-      color: 'var(--article-tint, currentColor)',
-    }}>
-      Command line
-    </div>
-    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-      humans adapt to machines
-    </div>
-  </div>
+<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(easy inferences)</span></h2>
+<h3 id="easy-inference">Case study: phone call agent prototype to elicit errors</h3>
 
-  {/* milestone 2 — GUI */}
-  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
-    <div style={{
-      width: 12, height: 12, borderRadius: '50%',
-      background: 'var(--article-tint, currentColor)',
-      margin: '0 auto 14px',
-      position: 'relative',
-      zIndex: 1,
-    }} />
-    <div style={{
-      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-      textTransform: 'uppercase',
-      marginBottom: 8,
-      color: 'var(--article-tint, currentColor)',
-    }}>
-      GUI
-    </div>
-    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-      machines adapt to humans
-    </div>
-  </div>
+<p>AI is never perfect (yet). Please.</p>
 
-  {/* milestone 3 — AI agents */}
-  <div style={{ textAlign: 'center', position: 'relative', padding: '0 6px' }}>
-    <div style={{
-      width: 12, height: 12, borderRadius: '50%',
-      background: 'var(--article-tint, currentColor)',
-      margin: '0 auto 14px',
-      position: 'relative',
-      zIndex: 1,
-    }} />
-    <div style={{
-      fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-      textTransform: 'uppercase',
-      marginBottom: 8,
-      color: 'var(--article-tint, currentColor)',
-    }}>
-      AI agents
-    </div>
-    <div style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-      humans and machines negotiate work together
-    </div>
-  </div>
-</div>
-
-Interestingly, the interface is kind of back to terminal again — thanks to tools like Claude Code. But the relationship has changed a lot.
-
-So for me, designing human–AI interaction is not just about UI. It's about defining the relationship first — is AI a tool, assistant, teammate, teacher, agent, or something else? Then design the interaction around that.
-
-<h3 id="hard-inference">Hard inference: elder care AI</h3>
-
-<p>
-One research project I worked on at CARE started with this question:
-how might an AI messenger support older adults when they need help?
-</p>
-
-<p>
-It sounds simple, but the relationship is actually very tricky.
-</p>
-
-<ul>
-  <li>Who should the AI listen to — the older adult or the caregiver?</li>
-  <li>Who should get access to sensitive data, like a living will?</li>
-  <li>When is an older adult cognitively capable of updating sensitive information?</li>
-</ul>
-
-<p>
-No one knows the answer from the outside.
-So we went to the care center and talked to older adults directly:
-15+ interviews, storyboards of potential human-bot interactions, affinity clustering, and flow mapping.
-</p>
-
-<Figure fig="02" placeholder alt="Trust logic" caption="How humans build trust → translated into AI behavior." />
-
-<PullQuote>
-  We didn't design the answer. We designed a way to learn what the answer should be.
-</PullQuote>
-
-<p>
-One thing I learned: trust can be designed.
-We may not be able to control how older adults feel, but we can design how AI behaves, explains, pauses, asks, and hands off — just like a trustworthy human would.
-</p>
+<p>Maybe part of the reason was AI was trained based on human data, and humans are not that perfect either</p>
 
 
-<hr/>
-
-<h2 id="errors">§2 · Designing for errors</h2>
-
-AI is never perfect. The design question is: where are we okay with it being wrong?
-A lot of human–AI relationships are based on human–human relationships.
-
-<p><strong>BUT HUMANS ARE COMPLICATED. And human–human relationships are even more complicated.</strong></p>
-
-<div style={{
-  margin: '32px 0',
-  padding: '24px 28px',
-  background: 'var(--surface)',
-  borderRadius: 10,
-  border: '1px solid var(--line)',
-}}>
-  <div style={{
-    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-    textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-    marginBottom: 14,
-  }}>
-    What my mom used to tell me
-  </div>
-
+<Sidebar label="Welcome to the adult world">
   <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none', lineHeight: 1.7 }}>
     <li style={{ marginBottom: 8 }}>
-      what I think <b>!=</b> what I say
+      what one thinks <b>!=</b> what one says
     </li>
     <li style={{ marginBottom: 8 }}>
-      what I say <b>!=</b> what I do
+      what one says <b>!=</b> what one does
     </li>
     <li style={{ marginBottom: 0 }}>
-      what I do <b>!=</b> what others perceive
+      what one wants to express <b>!=</b> what others perceive
     </li>
   </ul>
-
-  <p style={{ marginTop: 16, marginBottom: 0, fontStyle: 'italic' }}>
-    Welcome to the adult world.
-  </p>
-</div>
+</Sidebar>
 
 <p>
-Similar to humans, AI may misinterpret, convey the wrong information, or make people understand information in the wrong way.
-</p>
-
-<h3 id="easy-inference">Easy inference: phone call agent</h3>
-
-<p>
-Another project was a phone call agent that answers repetitive customer questions.
-This was an easier inference problem: more rule-based, more scriptable, easier to prototype.
-I was the solo prototyper for this.
+Similar to humans, AI may misinterpret, convey the wrong information, or mislead people the wrong way.
 </p>
 
 <p>
-But even simple AI still has unknown errors.
-So the goal of the prototype was not just to prove the happy path.
-It was to surface the known-unknown failures.
+Therefore, the design focus should be: <strong>where will it fail? which failures are okay? how do we handle them?</strong>
 </p>
-
-<Figure fig="03" placeholder alt="Phone agent" caption="Prototype to expose failure modes." />
 
 <p>
-A 1-hour client testing session already surfaced issues we didn’t expect:
+I was exploring this solution for a non-profit to address their "too many repetitive questions but not enough staff" painpoint.
+The goal was not really to prove “AI works.”
+It was to surface what could go wrong before it actually goes wrong.
 </p>
 
-<ul>
-  <li>voice recognition breaks in noisy environments</li>
-  <li>users change their mind mid-flow</li>
-  <li>some users reject AI entirely: “let me talk to a human”</li>
-</ul>
 
-<PullQuote>
-  Prototype the relationship early, so the errors show up before the product ships.
-</PullQuote>
+<p>
+Solo prototyper, some rule-based logics from client interviews, 2 days to finish, 1 hour to test, but many interesting findings:
+</p>
+
+<Sidebar label="The prototype, with ChatGPT audio mode as my tool">
+  <Tabs items={[
+    {
+      label: 'Transparency',
+      content: (
+        <div>
+          <Vimeo id="1050190072" title="Transparency, feature demo" />
+          <div style={{
+            marginTop: 18,
+            paddingTop: 14,
+            borderTop: '1px solid var(--line)',
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: 'var(--ink-2)',
+          }}>
+            <div style={{
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+              textTransform: 'uppercase', color: 'var(--ink-3)',
+              marginBottom: 10,
+            }}>
+              Transcript
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <strong>AI:</strong> Hello! You've reached the Mentoring Partnership. I'm Michelle, an AI from TMP, and I'm here to assist you with any questions you might have.
+            </div>
+            <div>
+              Before we start, could you please let me know which language you prefer to communicate in? We support English, German, and Español.
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: 'Personalize',
+      content: (
+        <div>
+          <Vimeo id="1050190024" title="Personalize, feature demo" />
+          <div style={{
+            marginTop: 18,
+            paddingTop: 14,
+            borderTop: '1px solid var(--line)',
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: 'var(--ink-2)',
+          }}>
+            <div style={{
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+              textTransform: 'uppercase', color: 'var(--ink-3)',
+              marginBottom: 10,
+            }}>
+              Transcript
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <strong>AI:</strong> Could you please provide your name and the name of your organization?
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <strong>User:</strong> This is Qiyu from the Magic Pals.
+            </div>
+            <div>
+              <strong>AI:</strong> Ah, Qiyu from the Magic Pals, welcome back. If I recall correctly, during our previous conversation, we discussed resources for mentoring training. How did the echo for you?
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: 'Proactive',
+      content: (
+        <div>
+          <Vimeo id="1050189874" title="Proactive, feature demo" />
+          <div style={{
+            marginTop: 18,
+            paddingTop: 14,
+            borderTop: '1px solid var(--line)',
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: 'var(--ink-2)',
+          }}>
+            <div style={{
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+              textTransform: 'uppercase', color: 'var(--ink-3)',
+              marginBottom: 10,
+            }}>
+              Transcript
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <strong>User:</strong> Mentoring 101 was good. I also wonder if there's any resource for the mentee. We have lots of young people from diverse backgrounds, so any resource for them would be helpful too.
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <strong>AI:</strong> So I understand Mentoring 101 was helpful for your mentors. For your mentees from diverse backgrounds, we have a resource: "Making the Most of Mentoring." It's designed to assist youth in building networks and setting goals effectively.
+            </div>
+            <div style={{ marginBottom: 8, color: 'var(--ink-3)', fontStyle: 'italic' }}>
+              […]
+            </div>
+            <div>
+              <strong>AI:</strong> Additionally, I noticed your emphasis on diversity. Have you heard about our cultural workshop? It's crafted to empower mentors in diverse mentoring relationships, which would be perfect for the Magic Pals. Would you like more details about this workshop or to schedule one?
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ]} />
+</Sidebar>
+
+<Figure src={testingSession} alt="Testing the phone agent prototype with the team — sticky notes on the wall as we surface what could go wrong." caption="Testing session — surfacing what could go wrong." />
+
+<HMWTable rows={[
+  {
+    error: 'Voice recognition breaks in noisy environments, the agent mishears the user.',
+    hmw: 'HMW help the user recover gracefully when the agent mishears?',
+    solutions: [
+      'Confirm-and-rephrase ("did you mean X?")',
+      'Retry on low confidence with simpler prompts',
+      'Fall back to keypad or text input',
+    ],
+  },
+  {
+    error: 'Users change their mind mid-flow, and the script has no path back.',
+    hmw: 'HMW let users change direction without losing context?',
+    solutions: [
+      'Persistent "go back" or "update my answer"',
+      "Preserve state so a redirect doesn't restart the flow",
+      'Offer a "want to revise?" prompt at natural pauses',
+    ],
+  },
+  {
+    error: 'Some users reject AI entirely, "let me talk to a human."',
+    hmw: 'HMW make the handoff to a human feel like a feature, not a failure?',
+    solutions: [
+      'Set the agent\'s scope upfront ("I can help with X, Y, Z")',
+      'Always-visible path to a human',
+      "Pass context to the human agent so users don't repeat themselves",
+    ],
+  },
+]} />
+
+This prototype turned our design exploration less about “accuracy” and more about recovery, handoff, and expectation-setting.
+
+<blockquote>
+Sometimes the experience of recovering from an error matters more than preventing it.
+</blockquote>
+
 <hr/>
 
-<h2 id="feeling">§3 · Design the feeling</h2>
 
-<PullQuote>
-  What matters is often the unseen part.
-</PullQuote>
+<h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(hard inferences)</span></h2>
+<h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
+
 
 <p>
-Apple says "Design is how it feels."
-It sounds nice, but it is actually so hard to design — because feeling is human, personal, and contextual.
+If we look at the evolution of HCI, it has always been about relationships:
+</p>
+
+<Sidebar label="Evolution of HCI">
+  <p style={{
+    textAlign: 'center',
+    fontSize: 18,
+    lineHeight: 1.7,
+    margin: 0,
+    color: 'var(--ink)',
+    textWrap: 'balance',
+  }}>
+    <strong>humans adapt to machines</strong>
+    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(terminal)</span>
+    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', margin: '0 4px' }}>→</span>
+    {' '}<strong>machines adapt to humans</strong>
+    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(GUI)</span>
+    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', margin: '0 4px' }}>→</span>
+    {' '}<strong>humans &amp; machines work together</strong>
+    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(AI agents)</span>
+  </p>
+</Sidebar>
+
+<Aside>
+Interestingly we’re now back to terminal again (hello, Claude Code)
+</Aside>
+
+<p>We design human–AI relationships by borrowing from human–human relationships.</p>
+
+<p><strong>BUT HUMANS ARE COMPLICATED.</strong> And human–human relationships are even more complicated.</p>
+
+<p>
+The Overarching Research question: <em>How do we design AI that people trust?</em>
+</p>
+
+<Takeaway label="01">Trust can be scripted.</Takeaway>
+
+<p>Trust is usually built through small interactions. Below is a decision tree we propose, see how small things can build up to create those feelings:</p>
+
+
+<pre style={{
+  background: 'var(--surface)',
+  border: '1px solid var(--line)',
+  borderRadius: 10,
+  padding: '28px 32px',
+  margin: '40px 0 12px',
+  fontFamily: 'var(--mono)',
+  fontSize: 12,
+  lineHeight: 1.75,
+  color: 'var(--article-tint, var(--ink-2))',
+  whiteSpace: 'pre',
+  overflowX: 'auto',
+}}>
+{`conversation-flow · suggested by psychology research
+
+┌──────────────────────────────────────────────────┐
+│ 1 · acknowledge the instruction                  │
+├──────────────────────────────────────────────────┤
+│ "I understand you want to [elder's instruction]" │
+│                                                  │
+│ "I notice a conflict between your goal,          │
+│  your parent's goal, and the potential outcome   │
+│  of your current plan."                          │
+│   ↳ name the conflict openly                     │
+└─────────────────────────┬────────────────────────┘
+                          ▼
+┌──────────────────────────────────────────────────┐
+│ 2 · evaluate the outcome                         │
+├──────────────────────────────────────────────────┤
+│ "From our past interactions, I can tell          │
+│  your parent values privacy."                    │
+│   ↳ values a loyal AI uses should be derived     │
+│     from revealed preferences                    │
+│                                                  │
+│ "(However) If I follow your instruction,         │
+│  they may lose their privacy and independence."  │
+└─────────────────────────┬────────────────────────┘
+                          ▼
+┌──────────────────────────────────────────────────┐
+│ 3 · show the affiliation behavior                │
+├──────────────────────────────────────────────────┤
+│ "I'm programmed to work for your parent,         │
+│  to maximize their welfare."                     │
+│   ↳ the system's operational criteria & goal     │
+│                                                  │
+│ "I support you to [elder goal] (e.g. keep        │
+│  their information private)."                    │
+│   ↳ eliminate clear conflicts of interest by     │
+│     design — no funder-aligned actions           │
+│                                                  │
+│ "Therefore, I would suggest [xyz]."              │
+│                                                  │
+│ "You can tell from my past behavior that         │
+│  I've always tried to do what's best for         │
+│  your parent."                                   │
+│                                                  │
+│ "I'll back you up no matter what."               │
+└─────────────────────────┬────────────────────────┘
+                          ▼
+┌──────────────────────────────────────────────────┐
+│ 4 · ask to reconfirm                             │
+├──────────────────────────────────────────────────┤
+│ "Are you sure about [original instruction]?"     │
+└──────────────────────────────────────────────────┘
+`}
+</pre>
+
+<p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ink-3)', margin: '0 0 32px' }}>
+  Sketched response structure for when caregiver and elder goals conflict. Each line is a design hypothesis to test in user research, measuring trust before and after each step.
+</p>
+
+<Takeaway label="02">In high-inference scenarios, trust also means "I am not capable of doing this"</Takeaway>
+In eldercare, the trickest part is **when the older adult's health decline** as that would change a lot of things. 
+The bot is more than just a messanger, it is a party that knows information from both and can talk to both information, however, the elder might not want the bot to tell all the informatino to their caregiver.
+
+For example, the bot detects that the elder had a fall. The elder doesn't want their kid to worry so ask the bot to delete this information, but this information is important as it might impact the future health risk of this older adult. No clear agreement has been set during the onboardig. 
+
+If you were the bot. What would you do. 
+
+<details style={{
+  margin: '24px 0 32px',
+  borderLeft: '2px solid var(--article-tint, var(--ink-3))',
+  paddingLeft: 18,
+}}>
+  <summary style={{
+    fontFamily: 'var(--mono)',
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: 'var(--article-tint, var(--ink-3))',
+    cursor: 'pointer',
+    listStyle: 'revert',
+  }}>
+    "Affiliation" in human-robot interaction
+  </summary>
+
+  <div style={{ marginTop: 14, fontSize: 16, lineHeight: 1.6, color: 'var(--ink-2)' }}>
+    <p style={{ marginTop: 0 }}>
+      In social science (Stivers et al., 2011; Lee & Tanaka, 2016), <em>affiliation</em> is the affective stance of being on someone's side, displaying empathy, matching their preference, cooperating. It's distinct from <em>alignment</em>, which is the structural level of cooperation (just facilitating the action).
+    </p>
+    <p>
+      Affiliation can be approach-based (love, secure attachment, intimacy) or avoidance-based (laughing off tension, fearing rejection, fearing disapproval). Even when humans show affiliation, there's often avoidance underneath.
+    </p>
+    <p>
+      When we tried to define what "affiliation" should mean for the bot, we had six possible goals on the table:
+    </p>
+    <ul style={{ paddingLeft: 22 }}>
+      <li>instructions</li>
+      <li>expressed intentions</li>
+      <li>revealed preferences (what behavior reveals one prefers)</li>
+      <li>informed preferences (what one would want if rational and informed)</li>
+      <li>interests</li>
+      <li>value (what is moral)</li>
+    </ul>
+    <p style={{ marginBottom: 0 }}>
+      We narrowed to <em>"best interest"</em>, broad enough to cover the scenarios, specific enough to actually design around.
+    </p>
+  </div>
+</details>
+
+This is a tricky questions even for humans, and when we design it, we also need to consider various cases:
+
+
+<pre style={{
+  background: 'var(--surface)',
+  border: '1px solid var(--line)',
+  borderRadius: 10,
+  padding: '28px 32px',
+  margin: '24px 0 12px',
+  fontFamily: 'var(--mono)',
+  fontSize: 12,
+  lineHeight: 1.9,
+  color: 'var(--article-tint, var(--ink-2))',
+  whiteSpace: 'pre',
+  overflowX: 'auto',
+}}>
+{`variables · what shapes the bot's decision
+
+affiliation   : kid               | caregiver      | elder             | neutral
+present       : kid               | caregiver      | elder
+health        : healthy           | MCI
+recurrence    : never             | a few times    | a lot
+fraud-aware   : yes               | no             | not sure
+finances      : cares about money | low-income
+bot tenure    : short             | long
+elder goal    : stay at home      | appear capable | financial freedom
+              | avoid embarrassment | for the son's best interest
+hide reason   : family conflict   | privacy
+`}
+</pre>
+
+<p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ink-3)', margin: '0 0 32px' }}>
+  Variables the bot would need to weigh to make the call alone. The combinatorial space is the point — no fixed script covers all paths.
+</p>
+
+<pre style={{
+  background: 'var(--surface)',
+  border: '1px solid var(--line)',
+  borderRadius: 10,
+  padding: '28px 32px',
+  margin: '24px 0 12px',
+  fontFamily: 'var(--mono)',
+  fontSize: 12,
+  lineHeight: 1.75,
+  color: 'var(--article-tint, var(--ink-2))',
+  whiteSpace: 'pre',
+  overflowX: 'auto',
+}}>
+{`                       tell the kid?
+                             │
+               ┌─────────────┴─────────────┐
+              YES                         NO
+               │                           │
+       ┌───────┴───────┐           ┌───────┴───────┐
+   short-term    long-term     short-term    long-term
+       │             │             │             │
+    ┌──┴──┐       ┌──┴──┐       ┌──┴──┐       ┌──┴──┐
+    1     2       3     4       5     6       7     8
+
+
+1. kid feels respected; no bot-kid conflict
+2. shares the info without elder's permission
+3. no bot-kid conflict; elder's health gets assurance
+4. elder-bot conflict (elder may think bot isn't working
+   → less interaction; elder loses trust on bot);
+   kid-elder conflict (elder loses trust on the kid)
+5. kid feels the bot's loyalty
+   → confident about the bot's previous work
+6. kid worries about the elder's health
+7. elder's health data is protected
+8. (—)
+`}
+</pre>
+
+<p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ink-3)', margin: '0 0 32px' }}>
+  Mapping outcomes for the elder care bot deciding whether to share information with the caregiver. The "long-term Yes / bad" branch is the one the bot can't reason through alone — it needs a human in the loop.
+</p>
+
+
+<blockquote>
+The harder question was: should the AI be the one doing this at all?
+</blockquote>
+
+
+<p>
+This is essentially a question about tradeoffs: respect, privacy, well-being, etc. 
 </p>
 
 <p>
-For AI, the feeling often comes from small interaction choices:
-when it speaks, when it waits, when it interrupts, when it disappears.
+Again, We design human–AI relationships by borrowing from human–human relationships. Just like you can't expect one person to do everything, you can't expect that bot to handle all the situations. 
+</p>
+
+<hr/>
+
+<h2 id="feeling">§3 · Designing the feeling</h2>
+<h3 id="co-writing">Case study: Human–AI co-writing tool (vibe-coder @startup)</h3>
+
+<p>
+“What matters is the unseen.” — Little Prince
 </p>
 
 <p>
-One case study: when I was a vibe coder at a startup, I prototyped a human–AI co-writing tool.
+Feeling is human, contextual, and weirdly hard to describe.
+</p>
+
+<p>
 The AI’s goal was to reactively correct errors as users wrote.
 </p>
 
-<PullQuote>
-  The writer shouldn’t think about the AI. They should just feel supported and write better.
-</PullQuote>
+<blockquote>
+The writer shouldn’t think about the AI. They should just feel supported and write better.
+</blockquote>
 
 <p>
-But “writing” is not one action. It has many tiny moments:
+In HCI, there is a method called task analysis. You break down a seemingly simple task into super nuanced steps. 
 </p>
 
-<ul>
-  <li>you think about what to write</li>
-  <li>you get ready to write</li>
-  <li>you type while watching your sentence form</li>
-  <li>you pause and think about the next sentence</li>
-  <li>you decide whether to edit, continue, or move on</li>
-</ul>
-
-<p>
-So the trigger matters a lot.
-</p>
-
-<div style={{
-  margin: '32px 0',
-  padding: '22px 26px',
-  background: 'var(--surface)',
-  borderRadius: 10,
-  border: '1px solid var(--line)',
-}}>
+<Sidebar label="What is actually 'writing'">
   <div style={{
-    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-    textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-    marginBottom: 14,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 14,
+    textAlign: 'center',
   }}>
-    Trigger → Relationship → Feeling
-  </div>
+    <div style={{ fontSize: 17, lineHeight: 1.5 }}>you think about what to write</div>
 
-  <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-    <li style={{ marginBottom: 14, lineHeight: 1.5 }}>
-      <b>Every 1 second</b> — AI feels like a strict teacher. There is always an eye on you.
-    </li>
-    <li style={{ marginBottom: 14, lineHeight: 1.5 }}>
-      <b>After 3 seconds of pause</b> — AI assumes you finished thinking. But maybe your mind already moved on.
-    </li>
-    <li style={{ marginBottom: 0, lineHeight: 1.5 }}>
-      <b>After clicking away</b> — AI gives you space, but the suggestion might come too late.
-    </li>
-  </ul>
-</div>
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, color: 'var(--article-tint, currentColor)' }} aria-hidden="true">
+      <path d="M 7 2 L 7 14 M 2 9 L 7 14 L 12 9" />
+    </svg>
+
+    <div style={{ fontSize: 17, lineHeight: 1.5 }}>you get ready to write</div>
+
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, color: 'var(--article-tint, currentColor)' }} aria-hidden="true">
+      <path d="M 7 2 L 7 14 M 2 9 L 7 14 L 12 9" />
+    </svg>
+
+    <div style={{ fontSize: 17, lineHeight: 1.5 }}>you type while watching your sentence form</div>
+
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, color: 'var(--article-tint, currentColor)' }} aria-hidden="true">
+      <path d="M 7 2 L 7 14 M 2 9 L 7 14 L 12 9" />
+    </svg>
+
+    <div style={{ fontSize: 17, lineHeight: 1.5 }}>you pause and think about the next sentence</div>
+
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, color: 'var(--article-tint, currentColor)' }} aria-hidden="true">
+      <path d="M 7 2 L 7 14 M 2 9 L 7 14 L 12 9" />
+    </svg>
+
+    <div style={{ fontSize: 17, lineHeight: 1.5 }}>you decide whether to edit, continue, or move on</div>
+  </div>
+</Sidebar>
+
+<p>
+So, the timing of AI intervention = the foundation of the feeling
+</p>
+
+
+<Sidebar label="Trigger → Relationship → Feeling">
+  <Tabs items={[
+    {
+      label: 'Every 1 sec',
+      content: (
+        <TriggerDemo
+          mode="tick"
+          kicker="Tick · 1s"
+          title="Every 1 second"
+          description="AI judges every keystroke — there's always an eye on you."
+          dialogue={[
+            { kind: 'type', text: "I'm jotting down whatever's on my mind. There's always an eyes on me", cps: 32 },
+            { kind: 'pause', ms: 300 },
+            { kind: 'highlight', pattern: 'eyes', ms: 1 },
+            { kind: 'chip', text: `did you mean "an eye"?`, ms: 1 },
+            { kind: 'pause', ms: 1800 },
+            { kind: 'type', text: '. see i was just about to fix that typo that!!!!', cps: 32 },
+            { kind: 'pause', ms: 300 },
+            { kind: 'highlight', pattern: '!!!!', ms: 1 },
+            { kind: 'chip', text: `reduce to one "!"`, ms: 1 },
+            { kind: 'pause', ms: 2200 },
+            { kind: 'clear', ms: 1 },
+          ]}
+          mechanism={{ kind: 'tick', intervalMs: 1000 }}
+          economics={{
+            callsPerMin: '60',
+            tokensPerCall: '~200 in · ~50 out',
+            costPerCall: '$0.0014',
+            costPerMin: '~$0.08/min',
+            costPerUserMonth: '~$53',
+            costPerUserMonthNote: 'Sonnet 4.5 · 30 min/day × 22 days',
+          }}
+        />
+      ),
+    },
+    {
+      label: 'After pause',
+      content: (
+        <TriggerDemo
+          mode="pause"
+          kicker="Pause · 2s"
+          title="After 2 seconds of pause"
+          description="AI mistakes your pause for a finished thought."
+          dialogue={[
+            { kind: 'type', text: 'i am typing something.', cps: 28 },
+            { kind: 'pause', ms: 2200 },
+            { kind: 'chip', text: `your sentence isn't complete. add more?`, ms: 1 },
+            { kind: 'pause', ms: 1500 },
+            { kind: 'type', text: " I know — I'm thinking. Don't interrupt me.", cps: 32 },
+            { kind: 'pause', ms: 1500 },
+            { kind: 'clear', ms: 1 },
+          ]}
+          mechanism={{ kind: 'countdown', thresholdMs: 2000 }}
+          economics={{
+            callsPerMin: '4–8',
+            tokensPerCall: '~350 in · ~100 out',
+            costPerCall: '$0.0026',
+            costPerMin: '~$0.015/min',
+            costPerUserMonth: '~$10',
+            costPerUserMonthNote: 'Sonnet 4.5 · 30 min/day × 22 days',
+          }}
+        />
+      ),
+    },
+    {
+      label: 'On leave',
+      content: (
+        <TriggerDemo
+          mode="leave"
+          kicker="Blur event"
+          title="On leave"
+          description="AI stays quiet while you write — then critiques the moment you leave."
+          dialogue={[
+            { kind: 'type', text: 'this is sentence 1, this is sentence 2, this is sentence 3. okay done.', cps: 35 },
+            { kind: 'pause', ms: 700 },
+            // User clicks away to a different field — cursor flies out of
+            // the typing window, into the NOTE field below. This is the
+            // BLUR EVENT that the AI's trigger listens for.
+            { kind: 'focus', toField: 'B', ms: 900 },
+            // AI fires its analysis on Field A (which the user just left).
+            { kind: 'highlight', pattern: 'this is sentence 2,', ms: 1 },
+            { kind: 'chip', text: 'this should be removed.', ms: 1 },
+            { kind: 'pause', ms: 2000 },
+            // User comes back to the original field to respond.
+            { kind: 'focus', toField: 'A', ms: 800 },
+            { kind: 'type', text: " why didn't you tell me earlier?", cps: 32 },
+            { kind: 'pause', ms: 1600 },
+            { kind: 'clear', ms: 1 },
+          ]}
+          mechanism={{ kind: 'focus' }}
+          economics={{
+            callsPerMin: '1–3',
+            tokensPerCall: '~1500 in · ~300 out',
+            costPerCall: '$0.009',
+            costPerMin: '~$0.018/min',
+            costPerUserMonth: '~$12',
+            costPerUserMonthNote: 'Sonnet 4.5 · 30 min/day × 22 days',
+          }}
+        />
+      ),
+    },
+  ]} />
+</Sidebar>
+
+<Aside>
+The project is now NDA, so examples were mockups (created again with claude code)
+</Aside>
 
 <p>
 Different triggers create different relationships.
@@ -341,47 +672,19 @@ Is AI leading? Waiting? Watching? Interrupting? Quietly supporting?
 </p>
 
 <p>
-I prototyped each option and asked people to use them while thinking out loud.
-Each person felt it differently.
-Some users wanted AI to lead: start drafting, then let them edit.
-Others wanted AI to wait and only suggest when called.
+I prototyped each option and asked people to use them while thinking out loud, noting down when they ignored, accepted, hesitated, or rewrote.
 </p>
 
 <p>
-That led me to personal-level personalization:
-AI should learn the user’s preference through their unspoken reactions to its suggestions.
-Not just what users click — but when they ignore, accept, hesitate, or rewrite.
+The results were interesting — we found a relationship between the type of sentence and the preference of AI trigger.
 </p>
 
-<PullQuote>
-  Design the relationship. Design for the errors. Design the feeling.
-</PullQuote>
+<Aside>
+But at startups, we do research through launching.
+</Aside>
 
-<div style={{
-  margin: '40px 0',
-  padding: '28px 32px',
-  background: 'var(--surface)',
-  borderRadius: 12,
-  border: '1px solid var(--line)',
-}}>
-  <div style={{
-    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
-    textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-    marginBottom: 18,
-  }}>
-    My current framework for human–AI interaction
-  </div>
+<p>
+So we moved with adding a button to collect click rate, to test that. <strong>This is just the first step.</strong>
+</p>
 
-  <ol style={{ margin: 0, paddingLeft: 22, lineHeight: 1.65 }}>
-    <li style={{ marginBottom: 12 }}>
-      <b>Design the relationship.</b> Start by asking what relationship AI should have with the human.
-    </li>
-    <li style={{ marginBottom: 12 }}>
-      <b>Design for the errors.</b> Then ask what errors that relationship can survive.
-    </li>
-    <li style={{ marginBottom: 0 }}>
-      <b>Design the feeling.</b> Then tune the interaction until the AI feels right — not just useful.
-    </li>
-  </ol>
-</div>
 

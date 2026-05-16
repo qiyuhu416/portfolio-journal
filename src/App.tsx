@@ -11,15 +11,84 @@ function readHash(): Route {
   return window.location.hash.replace(/^#/, '') || 'home';
 }
 
+// Scroll position is persisted across refreshes via sessionStorage. The
+// browser's automatic scroll restoration doesn't work for our home page —
+// the scroll-driver div is taller than the viewport (~9.5×) and isn't in
+// the DOM until React renders, so by the time the browser tries to restore
+// scrollY, the document is too short and it falls back to top. Manual
+// restoration waits for the driver div to render before scrolling.
+const SCROLL_KEY = 'home-scroll-y';
+
 export function App() {
   const [route, setRoute] = useState<Route>(readHash);
   const homeScrollRef = useRef(0);
   const prevRouteRef = useRef<Route>(route);
+  // Tracked for the throttled scroll-saver — its callback closure can't
+  // see the latest `route` directly without re-binding the listener on
+  // every route change, so we mirror it through a ref.
+  const routeRef = useRef<Route>(route);
+  useEffect(() => { routeRef.current = route; }, [route]);
 
   useEffect(() => {
     const h = () => setRoute(readHash());
     window.addEventListener('hashchange', h);
     return () => window.removeEventListener('hashchange', h);
+  }, []);
+
+  // ——— Cross-refresh scroll restoration ———
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
+    // Restore once on mount, IF the current route uses the home scroll
+    // (home itself, or an article overlay rendered on top of home).
+    const initialRoute = routeRef.current;
+    const usesHomeScroll = initialRoute === 'home' || initialRoute.startsWith('article:');
+    if (usesHomeScroll) {
+      const saved = parseInt(sessionStorage.getItem(SCROLL_KEY) || '0', 10);
+      if (saved > 0) {
+        // Seed the in-session ref so any subsequent leavingHome → returningHome
+        // round-trip restores to the right place even before the user scrolls.
+        homeScrollRef.current = saved;
+        // Wait for the scroll-driver div to render. Poll document height per
+        // frame until tall enough OR ~20 frames pass (safety bound).
+        let attempts = 0;
+        const tryRestore = () => {
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          if (maxScroll >= saved || attempts > 20) {
+            window.scrollTo(0, saved);
+            return;
+          }
+          attempts++;
+          requestAnimationFrame(tryRestore);
+        };
+        requestAnimationFrame(tryRestore);
+      }
+    }
+
+    // Save scrollY on every scroll (throttled) AND on pagehide /
+    // visibilitychange so a refresh or tab-close captures the latest position.
+    let throttle: number | undefined;
+    const persist = () => {
+      const r = routeRef.current;
+      if (r === 'home' || r.startsWith('article:')) {
+        sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+      }
+    };
+    const onScroll = () => {
+      window.clearTimeout(throttle);
+      throttle = window.setTimeout(persist, 120);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', persist);
+    document.addEventListener('visibilitychange', persist);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', persist);
+      document.removeEventListener('visibilitychange', persist);
+      window.clearTimeout(throttle);
+    };
   }, []);
 
   useEffect(() => {

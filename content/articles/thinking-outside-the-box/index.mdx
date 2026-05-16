@@ -3,11 +3,16 @@ slug: thinking-outside-the-box
 num: "01"
 quality: Creativity
 title: Thinking outside the box
-dek: What exactly does that mean?
+dek: A mindset to practice
 date: Apr 2026
 readtime: 6
 tint: "#B05941"
 surface: "#F6E3DB"
+experiences:
+  - { name: "Apple",        href: "https://www.apple.com",      role: "Role TBD",                                       period: "Period TBD" }
+  - { name: "Archetype AI", href: "https://www.archetypeai.io", role: "AI Design Fellow",                               period: "Period TBD" }
+  - { name: "Roche",        href: "https://www.roche.com",      role: "AI Design Fellow (extending from Archetype AI)", period: "Period TBD" }
+  - { name: "Meetfood",     href: "#",                          role: "Founding UX",                                    period: "1.5 years" }
 sections:
   - { id: see,   label: "See the box" }
   - { id: know,  label: "Understand the box" }
@@ -15,16 +20,17 @@ sections:
 ---
 
 import { Figure } from '@/components/Figure'
-import { PullQuote } from '@/components/PullQuote'
 import { Aside } from '@/components/Aside'
 import { Sidebar } from '@/components/Sidebar'
-import { MicroHeading } from '@/components/MicroHeading'
 import { YouTube } from '@/components/YouTube'
 import { Collage } from '@/components/Collage'
 import { InlineLink } from '@/components/InlineLink'
 import { ExternalLink } from '@/components/ExternalLink'
 import { TabbedFigure } from '@/components/TabbedFigure'
 import { Carousel } from '@/components/Carousel'
+import { InlineTOC } from '@/components/InlineTOC'
+import { BridgeAbstract } from './diagrams/BridgeAbstract'
+import { ServiceBlueprintAbstract } from './diagrams/ServiceBlueprintAbstract'
 import bridgeStartup from './images/bridge-startup.png'
 import bridgeRoche from './images/bridge-roche.png'
 import surveyRobot from './images/survey-robot.png'
@@ -32,6 +38,9 @@ import surveyFalling from './images/survey-falling.png'
 import surveyWall from './images/survey-wall.png'
 import surveyGround from './images/survey-ground.png'
 import surveyToilet from './images/survey-toilet.png'
+import meterFace from './images/meter-face.png'
+import groundSmiley from './images/ground-smiley.png'
+import shadowFace from './images/shadow-face.png'
 
 <p>I used to think I just had a quirky mind.</p>
 
@@ -41,15 +50,16 @@ import surveyToilet from './images/survey-toilet.png'
   caption="Things I made before I had the word for it."
   items={[
     { alt: "Orange, prototype",          aspectRatio: "3 / 4", caption: "Orange, prototype" },
-    { alt: "Street meter with a face",   aspectRatio: "1 / 1", caption: "Faces in meters" },
+    { src: meterFace,    alt: "Street meter with a smiley face drawn on the dial",   aspectRatio: "3 / 4", caption: "Faces in meters" },
     { alt: "Jelly-cat drawing on a cat", aspectRatio: "4 / 3", caption: "Cat, with a jelly cat" },
     { alt: "Arduino + sun plushie",      aspectRatio: "4 / 3", caption: "Sun, animated" },
-    { alt: "Smiley drawn in sand",       aspectRatio: "1 / 1", caption: "Smiley, in sand" },
+    { src: groundSmiley, alt: "Tiny smiley face arranged on the ground, circled in white", aspectRatio: "1 / 1", caption: "Smiley, on the ground" },
+    { src: shadowFace,   alt: "Self-portrait shadow with two flowers as eyes and a drawn smile", aspectRatio: "3 / 4", caption: "Shadow, with flower eyes" },
   ]}
 />
 
 <p>
-But then I realized — coming up with creative ideas is not hard.
+But then I realized. Coming up with creative ideas is not hard.
 </p>
 
 <Aside>
@@ -61,8 +71,10 @@ Everyone's crazy 8's ideas are super crazy...!!
 </p>
 
 <p>
-I am still practicing this mindset, but it tends to come back to three steps.
+I am still practicing this mindset, but it tends to come back to three 👌 steps.
 </p>
+
+<InlineTOC />
 
 <h2 id="see">☝️· See the box</h2>
 
@@ -71,9 +83,11 @@ You can’t question the box if you can’t see it.
 </p>
 
 <p>
-A “box” is usually just an assumption, the association we didn’t notice we made, just like:
+A “box” is usually just an assumption, the association we didn’t notice we made.
 </p>
 
+<Aside>
+Just like:
 <ul>
   <li>Designers → Figma</li>
   <li>Engineers → coding</li>
@@ -81,82 +95,86 @@ A “box” is usually just an assumption, the association we didn’t notice we
   <li>Portfolio → “hello, I am…” + case studies</li>
 </ul>
 
-<p>
-These used to feel true. Now, because of AI, a lot of them are already shifting (like I am vibe coding this site using Claude Code now).
-</p>
+</Aside>
 
-<PullQuote attribution="me, after rushing too many briefs">
-  You can’t see your own assumptions from inside them.
-</PullQuote>
-
-<Sidebar label="Method">
-  <p>
-  So I use models to pull myself out:
-  </p>
-
-  <TabbedFigure
-    fig="02"
-    span="full"
-    items={[
-      {
-        label: "Analysis–Synthesis Bridge",
-        src: bridgeStartup,
-        alt: "Analysis-Synthesis Bridge",
-        when: "To define a new product direction — when the problem is open and the team needs a shared shape to push against.",
-        where: "Founding designer at a pre-PMF startup",
-        caption: "Reframing consumer–merchant interaction from passive browsing → collaborative discovery."
-      },
-      {
-        label: "Service Blueprint",
-        src: bridgeRoche,
-        alt: "Service Blueprint",
-        when: "To map AI capability into a real workflow — when there are multiple actors, handoffs, and the question is where the AI actually fits.",
-        where: "AI design fellow at Archetype AI, expanding to Roche",
-        caption: "Mapping AI capability → actual user experience when expanding to enterprise customers."
-      }
-    ]}
-  />
-</Sidebar>
 
 <p>
-Sometimes I'll prompt AI: <i>"act as a world-class PM, analyze the problem and propose solutions."</i> But this thinking shouldn't be offshored. Use mental models — to train my own brain, not theirs.
+These used to feel true. Now, because of AI, a lot of them are already shifting (like I am vibe coding this site using Claude Code now). But going backwards, how to see those ways from ahead? 
 </p>
+
+<p>
+You can’t see your own assumptions from inside them. <strong> Use model thinking to look at things differently. </strong> 
+</p>
+
+
+<TabbedFigure
+  fig="02"
+  span="full"
+  items={[
+    {
+      label: "Analysis–Synthesis Bridge",
+      src: bridgeStartup,
+      alt: "Analysis-Synthesis Bridge",
+      abstract: <BridgeAbstract />,
+      when: "To define a new product direction, when the problem is open and the team needs a shared shape to push against.",
+      where: "Founding designer at a pre-PMF startup",
+      caption: "Reframing consumer–merchant interaction from passive browsing → collaborative discovery."
+    },
+    {
+      label: "Service Blueprint",
+      src: bridgeRoche,
+      alt: "Service Blueprint",
+      abstract: <ServiceBlueprintAbstract />,
+      when: "To map AI capability into a real workflow, when there are multiple actors, handoffs, and the question is where the AI actually fits.",
+      where: "AI design fellow at Archetype AI, expanding to Roche",
+      caption: "Mapping AI capability → actual user experience when expanding to enterprise customers."
+    }
+  ]}
+/>
+
+<p>
+You can also start from observation, then work backwards to build your own model.
+</p>
+
+<ul>
+  <li>Observation & Induction (noticing patterns)</li>
+  <li>Deduction (applying a rule to your own case)</li>
+  <li>Abduction (proposing a new possible model)</li>
+</ul>
+
+<p>
+I use this to explore the question: <InlineLink to="how-i-use-ai-to-create">Given AI exists now, is there a better way to achieve the same goal </InlineLink> instead of sticking to workflows we’ve followed for years simply because we got used to them? 
+</p>
+
+
+
 
 <h2 id="know">✌️ · Understand the box</h2>
 
 <p>
-Sometimes you think you’ve seen the box — but you’ve only seen part of it. 
+Sometimes you think you’ve seen the box, but you’ve only seen part of it. 
 </p>
-
-<PullQuote attribution="me, the long way">
-  If you don’t understand the context of where the box lives, you may break the wrong thing.
-</PullQuote>
 
 <p>
-These are the aspects I look for to understand the box inside the system: why it exists, who is involved, and whether it is actually a constraint or just a habit.
+  If you don’t understand the context of where the box lives, you may break the wrong thing.
 </p>
 
-<Sidebar label="Example">
-  <p>
-  At a startup, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>.  
-  I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.
-  </p>
 
-  <p>
-  At a bigger company, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.
-  </p>
+<p>
+At a startup, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>. I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.
+</p>
 
-  <p>
-  There was a time when I saw the market using a certain technology, but our team wasn’t. At first, I didn’t really get why. After talking to my manager many times, I realized I had only seen part of the system.
-  </p>
+<p>
+At Apple, I am a vibe coder too. However, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.
+</p>
 
-  <p>
-  Different goals, different workflows.
-  </p>
-</Sidebar>
+<p>
+Different goals, different workflows.
+</p>
   
 <p>
-But that doesn’t mean I stop questioning it. The courage is in knowing where to push.
+Along the way, I learned not only to keep questioning it, but also the courage in knowing where to push. 
+Aspects to look for: why it exists, who is involved, and whether it is actually a constraint or just a habit.
 </p>
 
 <h2 id="break">👌 · Break the box</h2>
@@ -166,32 +184,24 @@ This is the hardest part, because it moves from individual thinking to group wor
 </p>
 
 <p>
-I often get asked “why?” Why change this? Why try this? Why spend time experimenting? And fair — experimentation does not always lead to success. The proposal won’t always get adopted. But that doesn’t mean I shouldn’t bring it up.
+I often get asked “why?” Why change this? Why try this? Why spend time experimenting? And fair, experimentation does not always lead to success. The proposal won’t always get adopted. But that doesn’t mean I shouldn’t bring it up.
 </p>
 
 <Aside>
   In Autumn 2025, I participated as an alumni panelist, where I told my fellow designers "one underrated value of being a designer is resilience."  Still applies now in 2026... lol. 
 </Aside>
 
-<MicroHeading>Start small, and make it fun.</MicroHeading>
-
-<p>Breaking the box together can be very fun:</p>
+<h3>Start small, and make it fun.</h3>
 
 <p>
-    In a brainstorming session, I invited my team to roleplay — engineers were the LLM, my manager was the customer. It helped us align before real prototyping. And it was fun.
-</p>
-
-<p>
-In another project, we had a recruitment problem. So I asked: what if the survey was impossible to ignore? We placed it in strange, funny, unavoidable places.
+In one project, we had a recruitment problem. So I asked: what if the survey was impossible to ignore? 
 </p>
 
 <Carousel
-  fig="04"
-  caption="Strange, but effective."
   perView={2}
   items={[
     { src: surveyRobot,   alt: "Survey held by a cute robot",     caption: "Held by a robot 🤖" },
-    { src: surveyFalling, alt: "Survey intentionally falling off the board", caption: "Falling off" },
+    { src: surveyFalling, alt: "Survey intentionally falling off the board", caption: "Intentionally falling off" },
     { src: surveyWall,    alt: "Survey horizontally on the wall", caption: "On the wall" },
     { src: surveyGround,  alt: "Survey placed on the ground",     caption: "On the ground" },
     { src: surveyToilet,  alt: "Survey facing the toilet",        caption: "Facing the toilet" },
@@ -199,30 +209,25 @@ In another project, we had a recruitment problem. So I asked: what if the survey
 />
 
   
-<Sidebar label="Small ways we can all try to practice thinking outside the box and break it">
+<Sidebar label="Small ways I've tried to make work fun">
   <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
-      <b>Coding doesn't have to be eng's work</b> — share a repo with your PM and brainstorm together.
-    </li>
-    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
-      <b>Work doesn't have to be in the office</b> — invite your peers to go for a walk and brainstorm.
-    </li>
     <li style={{ marginBottom: 0, lineHeight: 1.5 }}>
-      <b>Prototyping doesn't have to be technical</b> — try paper prototyping in meetings.
+      **Prototyping doesn't have to be technical**: 
+      try paper prototyping in meetings with your engineers roleplaying the LLM.
+    </li>
+    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
+      **Coding doesn't have to be eng's work**: share a repo with the PM and prototype together.
+    </li>
+    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
+      **Work doesn't have to be in the office**: invite your peers to go for a walk and brainstorm.
     </li>
   </ul>
 </Sidebar>
 
-<MicroHeading>Small moves first. The box bends before it breaks.</MicroHeading>
+<h3>Small moves first. The box bends before it breaks.</h3>
 
-<YouTube
-  id="cUdWs5kfGss"
-  fig="05"
-  title="Thinking outside the box — a video essay"
-  caption="A video version of the argument, made earlier. It's not polished. I'm leaving it that way on purpose."
-/>
 
-<p>Once you see outside the box, you can apply that mindset to design anything:</p>
+<p>And once you see outside the box, you can apply that mindset to design anything:</p>
 
 <ul>
   <li>Design <InlineLink to="design-the-collaboration">the XF collaboration</InlineLink></li>
@@ -231,3 +236,12 @@ In another project, we had a recruitment problem. So I asked: what if the survey
 </ul>
 
 <p>Enjoy.</p>
+
+
+<YouTube
+  id="cUdWs5kfGss"
+  fig="05"
+  span="full"
+  title="Thinking outside the box, a video essay"
+  caption="A video version of the argument, made earlier. It's not polished. I'm leaving it that way on purpose."
+/>

@@ -88,10 +88,8 @@ export function Collage({
                     display: 'block',
                     width: '100%',
                     aspectRatio: it.aspectRatio ?? '1 / 1',
-                    objectFit: 'cover',
-                    borderRadius: 6,
-                    boxShadow: '0 10px 28px rgba(31,30,27,0.10)',
-                    background: surface,
+                    objectFit: 'contain',
+                    background: 'transparent',
                   }}
                 />
               ) : (

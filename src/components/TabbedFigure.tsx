@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useArticle } from '@/routes/ArticleContext';
 import { WRAPPER_BY_SPAN, PARATEXT_MAX, type FigureSpan } from './figureLayout';
 
@@ -9,12 +9,18 @@ type Item = {
   caption?: string;
   when?: string;   // when this model is the right tool
   where?: string;  // where I actually used it
+  /** Abstract preview of the figure (typically an SVG). When present, the
+   *  figure starts collapsed: reader sees the abstract, taps to reveal the
+   *  full image. Lets a complex diagram preview as structure-only first. */
+  abstract?: ReactNode;
+  /** Custom rendered figure (e.g. an inline SVG using the article's tokens)
+   *  to use in place of <img src=...>. Takes precedence over `src`. */
+  figure?: ReactNode;
 };
 
 type Props = {
   fig?: string;
   items: Item[];
-  height?: number;
   // Mirrors Figure.tsx — 'text' (680, default) for chart-style figures,
   // 'full' (1040) for diagrams with embedded text that need room to breathe,
   // 'bleed' (100%) for atmospheric / hero. Caps at container width inside
@@ -22,13 +28,22 @@ type Props = {
   span?: FigureSpan;
 };
 
-export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props) {
+// Single aspect ratio for every state (abstract preview, actual screenshot,
+// custom figure, placeholder) so swapping tabs or revealing the detail view
+// never causes layout shift. Tuned to roughly match the source PNGs
+// (bridge-startup ~2.19, bridge-roche ~2.32) — averaged so neither letterboxes
+// hard.
+const FIGURE_ASPECT = '2.2 / 1';
+
+export function TabbedFigure({ fig, items, span = 'text' }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   const article = useArticle();
   const tint = article?.tint ?? 'var(--ink-3)';
   const surface = article?.surface ?? 'var(--surface)';
   const active = items[activeIdx];
-  const showPlaceholder = !active?.src;
+  const showPlaceholder = !active?.src && !active?.figure;
+  const showAbstract = Boolean(active?.abstract) && !revealed;
 
   return (
     <figure style={{ ...WRAPPER_BY_SPAN[span], padding: '0 32px' }}>
@@ -48,7 +63,10 @@ export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props)
               key={i}
               role="tab"
               aria-selected={isActive}
-              onClick={() => setActiveIdx(i)}
+              onClick={() => {
+                setActiveIdx(i);
+                setRevealed(false);
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -76,10 +94,80 @@ export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props)
         })}
       </div>
 
-      {showPlaceholder ? (
+      {showAbstract ? (
+        <button
+          type="button"
+          onClick={() => setRevealed(true)}
+          aria-label="Reveal full diagram"
+          style={{
+            position: 'relative',
+            display: 'block',
+            width: '100%',
+            aspectRatio: FIGURE_ASPECT,
+            padding: 0,
+            background: 'var(--surface)',
+            border: 'none',
+            borderRadius: 10,
+            cursor: 'pointer',
+            textAlign: 'left',
+            overflow: 'hidden',
+            transition: 'background .2s',
+          }}
+          onMouseEnter={(e) => {
+            const hint = e.currentTarget.querySelector<HTMLElement>('[data-reveal-hint]');
+            if (hint) {
+              hint.style.background = tint;
+              hint.style.color = 'white';
+              hint.style.borderColor = tint;
+            }
+          }}
+          onMouseLeave={(e) => {
+            const hint = e.currentTarget.querySelector<HTMLElement>('[data-reveal-hint]');
+            if (hint) {
+              hint.style.background = 'transparent';
+              hint.style.color = tint;
+              hint.style.borderColor = tint;
+            }
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              padding: '32px 28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {active?.abstract}
+          </div>
+          <div
+            data-reveal-hint
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              padding: '6px 12px',
+              fontFamily: 'var(--mono)',
+              fontSize: 10,
+              letterSpacing: 1.4,
+              textTransform: 'uppercase',
+              color: tint,
+              border: `1px solid ${tint}`,
+              borderRadius: 999,
+              background: 'transparent',
+              transition: 'background .15s, color .15s',
+            }}
+          >
+            Tap to reveal ↗
+          </div>
+        </button>
+      ) : showPlaceholder ? (
         <div
           style={{
-            height,
+            width: '100%',
+            aspectRatio: FIGURE_ASPECT,
             background: surface,
             position: 'relative',
             overflow: 'hidden',
@@ -126,11 +214,70 @@ export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props)
           )}
         </div>
       ) : (
-        <img
-          src={active.src}
-          alt={active.alt ?? ''}
-          style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8 }}
-        />
+        <div style={{ position: 'relative', width: '100%', aspectRatio: FIGURE_ASPECT }}>
+          {active?.figure ? (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              padding: '32px 28px',
+              background: 'var(--surface)',
+              borderRadius: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}>
+              {active.figure}
+            </div>
+          ) : (
+            <img
+              src={active.src}
+              alt={active.alt ?? ''}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                background: 'var(--surface)',
+                borderRadius: 8,
+              }}
+            />
+          )}
+          {active?.abstract && (
+            <button
+              type="button"
+              onClick={() => setRevealed(false)}
+              aria-label="Show abstract diagram"
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                padding: '6px 12px',
+                fontFamily: 'var(--mono)',
+                fontSize: 10,
+                letterSpacing: 1.4,
+                textTransform: 'uppercase',
+                color: 'var(--ink-3)',
+                border: '1px solid var(--line)',
+                borderRadius: 999,
+                background: 'rgba(255,255,255,0.85)',
+                backdropFilter: 'blur(6px)',
+                cursor: 'pointer',
+                transition: 'color .15s, border-color .15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = tint;
+                e.currentTarget.style.borderColor = tint;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--ink-3)';
+                e.currentTarget.style.borderColor = 'var(--line)';
+              }}
+            >
+              ← Back to abstract
+            </button>
+          )}
+        </div>
       )}
 
       {(active?.caption || fig) && (
@@ -157,8 +304,8 @@ export function TabbedFigure({ fig, items, height = 380, span = 'text' }: Props)
             display: 'grid',
             gridTemplateColumns: active?.when && active?.where ? '1fr 1fr' : '1fr',
             gap: 32,
-            paddingTop: 20,
-            borderTop: '1px dashed var(--line)',
+            paddingBottom: 22,
+            borderBottom: '1px dashed var(--line)',
           }}
         >
           {active?.when && (

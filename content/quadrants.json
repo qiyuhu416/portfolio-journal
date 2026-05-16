@@ -6,7 +6,7 @@
     "axis": "Qiyu · think",
     "pos": "TL",
     "tint": "var(--tint-tl)",
-    "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet — where first drafts go to be held up to the light.",
+    "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet, where first drafts go to be held up to the light.",
     "layout": "statement",
     "statement": [
       { "type": "text",   "text": "I practice the mindset to " },
@@ -50,7 +50,7 @@
     "axis": "Qiyu · do",
     "pos": "TR",
     "tint": "var(--tint-tr)",
-    "framing": "What I kick off when nobody asked. Meetups, experiments, rituals I run on myself — the stuff that wouldn’t exist if I waited for permission.",
+    "framing": "What I kick off when nobody asked. Meetups, experiments, rituals I run on myself, the stuff that wouldn’t exist if I waited for permission.",
     "layout": "scatter",
     "axes": {
       "x": ["comfort zone", "stretch"],
@@ -60,7 +60,7 @@
       {
         "tag": "Play",
         "title": "Making design fun",
-        "dek": "Caltrain, After Effects, and a stubborn suspicion that everything could be easier.",
+        "dek": "How can I create work to bring joy to people and encourage creativity?",
         "meta": "06 · 5 min",
         "href": "#article:making-design-fun",
         "x": 0.28,
@@ -75,7 +75,7 @@
       {
         "tag": "Community",
         "title": "Events I host at Apple",
-        "dek": "An informal lunch for people curious about the new tools.",
+        "dek": "Help me see myself, the unknown unknowns.",
         "meta": "04 · 3 min",
         "href": "#article:vibe-coding-meetup-at-apple-park",
         "x": 0.55,
@@ -88,7 +88,7 @@
       {
         "tag": "Listening",
         "title": "Meet the stranger challenge",
-        "dek": "Twenty minutes with someone I’ve never met — this is what made me start paying attention →",
+        "dek": "Twenty minutes with someone I’ve never met, this is what made me start paying attention →",
         "meta": "ongoing",
         "href": "#section:attention",
         "kind": "cta",
@@ -165,6 +165,20 @@
         "meta": "CMU / Cornell · Research Asst. · 1.5y",
         "href": "#",
         "image": "/projects/ai-trust.png"
+      },
+      {
+        "tag": "Talk",
+        "title": "Designing the generation–review loop",
+        "dek": "A talk at Apple AIML on content generation, and the review process that keeps it honest.",
+        "meta": "Apple AIML · Invited talk",
+        "href": "#"
+      },
+      {
+        "tag": "Teaching",
+        "title": "Teaching is a design problem",
+        "dek": "Head TA, Python and HCI. Office hours as a UX research method.",
+        "meta": "CMU · Head TA · multi-semester",
+        "href": "#"
       }
     ]
   }

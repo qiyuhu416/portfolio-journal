@@ -6,13 +6,17 @@
      but the warm/cool axis is dropped. A single signal red is the only
      non-grey ink on the page, reserved strictly for live/active states
      (the QIYU pill, "Open to work", hovered cell labels, the CTA arrow). */
-  --bg: #F4F2EC;          /* warm paper, very subtly */
+  /* Mouthwash-studio-inspired neutrals: pure white page, light-grey surface
+     and hairline. Ink stays walnut (warm) — pulling it to neutral charcoal
+     felt clinical. The warm ink on cool white is the contrast that gives
+     the page editorial character without going corporate. */
+  --bg: #FFFFFF;          /* pure white */
   --ink: #1A1814;         /* walnut */
   --ink-2: #45403A;
   --ink-3: #807A6E;
   --ink-4: #B0AA9C;
-  --line: #DDD8CB;
-  --surface: #ECE7DA;
+  --line: #E5E5E2;        /* neutral hairline */
+  --surface: #F1F1F1;     /* neutral light-grey card surface */
 
   /* Quadrant tints — pigment colors brought back from graphite. Each section
      gets a chromatic identity that only shows when you're INSIDE it (active
@@ -48,18 +52,21 @@
   --cool:     var(--signal);
 
   /* ——— Type system ———
-     - --serif: editorial display serif (Fraunces, variable, optical sizing).
-       Used for hero/section titles, the wordmark, and short editorial body
-       (footer manifesto, statement layouts).
-     - --sans: UI workhorse (Inter, variable). Body, labels, kickers,
-       navigation, lists. Reads well at every size.
-     - --reading: long-form article body (Source Serif 4). Companion text
-       serif optimized for sustained reading; pairs with Fraunces visually
-       (both classified-modern serifs) but is tuned for paragraph rhythm.
-     - --mono: live-state / system info only (QIYU pill, "Open to work"). */
-  --serif:   'Fraunces',       'Source Serif 4', Charter, 'Georgia', serif;
-  --sans:    'Inter',          -apple-system, 'Segoe UI', system-ui, sans-serif;
-  --reading: 'Source Serif 4', Charter, 'Georgia', serif;
+     mouthwash.studio's font stack — Suisse BP Intl (sans) + Suisse Works
+     (serif). NOTE: both Suisse families are commercial fonts from Swiss
+     Typefaces and are not bundled here. Until they're licensed and the
+     .woff2 files are added under /public/webfonts/, the browser will skip
+     past Suisse and render with the next available family in the chain
+     (Inter for sans, Source Serif 4 for serif). The chain is in
+     mouthwash's order so that the moment Suisse files appear, the site
+     swaps to them with no other code changes.
+     - --serif:   editorial / display serif. Suisse Works → Source Serif → Times
+     - --sans:    UI + body sans. Suisse BP Intl → Inter → Helvetica
+     - --reading: long-form article body. Suisse Works → Source Serif → Times
+     - --mono:    live state / system info only. */
+  --serif:   'Suisse Works', 'Source Serif 4', 'Times', 'Times New Roman', serif;
+  --sans:    'Suisse BP Intl', 'Inter', 'Helvetica', 'Arial', sans-serif;
+  --reading: 'Suisse Works', 'Source Serif 4', 'Times', 'Times New Roman', serif;
   --mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 

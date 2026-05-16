@@ -13,9 +13,13 @@ export function PullQuote({ attribution, children }: Props) {
   return (
     <blockquote
       style={{
-        maxWidth: 720, margin: '72px auto',
-        padding: '0 32px',
-        textAlign: 'center',
+        // Match the article body's max-width (680px) so the pull-quote sits
+        // within the column rather than offset from it. Italic + display size
+        // already do the "this is emphasized" work; centering or width-shift
+        // would be a third differentiation slot spent on the same idea.
+        maxWidth: 680, margin: '72px auto',
+        padding: 0,
+        textAlign: 'left',
         border: 'none',
       }}
     >

@@ -3,51 +3,250 @@ slug: how-i-use-ai-to-create
 num: "03"
 quality: Craft
 title: How I use AI to create
-dek: Not despite AI. Because of it.
+dek: This article is also a prototype.
 date: Apr 2026
 readtime: 5
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: codebase, label: "Into the codebase" }
-  - { id: question, label: "A question I keep thinking about" }
-  - { id: stop,     label: "It doesn't stop" }
+  - { id: thinking,  label: "Don't let AI bypass your thinking" }
+  - { id: prototype, label: "What is a prototype" }
+  - { id: artifact,  label: "Not all prototypes need be …" }
+  - { id: pitfalls,  label: "The AI pitfalls" }
 ---
 
 {/*
-Shape uses your existing words from making-ai-feel-human drafts, just rearranged:
-- Opens with the startup story (concrete, first person, no Apple framing).
-- Workshop moment appears only as the question — no team context.
-- §3 keeps "It doesn't stop" from the original draft.
+Shape: meta-frame lede + dek (this article is also a prototype).
+§1 — don't let AI bypass your thinking (amplify/agent + don't chase the tool, sub-h3s).
+§2 — what is a prototype (when to code-prototype, when not to, expectation by org type).
+§3 — not all prototypes need be (questioning inherited artifacts).
+§4 — the AI pitfalls (loops, what humans still decide, return to curiosity).
 
-Decisions still open: slug, title, dek, quality tag, tint/surface, num (will collide with
+Decisions still open: slug, title, quality tag, tint/surface, num (will collide with
 making-ai-feel-human=03 until you renumber in quadrants.json).
 */}
 
 import { Figure } from '@/components/Figure'
-import { PullQuote } from '@/components/PullQuote'
 import { Aside } from '@/components/Aside'
+import { InlineTOC } from '@/components/InlineTOC'
 
-<h2 id="codebase">§1 · Into the codebase</h2>
+<p>Honestly, this article is also a prototype. A way for me to think through a question in public.</p>
 
-For a while I worked at an early-stage startup where I was wired directly into the codebase. I shipped to staging myself; my changes got merged to main every week. The team was all engineers — and they wanted a designer. Not despite AI. Because of it. The hands that could move between the two modes were the bottleneck, not either mode alone.
+<InlineTOC />
 
-You have to put yourself in an environment like that to feel the answer. Reading about it isn't the same.
+<h2 id="thinking">
+  §1 · First of all, don’t let AI bypass your thinking
+</h2>
 
-<Figure fig="01" placeholder alt="Shipping to staging" caption="Shipping to staging — forthcoming." />
+<p>
+A lot of things about AI are unteachable lessons — just go and try it out. And you may find it addictive.
+</p>
 
-<h2 id="question">§2 · A question I keep thinking about</h2>
+<Aside>
+In May 2025, I was hired as an “AI prototyper” for Apple. At the time, other teams thought this sounded very unique. But in just one year (May 2026 now), not using AI enough doesn’t seem to be an issue for most people anymore.
+</Aside>
 
-Someone once asked me, very seriously: *what do you think the value of designers should be, then?*
+<p>
+The real problem seems to be how to face our FOMO, and find the space where AI leaves room.
+</p>
 
-The question has been in my head ever since.
+<p>
+So sharing two things I’ve said in sharing sessions:
+</p>
 
-<PullQuote attribution="a note from around then">
-  The worry isn't "AI replaces designers." It's "designers don't step into the seat AI leaves open."
-</PullQuote>
+<h3>1. You either use AI to amplify your thinking, or become the human agent executing for AI.</h3>
 
-<h2 id="stop">§3 · It doesn't stop</h2>
+<p>
+There were moments where I would prompt my Claude Code:
+</p>
 
-Once I spent enough time collaborating with Claude, the limits became specific.
+<blockquote>
+  “You are a world-class designer. Analyze this problem, give me options, critique those options, and improve them based on your critique.”
+</blockquote>
 
-**It doesn't stop.** Prompt Claude to *"act as a world-class designer, critique the work, and then give suggestions based on the critique"* and it will keep going. It will critique, suggest, critique the suggestion, suggest again. Someone still has to decide *enough*. That someone is still me.
+<p>
+Honestly that feels awful. I was too eager to want that productivity, to trade my own brain. And sometimes we took a long loop, going back to the original point. Intentionally. Practice. To. urge. Your. impulse. To. get. That. efficiency.
+</p>
+
+<h3>2. Don’t chase the tool</h3>
+
+<p>
+One funny thing about AI tools I saw from a meme:
+</p>
+
+<blockquote>
+  If you learn AI slowly enough, sometimes you realize you didn’t even need to learn the majority of them.
+</blockquote>
+
+<p>
+So true. So crazy. Things are moving so fast.
+</p>
+
+<p>
+For a while everyone talked about prompt engineering, Claude Code tricks (e.g. <code>/compact</code>, <code>skills.md</code>). Then a few months later, the product abstracts half of it away:
+</p>
+
+<ul>
+  <li>stuff gets baked into the models</li>
+  <li>automatic context handling</li>
+</ul>
+
+<p>
+Right now: sometimes I use tools like Stitch for fast brainstorming. Sometimes I go back to Figma because visual sketches help the LLM understand direction better. Sometimes I prototype directly in code.
+</p>
+
+<p>
+Languages change. Frameworks change. Interfaces change.
+</p>
+
+<blockquote>
+You see, this whole process is a prototype. We are all in the prototyping phase of human–AI interaction.
+</blockquote>
+
+
+<hr />
+
+
+<h2 id="prototype">
+  §2 · What is a prototype
+</h2>
+<blockquote>
+Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.
+</blockquote>
+<p>
+As creation itself becomes easier, prototypes become part of the experiments to test “what to create.”
+</p>
+
+<p>
+And also as prototypes become part of thinking, I don’t think everything should become a coded prototype either. Prototypes can be anything that serves those goals:
+</p>
+
+<ul>
+  <li>explore more directions</li>
+  <li>test more interactions</li>
+  <li>simulate more edge cases</li>
+  <li>communicate ideas that used to be too expensive to build</li>
+  <li>much more</li>
+</ul>
+
+<p>
+Sometimes paper prototypes are enough. Sometimes Figma is enough. Sometimes talking is enough.
+</p>
+
+
+<p>
+Once creation becomes cheaper, we can rethink whether the existing artifact is even the right artifact anymore.
+</p>
+
+<p>
+A lot of workflows exist simply because we inherited them.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>What we’ve been doing</th>
+      <th>Underlying goal</th>
+      <th>Given the current tech, is there a better solution?</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Slides</td>
+      <td>Communicate ideas</td>
+      <td>Interactive HTML experiences</td>
+    </tr>
+
+    <tr>
+      <td>Meetings</td>
+      <td>Share context & alignment</td>
+      <td>Agents that help distribute context</td>
+    </tr>
+
+    <tr>
+      <td>Searching across the web</td>
+      <td>Learn & satisfy curiosity</td>
+      <td>A “teach me what you just did” AI workflow</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<hr />
+
+
+<p>
+So where NOT to prototype?
+</p>
+
+<p>
+Maybe to 100% duplicate a screen you’ve already made somewhere else, or to use a vibe-coding tool to fine-tune visual details. In those cases — why use a second tool, or why not just stick with the original one?
+</p>
+
+<p>
+Prototypes are not production. Prototypes are expected to be built, not used (unless unless). Sometimes the fastest way to understand an interaction is to actually build it.
+</p>
+
+<p>
+I also found that the expectation of prototyping goals is different.
+</p>
+
+<p>
+At an early-stage startup, I worked as what people now call a “vibe coder.” It felt more like being an explorer. I was encouraged to move fast and fail fast. I shipped to staging, which got merged to prod every week. There was one week I shipped four features.
+</p>
+
+<p>
+In larger organizations, the role shifts a bit. The prototype becomes an alignment tool across teams — so more focus on the testing side.
+</p>
+
+<p>
+So many things at Apple are under NDA, so I can’t share details. But through conversations with friends and teammates, I keep finding this mindset useful.
+</p>
+
+
+<hr />
+
+<h2 id="pitfalls">
+  §4 · The AI pitfalls
+</h2>
+
+<p>
+May 5 is an interesting day I want to mark, as we are now discussing AI fatigue and where not to use AI. I think it might mean a turning point for something.
+</p>
+
+<p>
+If you’ve tried the prompt from the beginning of this article, you probably know what I mean.
+</p>
+
+<p>
+The loop can go on forever:
+</p>
+
+<ul>
+  <li>critique</li>
+  <li>suggest</li>
+  <li>critique the suggestion</li>
+  <li>suggest again</li>
+</ul>
+
+<p>
+Endlessly.
+</p>
+
+<p>
+Someone still has to decide what is enough — and that part still feels deeply human to me.
+</p>
+
+<p>
+Technology is changing, and humans are adapting. But inherently we are not changed that much. We see this in human evolution — many human natures are still “human natures”:
+</p>
+
+<p>
+Like, curiosity. Be curiosity-driven. And embrace human–human connection!
+</p>
+
+<Aside>
+(how did I end up here in an article about using AI)
+</Aside>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useArticle } from '@/routes/ArticleContext';
+import { WRAPPER_BY_SPAN, type FigureSpan } from './figureLayout';
 
 type Item = {
   src?: string;
@@ -9,10 +10,9 @@ type Item = {
 
 type Props = {
   items: Item[];
-  fig?: string;
-  caption?: string;
   /** How many tiles visible at once. Default 2. */
   perView?: number;
+  span?: FigureSpan;
 };
 
 const GAP = 16;
@@ -22,7 +22,7 @@ const GAP = 16;
  * immediately, with prev/next controls + page dots. Each tile takes
  * (1/perView) of the container width minus gap.
  */
-export function Carousel({ items, fig, caption, perView = 2 }: Props) {
+export function Carousel({ items, perView = 2, span = 'full' }: Props) {
   const article = useArticle();
   const tint = article?.tint ?? 'var(--ink-3)';
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -79,7 +79,7 @@ export function Carousel({ items, fig, caption, perView = 2 }: Props) {
   };
 
   return (
-    <figure style={{ maxWidth: 920, margin: '40px auto', padding: '0 32px' }}>
+    <figure style={{ ...WRAPPER_BY_SPAN[span], padding: '0 32px' }}>
       {/* Outer relative container with horizontal gutters reserved for the
           arrows, so they sit fully outside the image strip rather than
           overlapping it. */}
@@ -194,48 +194,39 @@ export function Carousel({ items, fig, caption, perView = 2 }: Props) {
         )}
       </div>
 
-      {/* Caption + dots row */}
-      <figcaption
-        style={{
-          marginTop: 16,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          fontFamily: 'var(--mono)',
-          fontSize: 11,
-          color: 'var(--ink-3)',
-          letterSpacing: 0.3,
-        }}
-      >
-        <span>
-          {fig && <>Fig. {fig} · </>}
-          {caption}
-        </span>
-        {pageCount > 1 && (
-          <div style={{ display: 'flex', gap: 6 }}>
-            {Array.from({ length: pageCount }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => scrollToPage(i)}
-                style={{
-                  width: 6,
-                  height: 6,
-                  padding: 0,
-                  borderRadius: 3,
-                  background: i === page ? tint : 'var(--ink-4)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  opacity: i === page ? 1 : 0.4,
-                  transition: 'opacity .2s, background .2s',
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </figcaption>
+      {/* Centered dots — per-image captions already cover the labeling
+          job, so the figure-level caption row is gone. Dots only render
+          when there's more than one page to navigate. */}
+      {pageCount > 1 && (
+        <div
+          style={{
+            marginTop: 16,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          {Array.from({ length: pageCount }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Go to slide ${i + 1}`}
+              onClick={() => scrollToPage(i)}
+              style={{
+                width: 6,
+                height: 6,
+                padding: 0,
+                borderRadius: 3,
+                background: i === page ? tint : 'var(--ink-4)',
+                border: 'none',
+                cursor: 'pointer',
+                opacity: i === page ? 1 : 0.4,
+                transition: 'opacity .2s, background .2s',
+              }}
+            />
+          ))}
+        </div>
+      )}
     </figure>
   );
 }

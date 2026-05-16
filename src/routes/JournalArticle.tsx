@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavFn } from '@/App';
-import { ArticleProvider } from '@/routes/ArticleContext';
+import { ArticleProvider, ArticleScrollProvider } from '@/routes/ArticleContext';
 import { DrawerProvider } from '@/routes/DrawerContext';
 import { ArticleDrawer } from '@/components/ArticleDrawer';
+import { ExperienceChip } from '@/components/ExperienceChip';
+import { EditMode } from '@/components/EditMode';
 import { bySlug, articles, findQuadrantBySlug } from '@/content';
 import './JournalArticle.css';
 
@@ -76,10 +78,35 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [progress, setProgress] = useState(0);
+  // Active section id — last section whose heading is above the reading line
+  // (~30% from the top of the scroll viewport). Drives the TOC rail highlight.
+  const [activeSection, setActiveSection] = useState<string>('');
   // Hide the sticky top bar on scroll-down past TOP_BAR_HIDE_AT, restore on
   // scroll-up. Same pattern Medium and Substack use — keeps controls
   // discoverable without parking them on the canvas.
   const [topBarHidden, setTopBarHidden] = useState(false);
+  // Hover override — when the cursor is in the top strip of the viewport,
+  // the bar peeks back even if scroll says it should be hidden. A short
+  // leave-delay lets the cursor travel between the hover trap and the bar
+  // itself without the bar yo-yo-ing.
+  const [topBarHovered, setTopBarHovered] = useState(false);
+  const hoverLeaveTimerRef = useRef<number | null>(null);
+  const handleTopHoverEnter = () => {
+    if (hoverLeaveTimerRef.current !== null) {
+      window.clearTimeout(hoverLeaveTimerRef.current);
+      hoverLeaveTimerRef.current = null;
+    }
+    setTopBarHovered(true);
+  };
+  const handleTopHoverLeave = () => {
+    hoverLeaveTimerRef.current = window.setTimeout(() => {
+      setTopBarHovered(false);
+      hoverLeaveTimerRef.current = null;
+    }, 200);
+  };
+  useEffect(() => () => {
+    if (hoverLeaveTimerRef.current !== null) window.clearTimeout(hoverLeaveTimerRef.current);
+  }, []);
   const lastScrollTopRef = useRef(0);
   const [viewportW, setViewportW] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1200,
@@ -107,7 +134,6 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
   const modalRadius = 14 * (1 - modalT);
   const modalShadow = `0 ${30 * (1 - modalT)}px ${80 * (1 - modalT)}px rgba(31,30,27,${0.18 * (1 - modalT)})`;
   const backdropAlpha = 0.32 * (1 - modalT);
-  const sidebarT = clamp((modalT - 0.75) / 0.25, 0, 1);
 
   // hero: padded "modal" at top → full-bleed as you scroll through the first ~260px
   const baseHeroT = clamp(scrollTop / 260, 0, 1);
@@ -152,6 +178,34 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
       const max = el.scrollHeight - el.clientHeight;
       setProgress(max > 0 ? cur / max : 0);
 
+      // Bottom-overscroll deflate is sticky: once the user wheels at the
+      // bottom, exitPull ramps up and modalT collapses back to rest (full
+      // gutters, narrow body). The reset timer in the wheel handler only
+      // fires after 1500ms of wheel silence at the bottom — which means if
+      // the user scrolls up via native wheel from there, the modal stays
+      // in its rest size for the rest of that timer's life, with the
+      // article scrolled deep but the modal dressed for "I just opened
+      // this." That's the "big margins" stuck state. Snap out the moment
+      // the scroll position has actually moved off the bottom edge.
+      if (max > 0 && cur < max - 4) {
+        // Read latest via setState callback so we don't capture stale values.
+        setExitPull((p) => (p > 0 ? 0 : p));
+        deflateLatchedRef.current = false;
+        if (exitResetTimer.current) {
+          window.clearTimeout(exitResetTimer.current);
+          exitResetTimer.current = null;
+        }
+      }
+
+      // Reading line ~30% down — last section above this is "active."
+      const line = cur + el.clientHeight * 0.3;
+      let active = '';
+      for (const section of meta.sections ?? []) {
+        const node = el.querySelector<HTMLElement>(`#${section.id}`);
+        if (node && node.offsetTop <= line) active = section.id;
+      }
+      setActiveSection(active);
+
       const last = lastScrollTopRef.current;
       if (cur > HIDE_AT && cur > last + DELTA) {
         setTopBarHidden(true);
@@ -161,6 +215,9 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
       lastScrollTopRef.current = cur;
     };
     el.addEventListener('scroll', onScroll);
+    // Compute active section once after the body renders so the TOC rail is
+    // highlighted on first paint, before the user scrolls.
+    requestAnimationFrame(onScroll);
     return () => el.removeEventListener('scroll', onScroll);
   }, [slug]);
 
@@ -311,9 +368,23 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
     try { await navigator.clipboard.writeText(url); } catch {}
   };
 
+  // Scroll-to-section helper exposed via context so MDX components (e.g.
+  // <InlineTOC />) can target the modal's inner scroll container.
+  const scrollToSection = useCallback((id: string) => {
+    const el = scrollRef.current?.querySelector(`#${id}`) as HTMLElement | null;
+    if (el && scrollRef.current) {
+      scrollRef.current.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
+    }
+  }, []);
+  const scrollValue = useMemo(
+    () => ({ scrollToSection, activeSection, progress, scrollContainerRef: scrollRef }),
+    [scrollToSection, activeSection, progress],
+  );
+
   return (
     <DrawerProvider>
     <ArticleProvider value={meta}>
+    <ArticleScrollProvider value={scrollValue}>
       <div
         onClick={(e) => { if (e.target === e.currentTarget && modalT < 0.1) onClose(); }}
         style={{
@@ -389,50 +460,17 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
             {exitPullNorm >= 1 ? 'Release to close' : 'Keep pulling'}
           </div>
 
-          {/* reading progress — thin line above everything */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, zIndex: 12, pointerEvents: 'none' }}>
-            <div style={{ height: '100%', background: meta.tint, width: `${progress * 100}%`, transition: 'width .1s linear' }} />
-          </div>
+          {/* Reading progress now lives on the section rail itself (vertical
+              fill on the left edge of the TOC) — see sectionRail / floating
+              aside below. The horizontal top-of-modal progress bar was removed
+              to consolidate progress signals into the TOC. */}
 
-          {/* floating section rail — centered layouts only.
-              In split layout the rail lives inside the left column instead. */}
-          {meta.layout !== 'split' && sidebarT > 0.01 && meta.sections && meta.sections.length > 0 && (
-            <aside style={{
-              position: 'fixed', top: '50%', right: 48,
-              width: 200,
-              opacity: sidebarT,
-              // Vertically center + slide in from the right as sidebarT ramps up.
-              transform: `translateY(-50%) translateX(${16 * (1 - sidebarT)}px)`,
-              pointerEvents: sidebarT > 0.5 ? 'auto' : 'none',
-              zIndex: 8,
-            }}>
-              <div style={{
-                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-                textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 14,
-              }}>
-                In this piece
-              </div>
-              <nav style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {meta.sections.map((s) => (
-                  <a key={s.id} href={`#${s.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const el = scrollRef.current?.querySelector(`#${s.id}`) as HTMLElement | null;
-                      if (el && scrollRef.current) {
-                        scrollRef.current.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
-                      }
-                    }}
-                    style={{
-                      fontFamily: 'var(--serif)', fontSize: 14, lineHeight: 1.35,
-                      color: 'var(--ink-3)', textDecoration: 'none',
-                      borderLeft: '1px solid var(--line)', paddingLeft: 12,
-                    }}>
-                    {s.label}
-                  </a>
-                ))}
-              </nav>
-            </aside>
-          )}
+          {/* The floating right-side rail used to live here (faded in on
+              scroll, mirroring the inline section-list with active-state
+              highlight + progress fill). It's now owned by <InlineTOC />,
+              which handles both its own inline placement AND the pinned
+              right-rail state — so the morph happens on the same element
+              the reader was just looking at, not as a separate widget. */}
 
           {/* scroll container */}
           <div
@@ -442,18 +480,87 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
               background: 'var(--bg)',
             }}
           >
-          {/* sticky top bar — hides on scroll-down, restores on scroll-up */}
+          {/* Ghost edge — a 3px tinted strip pinned to the top of the modal,
+              plus a persistent × peek so the user always has a close
+              affordance and a clear "something lives up here" hint while
+              the full bar is hidden. Fades out the moment the bar restores
+              so the bar's own borderBottom + close button take over. */}
           <div
             style={{
+              position: 'sticky', top: 0, zIndex: 8,
+              height: 0,
+              pointerEvents: 'none',
+            }}
+          >
+            <div aria-hidden style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: 3,
+              background: meta.tint,
+              opacity: (topBarHidden && !topBarHovered) ? 0.7 : 0,
+              transition: 'opacity .25s ease',
+            }} />
+            <button
+              onClick={onClose}
+              onMouseEnter={(e) => {
+                handleTopHoverEnter();
+                e.currentTarget.style.background = 'rgba(31,30,27,0.06)';
+              }}
+              onMouseLeave={(e) => {
+                handleTopHoverLeave();
+                e.currentTarget.style.background = 'transparent';
+              }}
+              aria-label="Close"
+              style={{
+                position: 'absolute', top: 10, left: 24,
+                width: 28, height: 28,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                fontSize: 22, lineHeight: 1, color: 'var(--ink-2)',
+                padding: 0, borderRadius: 14,
+                opacity: (topBarHidden && !topBarHovered) ? 1 : 0,
+                pointerEvents: (topBarHidden && !topBarHovered) ? 'auto' : 'none',
+                transition: 'opacity .25s ease, background .15s',
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Hover trap — invisible strip at the top of the modal that brings
+              the bar back when the cursor approaches. Sits underneath the
+              bar (lower z-index) so when the bar is visible, clicks land on
+              the bar's buttons; when the bar is hidden, the trap catches the
+              cursor and reveals it. */}
+          <div
+            onMouseEnter={handleTopHoverEnter}
+            onMouseLeave={handleTopHoverLeave}
+            style={{
+              position: 'sticky', top: 0, zIndex: 9,
+              height: 0,
+              pointerEvents: 'auto',
+            }}
+          >
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: 60,
+            }} />
+          </div>
+          {/* sticky top bar — hides on scroll-down, restores on scroll-up
+              OR on hover at the top of the modal. */}
+          <div
+            onMouseEnter={handleTopHoverEnter}
+            onMouseLeave={handleTopHoverLeave}
+            style={{
               position: 'sticky', top: 0, zIndex: 10,
+              marginTop: -1,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '16px 24px',
               background: 'rgba(250,248,243,0.85)',
               backdropFilter: 'blur(10px)',
               borderBottom: `1px solid rgba(233,227,214,${clamp(scrollTop / 40, 0, 1) * 0.8})`,
-              transform: topBarHidden ? 'translateY(-100%)' : 'translateY(0)',
-              opacity: topBarHidden ? 0 : 1,
-              pointerEvents: topBarHidden ? 'none' : 'auto',
+              transform: (topBarHidden && !topBarHovered) ? 'translateY(-100%)' : 'translateY(0)',
+              opacity: (topBarHidden && !topBarHovered) ? 0 : 1,
+              pointerEvents: (topBarHidden && !topBarHovered) ? 'none' : 'auto',
               transition: 'transform .25s ease, opacity .25s ease, border-color .2s',
             }}
           >
@@ -559,32 +666,35 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                     ? { dangerouslySetInnerHTML: { __html: meta.titleHtml } }
                     : { children: meta.title })}
                 />
-                <p style={{
-                  fontFamily: 'var(--reading)', fontStyle: 'italic',
-                  fontSize: useSplit ? 18 : 22,
-                  lineHeight: 1.45, color: 'var(--ink-2)',
-                  marginTop: 16,
-                }}>
-                  {meta.dek}
-                </p>
-
                 <div style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  marginTop: 28, paddingTop: 18,
-                  borderTop: '1px solid var(--line)',
+                  display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px 14px',
+                  marginTop: 28, paddingBottom: 18,
+                  borderBottom: '1px solid var(--line)',
                   fontSize: 13, color: 'var(--ink-3)',
                 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: 15,
-                    background: meta.tint,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15,
-                  }}>q</div>
-                  <div>By <b style={{ color: 'var(--ink)' }}>Qiyu Hu</b></div>
+                  {meta.experiences && meta.experiences.length > 0 && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+                      gap: 6, color: 'var(--ink-3)',
+                    }}>
+                      <span style={{ marginRight: 4 }}>Reflected from</span>
+                      {meta.experiences.map((exp, i) => (
+                        <ExperienceChip key={i} exp={exp} tint={meta.tint} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             );
 
+            // sectionRail is the navigational chrome — used in split layout's
+            // sticky left column and visually echoed in the floating right-side
+            // aside on scroll. Has the mono kicker, the vertical progress
+            // track, and active-state highlighting.
+            //
+            // The *inline* TOC (story-flow placement) is no longer rendered
+            // here. The writer drops it themselves via <InlineTOC /> in MDX
+            // wherever it fits the narrative — see src/components/InlineTOC.tsx.
             const sectionRail = meta.sections && meta.sections.length > 0 && (
               <nav style={{ marginTop: 32 }}>
                 <div style={{
@@ -593,25 +703,41 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 }}>
                   In this piece
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {meta.sections.map((s) => (
-                    <a key={s.id} href={`#${s.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const el = scrollRef.current?.querySelector(`#${s.id}`) as HTMLElement | null;
-                        if (el && scrollRef.current) {
-                          scrollRef.current.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
-                        }
-                      }}
-                      style={{
-                        fontFamily: 'var(--serif)', fontSize: 14, lineHeight: 1.35,
-                        color: 'var(--ink-3)', textDecoration: 'none',
-                        borderLeft: '1px solid var(--line)', paddingLeft: 12,
-                        paddingTop: 4, paddingBottom: 4,
-                      }}>
-                      {s.label}
-                    </a>
-                  ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute', left: 0, top: 4, bottom: 4, width: 2,
+                    background: 'var(--line)',
+                  }} />
+                  <div style={{
+                    position: 'absolute', left: 0, top: 4, width: 2,
+                    height: `calc((100% - 8px) * ${progress})`,
+                    background: 'var(--article-tint)',
+                    transition: 'height .15s linear',
+                  }} />
+                  {meta.sections.map((s) => {
+                    const isActive = s.id === activeSection;
+                    return (
+                      <a key={s.id} href={`#${s.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const el = scrollRef.current?.querySelector(`#${s.id}`) as HTMLElement | null;
+                          if (el && scrollRef.current) {
+                            scrollRef.current.scrollTo({ top: el.offsetTop - 24, behavior: 'smooth' });
+                          }
+                        }}
+                        style={{
+                          fontFamily: 'var(--serif)', fontSize: 15, lineHeight: 1.35,
+                          color: isActive ? 'var(--ink)' : 'var(--ink-3)',
+                          fontWeight: isActive ? 500 : 400,
+                          textDecoration: 'none',
+                          paddingLeft: 14,
+                          paddingTop: 4, paddingBottom: 4,
+                          transition: 'color .25s, font-weight .25s',
+                        }}>
+                        {s.label}
+                      </a>
+                    );
+                  })}
                 </div>
               </nav>
             );
@@ -631,9 +757,11 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                     {sectionRail}
                   </div>
                   <div>
-                    <div className="article-body split-layout" style={{ paddingBottom: 60 }}>
-                      <Body />
-                    </div>
+                    <EditMode slug={slug}>
+                      <div className="article-body split-layout" style={{ paddingBottom: 60 }}>
+                        <Body />
+                      </div>
+                    </EditMode>
                   </div>
                 </div>
               );
@@ -644,9 +772,11 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 <article style={{ maxWidth: 780, margin: '0 auto', padding: '48px 32px 24px' }}>
                   {titleBlock}
                 </article>
-                <div className="article-body" style={{ paddingBottom: 60 }}>
-                  <Body />
-                </div>
+                <EditMode slug={slug}>
+                  <div className="article-body" style={{ paddingBottom: 60 }}>
+                    <Body />
+                  </div>
+                </EditMode>
               </>
             );
           })()}
@@ -705,15 +835,6 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                     transition: 'transform .2s cubic-bezier(.2,.7,.2,1)',
                   }}>→</span>
                 </div>
-                {next.dek && (
-                  <div style={{
-                    fontFamily: 'var(--serif)', fontStyle: 'italic',
-                    fontSize: 17, lineHeight: 1.45, color: 'var(--ink-3)',
-                    marginTop: 8, maxWidth: 520, textWrap: 'pretty',
-                  }}>
-                    {next.dek}
-                  </div>
-                )}
               </a>
             </section>
           )}
@@ -721,6 +842,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
         </div>
       </div>
       <ArticleDrawer />
+    </ArticleScrollProvider>
     </ArticleProvider>
     </DrawerProvider>
   );

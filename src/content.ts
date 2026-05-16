@@ -22,7 +22,14 @@ export type ArticleFrontmatter = {
   tint: string;
   surface: string;
   hero?: string;
+  /** Places / projects the writer is reflecting from. Rendered as a clickable
+   *  chip row in the byline ("By Qiyu Hu — reflected from [Apple] [Archetype AI]…"). */
+  experiences?: Company[];
   sections: ArticleSection[];
+  /** Optional sentence rendered just above the inline section rail at the top
+   *  of the body — sets up the structure for the reader before they scan it
+   *  ("So, here are the angles I'll work through:"). */
+  tocIntro?: string;
   /** Per-article layout. 'centered' (default) puts title above body in one column.
    *  'split' anchors title/dek/section-rail in a sticky left column, body in the right. */
   layout?: ArticleLayout;
@@ -60,6 +67,14 @@ export type Company = {
   name: string;
   /** Optional path to a monochrome SVG/PNG mark. If omitted, the name renders as text. */
   logo?: string;
+  /** Optional click-through URL — when set, the chip becomes a link. */
+  href?: string;
+  /** Optional role at this place (e.g., "Design fellow", "Founding designer").
+   *  Shown in the hover popover on `experiences` chips in the article byline. */
+  role?: string;
+  /** Optional time period (e.g., "Jun 2024 – present", "Sep 2023 – Dec 2023").
+   *  Shown beneath `role` in the hover popover. */
+  period?: string;
 };
 
 /** Small thumbnail revealed on scatter-dot hover. `src` optional — placeholder chips render
