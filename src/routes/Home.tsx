@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { NavFn } from '@/App';
-import { quadrants, type Quadrant } from '@/content';
+import { quadrants, bySlug, type Quadrant } from '@/content';
 import { QuadrantPanel } from '@/components/QuadrantMap';
 import backgroundData from '@content/background.json';
 
@@ -83,27 +83,27 @@ const END_HOLD_END       = 0.89;
 // gets a quarter of it. Scrolling naturally walks through them; the corner-nav
 // click jumps to the midpoint of a section's range.
 const SECTION_RANGES: Record<SectionId, [number, number]> = {
-  mirror:    [CORNER_SETTLE_END, 0.39],
-  practice:  [0.39, 0.52],
-  attention: [0.52, 0.65],
-  work:      [0.65, SECTIONS_END],
+  reflect:     [CORNER_SETTLE_END, 0.39],
+  experiment:  [0.39, 0.52],
+  hear:        [0.52, 0.65],
+  collaborate: [0.65, SECTIONS_END],
 };
 function activeSectionFromProgress(p: number): SectionId {
-  if (p >= SECTION_RANGES.work[0])      return 'work';
-  if (p >= SECTION_RANGES.attention[0]) return 'attention';
-  if (p >= SECTION_RANGES.practice[0])  return 'practice';
-  return 'mirror';
+  if (p >= SECTION_RANGES.collaborate[0]) return 'collaborate';
+  if (p >= SECTION_RANGES.hear[0])        return 'hear';
+  if (p >= SECTION_RANGES.experiment[0])  return 'experiment';
+  return 'reflect';
 }
 
 // ——— Dots ———
 // Four dots persist across the entire timeline, morphing through five resting
 // states. `id` matches the cardinal node in the centered ring: qiyu=top,
 // make=right, other=bottom, notice=left.
-const DOT_IDS = ['qiyu', 'make', 'other', 'notice'] as const;
+const DOT_IDS = ['qiyu', 'create', 'other', 'think'] as const;
 type DotId = typeof DOT_IDS[number];
 
 const DOT_ANGLE: Record<DotId, number> = {
-  qiyu: -90, make: 0, other: 90, notice: 180,
+  qiyu: -90, create: 0, other: 90, think: 180,
 };
 
 // Hero scatter: viewport-relative (0–1) start positions for landing-page floaters.
@@ -111,8 +111,8 @@ const DOT_ANGLE: Record<DotId, number> = {
 // "AI loading" indicator; the other three drift around the middle.
 const HERO_SCATTER: Record<DotId, { x: number; y: number }> = {
   qiyu:   { x: 0.50, y: 0.13 },
-  notice: { x: 0.24, y: 0.46 },
-  make:   { x: 0.80, y: 0.54 },
+  think:  { x: 0.24, y: 0.46 },
+  create: { x: 0.80, y: 0.54 },
   other:  { x: 0.55, y: 0.42 },
 };
 
@@ -120,8 +120,8 @@ const HERO_SCATTER: Record<DotId, { x: number; y: number }> = {
 // phase so dots wiggle gently before the morph begins.
 const DOT_FLOAT: Record<DotId, { anim: string; dur: string; delay: string }> = {
   qiyu:   { anim: 'float-a', dur: '7.2s', delay: '0.4s' },
-  notice: { anim: 'float-b', dur: '7.8s', delay: '1.2s' },
-  make:   { anim: 'float-c', dur: '5.6s', delay: '2.5s' },
+  think:  { anim: 'float-b', dur: '7.8s', delay: '1.2s' },
+  create: { anim: 'float-c', dur: '5.6s', delay: '2.5s' },
   other:  { anim: 'float-a', dur: '6.4s', delay: '0s' },
 };
 
@@ -129,8 +129,8 @@ const DOT_FLOAT: Record<DotId, { anim: string; dur: string; delay: string }> = {
 // user hovers a floater. Names "Qiyu's relationship" with that node.
 const DOT_STATUS: Record<DotId, string> = {
   qiyu:   'Thinking…',
-  notice: 'Noticing patterns…',
-  make:   'Making things…',
+  think:  'Noticing patterns…',
+  create: 'Making things…',
   other:  'Listening to others…',
 };
 
@@ -138,7 +138,7 @@ const DOT_STATUS: Record<DotId, string> = {
 // The four arcs in the centered ring → four section views. Each section
 // activates two cardinal dots in the corner nav (the two ends of its arc),
 // and fills one cell of the final 2×2 reveal.
-type SectionId = 'mirror' | 'practice' | 'attention' | 'work';
+type SectionId = 'reflect' | 'experiment' | 'hear' | 'collaborate';
 
 // Each section pairs two cardinal nodes — that pairing IS the section's
 // identity (e.g., Reflection sits where Qiyu meets Noticing). The tag is
@@ -161,10 +161,10 @@ const SECTIONS: {
    *  up its own color without re-skinning the whole UI. */
   tint: string;
 }[] = [
-  { id: 'mirror',    title: 'to reflect',     axisPair: ['Qiyu',   'Noticing'], persona: 'Qiyu',   activity: 'noticing things on my own…',     activeDots: ['qiyu', 'notice'],  cell: 'TL', tint: 'var(--tint-tl)' },
-  { id: 'practice',  title: 'to experiment',  axisPair: ['Qiyu',   'Making'],   persona: 'Qiyu',   activity: 'making things on my own…',       activeDots: ['qiyu', 'make'],    cell: 'TR', tint: 'var(--tint-tr)' },
-  { id: 'attention', title: 'to hear',        axisPair: ['Others', 'Noticing'], persona: 'Qiyu',   activity: 'noticing things with others…',   activeDots: ['other', 'notice'], cell: 'BL', tint: 'var(--tint-bl)' },
-  { id: 'work',      title: 'to collaborate', axisPair: ['Others', 'Making'],   persona: 'Qiyu',   activity: 'making things with others…',     activeDots: ['other', 'make'],   cell: 'BR', tint: 'var(--tint-br)' },
+  { id: 'reflect',    title: 'to reflect',     axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu',   activity: 'thinking who I am…',     activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
+  { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Creating'],   persona: 'Qiyu',   activity: 'making things happen…',                       activeDots: ['qiyu', 'create'],    cell: 'TR', tint: 'var(--tint-tr)' },
+  { id: 'hear', title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu',   activity: 'hearing what others say…',       activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
+  { id: 'collaborate',      title: 'to collaborate', axisPair: ['Others', 'Creating'],   persona: 'Qiyu',   activity: 'creating with others…',                              activeDots: ['other', 'create'],   cell: 'BR', tint: 'var(--tint-br)' },
 ];
 
 const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEntries(
@@ -176,11 +176,24 @@ const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEnt
 // that section's quadrant of the 2×2). `startId → endId` is given in
 // SVG-clockwise order so the path command can be written verbatim.
 const SECTION_ARC: Record<SectionId, { startId: DotId; endId: DotId }> = {
-  mirror:    { startId: 'notice', endId: 'qiyu' },   // top-left arc
-  practice:  { startId: 'qiyu',   endId: 'make' },   // top-right arc
-  attention: { startId: 'other',  endId: 'notice' }, // bottom-left arc
-  work:      { startId: 'make',   endId: 'other' },  // bottom-right arc
+  reflect:     { startId: 'think',  endId: 'qiyu'   }, // top-left arc
+  experiment:  { startId: 'qiyu',   endId: 'create' }, // top-right arc
+  hear:        { startId: 'other',  endId: 'think'  }, // bottom-left arc
+  collaborate: { startId: 'create', endId: 'other'  }, // bottom-right arc
 };
+
+// For each dot, the two other dots it's connected to via a section arc.
+// Derived from SECTION_ARC so it stays in sync automatically.
+const DOT_CONNECTIONS: Record<DotId, DotId[]> = (() => {
+  const map: Partial<Record<DotId, Set<DotId>>> = {};
+  for (const { startId, endId } of Object.values(SECTION_ARC)) {
+    (map[startId] ??= new Set()).add(endId);
+    (map[endId]   ??= new Set()).add(startId);
+  }
+  return Object.fromEntries(
+    DOT_IDS.map((id) => [id, [...(map[id] ?? [])]])
+  ) as Record<DotId, DotId[]>;
+})();
 
 // Default status phrases — cycle through these when no dot is hovered.
 // Should read like a live now-doing feed: specific, playful, present-continuous.
@@ -276,10 +289,10 @@ const CORNER_R = 130;
 // rotate the WHOLE cluster (all 4 dots, even invisible ones) so their
 // active pair ends up in the same physical position.
 const SECTION_CLUSTER_ROTATION: Record<SectionId, number> = {
-  practice:    0,    // qiyu top, make right (natural)
-  work:      -90,    // make→top, other→right
-  attention: 180,    // other→top, notice→right
-  mirror:     90,    // notice→top, qiyu→right
+  experiment:   0,    // qiyu top, create right (natural)
+  collaborate: -90,   // create→top, other→right
+  hear:        180,   // other→top, think→right
+  reflect:      90,   // think→top, qiyu→right
 };
 
 function endHubPos(id: DotId, vw: number, vh: number): Pos {
@@ -377,7 +390,7 @@ function ringDotPos(id: DotId, ring: RingState, rotationDeg: number): Pos {
 // interpolates to the next section's rotation along the SHORTEST arc.
 // The user feels the rotation as scroll-driven motion rather than a delayed
 // reaction to crossing a boundary.
-const SECTIONS_IN_ORDER: SectionId[] = ['mirror', 'practice', 'attention', 'work'];
+const SECTIONS_IN_ORDER: SectionId[] = ['reflect', 'experiment', 'hear', 'collaborate'];
 const ROTATION_TRANSITION_BAND = 0.025; // ±half-width of cross-fade around each boundary
 function clusterRotationAt(p: number, hoveredArc: SectionId | null, navMapT: number = 0): number {
   // When the corner nav map is open (navMapT > 0), lerp the rotation to 0 so
@@ -406,9 +419,9 @@ function clusterRotationAtBase(p: number, hoveredArc: SectionId | null): number 
   // (0 if no hover, hovered section's rotation otherwise) → mirror's target.
   // Shortest-arc interpolation so a -90°→+90° transition picks the shorter
   // sweep direction instead of going the long way around.
-  if (p < SECTION_RANGES.mirror[0]) {
+  if (p < SECTION_RANGES.reflect[0]) {
     const fromRot = hoveredArc ? SECTION_CLUSTER_ROTATION[hoveredArc] : 0;
-    const toRot = SECTION_CLUSTER_ROTATION.mirror;
+    const toRot = SECTION_CLUSTER_ROTATION.reflect;
     let delta = toRot - fromRot;
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
@@ -422,7 +435,7 @@ function clusterRotationAtBase(p: number, hoveredArc: SectionId | null): number 
     // with their fan-out targets, so the hold→fan boundary has no jump.
     if (p >= END_CONVERGE_END) return 0;
     const t = (p - SECTIONS_END) / (END_CONVERGE_END - SECTIONS_END);
-    return SECTION_CLUSTER_ROTATION.work * (1 - smootherstep(clamp(t, 0, 1)));
+    return SECTION_CLUSTER_ROTATION.collaborate * (1 - smootherstep(clamp(t, 0, 1)));
   }
   for (let i = 0; i < SECTIONS_IN_ORDER.length; i++) {
     const id = SECTIONS_IN_ORDER[i];
@@ -442,7 +455,7 @@ function clusterRotationAtBase(p: number, hoveredArc: SectionId | null): number 
     }
     return SECTION_CLUSTER_ROTATION[id];
   }
-  return SECTION_CLUSTER_ROTATION.mirror;
+  return SECTION_CLUSTER_ROTATION.reflect;
 }
 
 function fanPos(id: DotId, vw: number, vh: number): Pos {
@@ -452,9 +465,9 @@ function fanPos(id: DotId, vw: number, vh: number): Pos {
   const insetY = vh * 0.06;
   switch (id) {
     case 'qiyu':   return { x: vw / 2,         y: insetY };
-    case 'make':   return { x: vw - insetX,    y: vh / 2 };
+    case 'create': return { x: vw - insetX,    y: vh / 2 };
     case 'other':  return { x: vw / 2,         y: vh - insetY };
-    case 'notice': return { x: insetX,         y: vh / 2 };
+    case 'think':  return { x: insetX,         y: vh / 2 };
   }
 }
 
@@ -465,9 +478,9 @@ function fanPos(id: DotId, vw: number, vh: number): Pos {
 // sitting at the bend. Returns null when this dot stays put for that section.
 const AXIS_INSET = 80;
 function sectionAxisPos(sectionId: SectionId, id: DotId, vw: number, vh: number): Pos | null {
-  if (sectionId === 'practice') {
-    if (id === 'qiyu') return { x: CORNER_CX, y: AXIS_INSET };
-    if (id === 'make') return { x: vw - AXIS_INSET, y: vh - CORNER_CX };
+  if (sectionId === 'experiment') {
+    if (id === 'qiyu')   return { x: CORNER_CX, y: AXIS_INSET };
+    if (id === 'create') return { x: vw - AXIS_INSET, y: vh - CORNER_CX };
   }
   return null;
 }
@@ -674,7 +687,7 @@ export function Home({ onNav }: Props) {
 
   // Refs for measuring the dashed hover line between QIYU dot and a floater.
   const dotRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [hoverLinePos, setHoverLinePos] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const [hoverLinePos, setHoverLinePos] = useState<{ x1: number; y1: number; x2: number; y2: number }[] | null>(null);
 
   // Pill anchor — invisible 10×10 span between the QIYU label and the rotating
   // status text. Measured every frame during hero so the qiyu dot can sit
@@ -701,26 +714,30 @@ export function Home({ onNav }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!hoveredDot || hoveredDot === 'qiyu') { setHoverLinePos(null); return; }
+    if (!hoveredDot) { setHoverLinePos(null); return; }
     const id = hoveredDot;
+    const neighbors = [...new Set(['qiyu' as DotId, ...DOT_CONNECTIONS[id]])];
     let raf = 0;
     const tick = () => {
-      const q = dotRefs.current['qiyu'];
-      const d = dotRefs.current[id];
-      if (q && d) {
-        const qr = q.getBoundingClientRect();
-        const dr = d.getBoundingClientRect();
-        const x1 = qr.left + qr.width / 2;
-        const y1 = qr.top + qr.height / 2;
-        const x2 = dr.left + dr.width / 2;
-        const y2 = dr.top + dr.height / 2;
-        setHoverLinePos((prev) => {
-          if (prev
-            && Math.abs(prev.x1 - x1) < 0.5 && Math.abs(prev.y1 - y1) < 0.5
-            && Math.abs(prev.x2 - x2) < 0.5 && Math.abs(prev.y2 - y2) < 0.5) return prev;
-          return { x1, y1, x2, y2 };
-        });
-      }
+      const origin = dotRefs.current[id];
+      if (!origin) { raf = requestAnimationFrame(tick); return; }
+      const or = origin.getBoundingClientRect();
+      const ox = or.left + or.width / 2;
+      const oy = or.top + or.height / 2;
+      const lines = neighbors.flatMap((nid) => {
+        const n = dotRefs.current[nid];
+        if (!n) return [];
+        const nr = n.getBoundingClientRect();
+        return [{ x1: ox, y1: oy, x2: nr.left + nr.width / 2, y2: nr.top + nr.height / 2 }];
+      });
+      setHoverLinePos((prev) => {
+        if (prev && prev.length === lines.length
+          && lines.every((l, i) =>
+            Math.abs((prev[i].x1 - l.x1)) < 0.5 && Math.abs((prev[i].y1 - l.y1)) < 0.5
+            && Math.abs((prev[i].x2 - l.x2)) < 0.5 && Math.abs((prev[i].y2 - l.y2)) < 0.5
+          )) return prev;
+        return lines;
+      });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -763,6 +780,23 @@ export function Home({ onNav }: Props) {
   const tourScrollPx = viewportH * 8;
   const driverHeight = tourScrollPx + viewportH * 1.5;
   const progress = clamp(smoothScrollY / tourScrollPx, 0, 1);
+
+  // Footer entrance — the diagram shrinks as the user scrolls past the
+  // tour and into the post-tour buffer. By the time the footer top reaches
+  // the top of viewport (smoothScrollY = driverHeight), footerProgress is
+  // already 1, so the diagram has settled into its small "header" size
+  // above the footer. Smootherstep keeps the shrink itself feeling
+  // continuous + decelerated, not a sudden snap.
+  const footerProgressRaw = clamp(
+    (smoothScrollY - tourScrollPx) / (viewportH * 1.5),
+    0,
+    1,
+  );
+  const footerProgress = smootherstep(footerProgressRaw);
+  // Final size ≈ 35% of full; shrinks toward upper-center (origin Y at 22%
+  // of viewport) so the small diagram lands in the top strip that the
+  // rising footer doesn't cover.
+  const diagramScale = lerp(1, 0.35, footerProgress);
 
   // Phase amounts (each 0→1 over its phase, clamped outside).
   const heroT     = clamp(progress / HERO_END, 0, 1);
@@ -832,7 +866,7 @@ export function Home({ onNav }: Props) {
   // Noticing + Qiyu — as a calm starter state. Only hover overrides this;
   // there's no scroll-driven cycling, which previously felt "clinchy"
   // because all four section names flicked past in ~280px of scroll.
-  const visibleSectionId: SectionId = hoveredArc ?? 'mirror';
+  const visibleSectionId: SectionId = hoveredArc ?? 'reflect';
 
   // The active section is purely scroll-driven — each section holds the
   // (CORNER_SETTLE_END → SECTIONS_END) slice for a quarter, so scrolling
@@ -877,7 +911,18 @@ export function Home({ onNav }: Props) {
 
   return (
     <div style={{ background: 'var(--bg)', color: 'var(--ink)' }}>
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '100vh', zIndex: 10, overflow: 'hidden' }}>
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: '100vh',
+        zIndex: 10, overflow: 'hidden',
+        // The whole canvas (dots + axis + labels + cluster) shrinks as the
+        // footer comes up, leaving room for the footer body below while
+        // keeping the diagram visible as a small "header" above it.
+        // transform-origin sits at 50% 22% so the diagram shrinks toward the
+        // upper-center, staying clear of the rising footer.
+        transform: `scale(${diagramScale})`,
+        transformOrigin: '50% 22%',
+        willChange: 'transform',
+      }}>
         {/* ——— Dark-mode scrim ——— Fades in when the corner nav blooms,
             painting the whole viewport black so the cluster reads as the
             ONLY thing on the page. Sits at z-32: above the hero h1 (z-30)
@@ -891,10 +936,9 @@ export function Home({ onNav }: Props) {
           style={{
             position: 'absolute', inset: 0,
             background: '#0e0d0b',
-            opacity: navMapT * 0.96,
+            opacity: 0,
             pointerEvents: 'none',
             zIndex: 32,
-            transition: 'opacity .35s ease',
           }}
         />
         {/* ——— Hero tagline ——— Sits as the ground line of the dot scatter
@@ -916,7 +960,7 @@ export function Home({ onNav }: Props) {
           pointerEvents: 'none',
           zIndex: 30,
         }}>
-          Yo, how might we<br />
+          Design is about<br />
           <button
             onMouseEnter={() => setPhraseHovered(true)}
             onMouseLeave={() => setPhraseHovered(false)}
@@ -948,7 +992,7 @@ export function Home({ onNav }: Props) {
               textDecorationColor: 'currentColor',
               transition: 'text-decoration-color .2s ease',
             }}>
-            connect the dots?
+            connecting the dots.
           </button>
         </h1>
 
@@ -968,8 +1012,8 @@ export function Home({ onNav }: Props) {
               const text =
                 id === 'qiyu'   ? 'Qiyu'    :
                 id === 'other'  ? 'Others'  :
-                id === 'notice' ? 'Noticing':
-                                  'Making';
+                id === 'think'  ? 'Thinking':
+                                  'Creating';
               return (
                 <div key={id} style={{
                   position: 'absolute',
@@ -1041,17 +1085,19 @@ export function Home({ onNav }: Props) {
           );
         })()}
 
-        {/* ——— Hover line ——— Dashed line between QIYU dot and the hovered
-            floater. Endpoints measured from the rendered DOM each frame so
-            it tracks the dots' float wiggle precisely. */}
-        {hoverLinePos && heroT < 1 && (
+        {/* ——— Hover lines ——— Dashed lines from the hovered dot to each of
+            its two arc-neighbors. Endpoints measured from the DOM each frame
+            so they track float wiggle. */}
+        {hoverLinePos && hoverLinePos.length > 0 && heroT < 1 && (
           <svg style={{
             position: 'absolute', inset: 0, width: '100%', height: '100%',
             pointerEvents: 'none', zIndex: 31,
           }}>
-            <line x1={hoverLinePos.x1} y1={hoverLinePos.y1} x2={hoverLinePos.x2} y2={hoverLinePos.y2}
-              stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="3 5"
-              style={{ opacity: clamp(1 - heroT * 1.6, 0, 1) }} />
+            {hoverLinePos.map((seg, i) => (
+              <line key={i} x1={seg.x1} y1={seg.y1} x2={seg.x2} y2={seg.y2}
+                stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="3 5"
+                style={{ opacity: clamp(1 - heroT * 1.6, 0, 1) }} />
+            ))}
           </svg>
         )}
 
@@ -1070,7 +1116,7 @@ export function Home({ onNav }: Props) {
           // and the cross-fade is invisible to the eye.
           const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const cStart = ringDotPos('qiyu', ring, 0);
-          const cEnd   = ringDotPos('make', ring, 0);
+          const cEnd   = ringDotPos('create', ring, 0);
           const canonicalD = `M ${cStart.x},${cStart.y} A ${ring.r},${ring.r} 0 0 1 ${cEnd.x},${cEnd.y}`;
           const hitActive = hubLabelVis > 0.6;
           return (
@@ -1084,7 +1130,7 @@ export function Home({ onNav }: Props) {
               <g style={{
                 transformOrigin: `${ring.cx}px ${ring.cy}px`,
                 transform: `rotate(${arcRotateDeg}deg)`,
-                opacity: isHubNeutral ? 0 : 1,
+                opacity: 0,
                 transition: 'transform .65s cubic-bezier(.4,.2,.2,1), opacity .35s ease',
               }}>
                 <path d={canonicalD}
@@ -1163,9 +1209,9 @@ export function Home({ onNav }: Props) {
           const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const labels: { id: DotId; text: string }[] = [
             { id: 'qiyu',   text: 'Qiyu' },
-            { id: 'make',   text: 'Making' },
+            { id: 'create', text: 'Creating' },
             { id: 'other',  text: 'Others' },
-            { id: 'notice', text: 'Noticing' },
+            { id: 'think',  text: 'Thinking' },
           ];
           // Label gap past the dot edge — small enough to read as a caption,
           // large enough not to crowd the dot.
@@ -1284,12 +1330,10 @@ export function Home({ onNav }: Props) {
               pointerEvents: sectionBodyVis > 0.5 ? 'auto' : 'none',
               zIndex: 36,
             }}>
-              {/* Subheading block: kicker (axis pair) above section title.
-                  Each child carries its own opacity so the kicker fades in
-                  FIRST (sectionKickerVis), then the italic title follows
-                  ~80ms behind (sectionTitleVis) — category labels itself,
-                  then the page names itself. The wrapper stays at opacity 1
-                  so the children's opacities aren't compounded. */}
+              {/* Subheading block: just the kicker (persona · activity).
+                  The italic page-name title used to live here; it was
+                  removed because the activity phrase already names the
+                  page's posture (e.g. "making things with others…"). */}
               <div key={section.id} style={{
                 position: 'absolute',
                 top: SPACE.xxxl, left: 0, right: 0,
@@ -1317,18 +1361,6 @@ export function Home({ onNav }: Props) {
                     display: 'inline-block',
                   }} aria-hidden />
                   <span style={{ color: section.tint }}>{section.activity}</span>
-                </div>
-                <div style={{
-                  fontFamily: 'var(--serif)',
-                  fontStyle: 'italic',
-                  fontSize: TYPE.sectionH1.size,
-                  fontWeight: TYPE.sectionH1.weight,
-                  letterSpacing: TYPE.sectionH1.tracking,
-                  lineHeight: TYPE.sectionH1.lineHeight,
-                  color: 'var(--ink)',
-                  opacity: sectionTitleVis,
-                }}>
-                  {section.title}
                 </div>
               </div>
               {/* Body wrapper — fades in AFTER the header. The 5% gap
@@ -1361,12 +1393,12 @@ export function Home({ onNav }: Props) {
             At t=1 → first 24 segments along Y-leg (qLive→cl), next 24 along
                      X-leg (cl→mLive). Sharp 90° corner at u=0.5 (which lands
                      at cl). */}
-        {sectionVis > 0 && activeSection === 'practice' && (() => {
-          const t = sectionExtractT(progress, 'practice');
+        {sectionVis > 0 && activeSection === 'experiment' && (() => {
+          const t = sectionExtractT(progress, 'experiment');
           if (t <= 0) return null;
           const cl = { x: CORNER_CX, y: viewportH - CORNER_CX };
           const qLive = dotState('qiyu', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
-          const mLive = dotState('make', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
+          const mLive = dotState('create', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT).pos;
           const ring = ringStateAt(progress, viewportW, viewportH, navMapT);
           const morph = smootherstep(t);
           const STEPS = 48;
@@ -1431,8 +1463,8 @@ export function Home({ onNav }: Props) {
           const cx = viewportW / 2, cy = viewportH / 2;
           const { pos: qpos } = dotState('qiyu',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
           const { pos: opos } = dotState('other',  progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
-          const { pos: npos } = dotState('notice', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
-          const { pos: mpos } = dotState('make',   progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
+          const { pos: npos } = dotState('think',  progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
+          const { pos: mpos } = dotState('create', progress, viewportW, viewportH, activeSection, clusterRotationDeg, pillAnchor, navMapT);
           const arms: { x: number; y: number }[] = [
             { x: lerp(cx, qpos.x, axisDrawT), y: lerp(cy, qpos.y, axisDrawT) },
             { x: lerp(cx, mpos.x, axisDrawT), y: lerp(cy, mpos.y, axisDrawT) },
@@ -1517,9 +1549,9 @@ export function Home({ onNav }: Props) {
         {cellLabelVis > 0 && (() => {
           const labels: { id: DotId; text: string; dx: number; dy: number; anchor: 'start' | 'middle' | 'end' }[] = [
             { id: 'qiyu',   text: 'Qiyu',     dx: 0,    dy: -14, anchor: 'middle' },
-            { id: 'make',   text: 'Making',   dx: 16,   dy: 4,   anchor: 'start' },
+            { id: 'create', text: 'Creating',  dx: 16,   dy: 4,   anchor: 'start' },
             { id: 'other',  text: 'Others',   dx: 0,    dy: 22,  anchor: 'middle' },
-            { id: 'notice', text: 'Noticing', dx: -16,  dy: 4,   anchor: 'end' },
+            { id: 'think',  text: 'Thinking', dx: -16,  dy: 4,   anchor: 'end' },
           ];
           return (
             <div style={{
@@ -1540,11 +1572,9 @@ export function Home({ onNav }: Props) {
                     // Bump the cardinal label up from 14 → 17px as the corner
                     // nav blooms (navMapT 0 → 1) so the labels read as nav
                     // affordances, not faint captions, in dark mode.
-                    fontSize: lerp(14, 17, navMapT),
-                    fontWeight: 400 + navMapT * 100,
-                    // Dark-mode flip: cardinal labels go from ink-3 (dim on
-                    // cream bg) to off-white (legible on the black scrim).
-                    color: navMapT > 0.5 ? 'rgba(250,248,243,0.92)' : 'var(--ink-3)',
+                    fontSize: lerp(13, 15, navMapT),
+                    fontWeight: 400,
+                    color: 'var(--ink-3)',
                     whiteSpace: 'nowrap',
                     transition: 'color .25s ease, font-size .25s ease, font-weight .25s ease',
                   }}>{l.text}</div>
@@ -1637,41 +1667,49 @@ export function Home({ onNav }: Props) {
                 zIndex: 35,
                 cursor: 'default',
               }}>
-              <div
-                ref={(el) => { dotRefs.current[id] = el; }}
-                style={{
-                  width: isHovered ? effectiveSize + 4 : effectiveSize,
-                  height: isHovered ? effectiveSize + 4 : effectiveSize,
-                  borderRadius: '50%',
-                  // Active dots in the corner cluster pick up the active
-                  // section's tint — the page picks up its hue the moment
-                  // you arrive in a section. Inactive dots stay ink (just
-                  // dimmed via opacity above). Outside the corner phase,
-                  // every dot is plain ink.
-                  background: isActive && cornerPhase > 0
-                    ? `color-mix(in srgb, ${SECTION_BY_ID[activeSection].tint} ${cornerPhase * 100}%, var(--ink))`
-                    : 'var(--ink)',
-                  transition: 'width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1), box-shadow .2s, background .35s ease',
-                  // Subtle hover ring (per-dot focus state). No always-on
-                  // tinted halo — the active arc + colored dot fill already
-                  // do the "live target" work; an additional glow stacks
-                  // and reads as decorative noise.
-                  boxShadow: isHovered ? '0 0 0 6px rgba(20,19,15,.08)' : 'none',
-                  // During hero, qiyu pulses in place (AI-loading indicator);
-                  // the other three drift with their float animations. When
-                  // previewActive OR a click animation is running, we suppress
-                  // all of these so the dots sit still on whichever path is
-                  // being driven (the float keyframes use `transform:
-                  // translate(...)`, which would push the dot off-line).
-                  animation: (previewActive || isClickAnim)
-                    ? 'none'
-                    : inHero
-                      ? id === 'qiyu'
-                        ? 'livePulse 1.6s ease-in-out infinite'
-                        : `${DOT_FLOAT[id].anim} ${DOT_FLOAT[id].dur} ease-in-out ${DOT_FLOAT[id].delay} infinite`
-                      : 'none',
-                  animationPlayState: isHovered ? 'paused' : 'running',
-                }} />
+              {/* Intermediate wrapper carries the float/pulse animation so
+                  the dot circle and its label move as one unit. */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                animation: (previewActive || isClickAnim)
+                  ? 'none'
+                  : inHero
+                    ? id === 'qiyu'
+                      ? 'livePulse 1.6s ease-in-out infinite'
+                      : `${DOT_FLOAT[id].anim} ${DOT_FLOAT[id].dur} ease-in-out ${DOT_FLOAT[id].delay} infinite`
+                    : 'none',
+                animationPlayState: isHovered ? 'paused' : 'running',
+              }}>
+                <div
+                  ref={(el) => { dotRefs.current[id] = el; }}
+                  style={{
+                    width: isHovered ? effectiveSize + 4 : effectiveSize,
+                    height: isHovered ? effectiveSize + 4 : effectiveSize,
+                    flexShrink: 0,
+                    borderRadius: '50%',
+                    background: isActive && cornerPhase > 0
+                      ? `color-mix(in srgb, ${SECTION_BY_ID[activeSection].tint} ${cornerPhase * 100}%, var(--ink))`
+                      : 'var(--ink)',
+                    transition: 'width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1), box-shadow .2s, background .35s ease',
+                    boxShadow: isHovered ? '0 0 0 6px rgba(20,19,15,.08)' : 'none',
+                  }} />
+                {id !== 'qiyu' && inHero && !previewActive && (
+                  <span style={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: 11,
+                    letterSpacing: 1.4,
+                    textTransform: 'uppercase',
+                    color: 'var(--ink-3)',
+                    whiteSpace: 'nowrap',
+                    opacity: clamp(1 - heroT * 1.6, 0, 1),
+                    pointerEvents: 'none',
+                  }}>
+                    {id === 'other' ? 'Others' : id === 'think' ? 'Thinking' : 'Creating'}
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -1785,7 +1823,7 @@ export function Home({ onNav }: Props) {
                 // Light-up the backing ring on dark mode so it stays visible
                 // when the black scrim is over the page; otherwise it'd
                 // disappear into the background.
-                stroke={navMapT > 0.5 ? 'rgba(250,248,243,0.45)' : 'var(--ink-4)'}
+                stroke={navMapT > 0.5 ? 'var(--ink-3)' : 'var(--ink-4)'}
                 // Brighten + thicken the backing ring as the nav map opens —
                 // it stops being a faint hint and becomes the visible compass
                 // outline. strokeDasharray switches from dotted (1 5) to a
@@ -1820,7 +1858,7 @@ export function Home({ onNav }: Props) {
                   read at lower opacity so the active pair still pops as
                   the section's protagonists. textAnchor flips with the
                   screen quadrant so labels never crash their dots. */}
-              {(['qiyu', 'make', 'other', 'notice'] as const).map((id) => {
+              {(['qiyu', 'create', 'other', 'think'] as const).map((id) => {
                 const isActive = id === aId || id === bId;
                 const angle = DOT_ANGLE[id] + clusterRotationDeg;
                 const anchor = isActive
@@ -1833,14 +1871,14 @@ export function Home({ onNav }: Props) {
                     x={lab.x} y={lab.y}
                     textAnchor={lab.anchor}
                     dominantBaseline="middle"
-                    fill={navMapT > 0.5 ? 'rgba(250,248,243,0.96)' : 'var(--ink-2)'}
-                    opacity={Math.max(cornerNavVis, sectionVis) * (isActive ? 1 : 0.55)}
+                    fill={isActive ? 'var(--ink)' : 'var(--ink-3)'}
+                    opacity={Math.max(cornerNavVis, sectionVis)}
                     style={{
                       fontFamily: 'var(--sans)',
-                      fontSize: lerp(14, 17, navMapT),
-                      fontWeight: isActive ? 500 : 400,
+                      fontSize: isActive ? lerp(14, 18, navMapT) : lerp(12, 13, navMapT),
+                      fontWeight: isActive ? 600 : 400,
                       animation: 'statusFade .35s ease',
-                      transition: 'fill .25s ease, font-size .25s ease, opacity .25s ease',
+                      transition: 'fill .25s ease, font-size .25s ease, font-weight .25s ease',
                     }}
                   >
                     {DOT_LABEL[id]}
@@ -2002,7 +2040,7 @@ export function Home({ onNav }: Props) {
           textTransform: 'uppercase', color: 'var(--ink-3)',
           pointerEvents: 'none', zIndex: 40,
         }}>
-          <span>scroll to explore</span>
+          <span>but how might we</span>
           <span style={{ width: 1, height: 20, background: 'var(--ink-4)', animation: 'scrollHint 1.8s ease-in-out infinite' }} />
         </div>
       </div>
@@ -2053,16 +2091,15 @@ export function Home({ onNav }: Props) {
             gap: SPACE.xxl,
           }}>
             <FooterList kicker="Good at" items={[
-              'Noticing the box before I’m inside it',
-              'Making the first scrappy version',
-              'Bridging design and code',
+              'Prototyping crazy "what-if" concepts',
+              'Talking to the actual users',
+              'Exploring new Human-AI interaction concepts',
               'Making the work fun',
             ]} />
-            <FooterList kicker="Working on" items={[
-              'Sitting still in long meetings',
-              'Saying “I don’t know” without flinching',
-              'Self-promotion (clearly)',
-              'Staying inside the spec',
+            <FooterList kicker="Still working on" items={[
+              'Staying at my Desk',
+              'Pixel-perfect detail craft',
+              'Pulling myself out of overthinking',
             ]} />
           </section>
 
@@ -2110,8 +2147,6 @@ export function Home({ onNav }: Props) {
                 fontFamily: 'var(--sans)', fontSize: 14,
                 color: 'var(--ink-2)',
               }}>
-                <a href="#">As a Designer</a>
-                <a href="#">As a Collaborator</a>
                 <a href="#">Resume <span style={{ color: 'var(--ink-4)' }}>↗</span></a>
                 <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn <span style={{ color: 'var(--ink-4)' }}>↗</span></a>
               </nav>
@@ -2179,10 +2214,10 @@ function SectionView({
   onSectionJump: (id: SectionId) => void;
 }) {
   switch (section.id) {
-    case 'mirror':    return <ReflectionView q={q} onNav={onNav} />;
-    case 'practice':  return <CreateScatter q={q} onNav={onNav} onSectionJump={onSectionJump} />;
-    case 'attention': return <LearnQuotes onNav={onNav} />;
-    case 'work':      return <WorkGrid q={q} onNav={onNav} />;
+    case 'reflect':     return <ReflectionView q={q} onNav={onNav} />;
+    case 'experiment':  return <CreateScatter q={q} onNav={onNav} onSectionJump={onSectionJump} />;
+    case 'hear':        return <LearnQuotes onNav={onNav} />;
+    case 'collaborate': return <WorkGrid q={q} onNav={onNav} />;
   }
 }
 
@@ -2547,17 +2582,23 @@ const LEARN_VALUE_LINKS: [string, string][] = [
 ];
 const LEARN_QUOTES: LearnQuote[] = [
   { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.',
-    who: 'a designer at IDEO',          value: 'listen',     pos: { x: 0.30, y: 0.20 } },
-  { quote: 'When a teammate gets quiet, that’s usually the most important thing said all meeting.',
-    who: 'a research lead',             value: 'listen',     pos: { x: 0.27, y: 0.50 } },
-  { quote: 'The best research is just listening with slightly better manners.',
-    who: 'a UX lead at dinner',         value: 'listen',     pos: { x: 0.30, y: 0.80 } },
-  { quote: 'The questions someone asks reveal more than the answers they give.',
-    who: 'a senior PM, on hiring',      value: 'underneath', pos: { x: 0.70, y: 0.20 } },
-  { quote: 'You’re describing a feedback loop but you’re acting like it’s a process.',
-    who: 'a PM over zoom',              value: 'underneath', pos: { x: 0.73, y: 0.50 } },
-  { quote: 'You keep saying “I think” — but that’s the whole point, isn’t it?',
-    who: 'a designer at a coffee shop', value: 'underneath', pos: { x: 0.70, y: 0.80 } },
+    who: ‘a designer at IDEO’,          value: ‘listen’,     pos: { x: 0.30, y: 0.20 },
+    articleSlug: ‘making-ai-feel-human’, sectionId: ‘relationship’ },
+  { quote: `When a teammate gets quiet, that’s usually the most important thing said all meeting.`,
+    who: ‘a research lead’,             value: ‘listen’,     pos: { x: 0.27, y: 0.50 },
+    articleSlug: ‘design-the-collaboration’, sectionId: ‘cross’ },
+  { quote: ‘Research is just listening with slightly better manners.’,
+    who: ‘a UX lead, Jan 2024’,         value: ‘listen’,     pos: { x: 0.30, y: 0.80 },
+    articleSlug: ‘making-ai-feel-human’, sectionId: ‘cant’ },
+  { quote: ‘The questions someone asks reveal more than the answers they give.’,
+    who: ‘a senior PM, on hiring’,      value: ‘underneath’, pos: { x: 0.70, y: 0.20 },
+    articleSlug: ‘thinking-outside-the-box’, sectionId: ‘see’ },
+  { quote: ‘Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.’,
+    who: ‘a draft from March’,          value: ‘underneath’, pos: { x: 0.73, y: 0.50 },
+    articleSlug: ‘how-i-use-ai-to-create’, sectionId: ‘pitfalls’ },
+  { quote: ‘Flexibility is what you leave room for on purpose, not what you failed to decide.’,
+    who: ‘a draft from March’,          value: ‘underneath’, pos: { x: 0.70, y: 0.80 },
+    articleSlug: ‘thinking-outside-the-box’, sectionId: ‘see’ },
 ];
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // Mutable position state — keyed by node id (`q:${i}` or `v:${id}`).
@@ -2928,13 +2969,54 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
                   color: 'var(--ink-3)',
                 }}>
                   <span>{q.who}</span>
-                  {linked && (
-                    <span style={{
-                      color: 'var(--ink-3)',
-                      display: 'inline-block',
-                    }}>{isLeft ? '←' : '→'}</span>
-                  )}
                 </cite>
+                {/* Article preview card — visible when the cluster is lit.
+                    Tinted with the article's own surface + tint colors so
+                    it reads as a physical thing you can pick up, not a link. */}
+                {linked && (() => {
+                  const article = q.articleSlug ? bySlug[q.articleSlug] : undefined;
+                  if (!article) return null;
+                  return (
+                    <div
+                      onClick={(e) => { e.stopPropagation(); onNav(`article:${article.meta.slug}${q.sectionId ? `:${q.sectionId}` : ''}`); }}
+                      style={{
+                        marginTop: SPACE.sm,
+                        padding: '8px 12px 10px',
+                        background: article.meta.surface,
+                        borderRadius: 6,
+                        borderLeft: isLeft ? 'none' : `3px solid ${article.meta.tint}`,
+                        borderRight: isLeft ? `3px solid ${article.meta.tint}` : 'none',
+                        cursor: 'pointer',
+                        textAlign: isLeft ? 'right' : 'left',
+                      }}
+                    >
+                      <div style={{
+                        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                        textTransform: 'uppercase', color: article.meta.tint,
+                        marginBottom: 4,
+                      }}>
+                        {article.meta.quality} · {article.meta.readtime} min read
+                      </div>
+                      <div style={{
+                        fontFamily: 'var(--serif)', fontWeight: 400,
+                        fontSize: 14, lineHeight: 1.2, letterSpacing: -0.2,
+                        color: 'var(--ink)',
+                        display: 'flex', alignItems: 'baseline', gap: 5,
+                        flexDirection: isLeft ? 'row-reverse' : 'row',
+                      }}>
+                        <span style={{ color: article.meta.tint }}>{isLeft ? '←' : '→'}</span>
+                        {article.meta.title}
+                      </div>
+                      <div style={{
+                        fontFamily: 'var(--serif)', fontStyle: 'italic',
+                        fontSize: 12, lineHeight: 1.4, color: 'var(--ink-3)',
+                        marginTop: 2, textWrap: 'pretty',
+                      }}>
+                        {article.meta.dek}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
                 );
               })()}
@@ -2951,15 +3033,132 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
 // of roles active that month. The featured projects (Meetfood, Apple, etc.)
 // are not separate cards anymore — they live as the brightest cells in the
 // grid. Click "what I made" out of the picture; let the arc speak.
-function WorkGrid({ q }: { q: Quadrant; onNav: NavFn }) {
+const GALLERY_ITEMS = [
+  {
+    tag: '0 → 1',
+    title: 'Shopping doesn\'t have to start with a search',
+    dek: 'Watch · create · purchase. Six business partners, one app.',
+    meta: 'Meetfood · Founding UX · 1.5y',
+    image: '/projects/meetfood.png',
+    href: 'https://www.key-you.com/projects/app-launch',
+  },
+  {
+    tag: 'GenAI',
+    title: 'AI doesn\'t have to be complex',
+    dek: 'Research-to-prototype. SUS 86.3.',
+    meta: 'Google Cloud · UX · 4mo',
+    image: '/projects/google-cloud.png',
+    href: 'https://www.key-you.com/projects/google-cloud',
+  },
+  {
+    tag: 'Conversational AI',
+    title: 'AI can be a design tool',
+    dek: 'A working call agent built in a week of prompt engineering.',
+    meta: 'The Mentoring Partnership · Solo AI · 1wk',
+    image: '/projects/call-agent.png',
+    href: 'https://www.key-you.com/projects/prototyping-with-ai',
+  },
+  {
+    tag: 'Service design',
+    title: 'Design can be a research tool',
+    dek: 'Hi-fi prototypes drove adoption. SUS 90.3.',
+    meta: 'Pittsburgh Parking Authority · Service design · 4mo',
+    image: '/projects/research-tool.png',
+    href: 'https://www.key-you.com/projects/design-as-a-research-tool',
+  },
+  {
+    tag: 'Physical AI',
+    title: 'AI doesn\'t have to stay on a screen',
+    dek: 'Embedding diagnostic AI into a clinical workflow.',
+    meta: 'Roche · Service design · 1mo',
+    image: '/projects/roche.png',
+    href: 'https://www.linkedin.com/posts/tantara_its-a-wrap-for-the-inaugural-strange-design-ugcPost-7229713649941028865-kYh4/',
+  },
+  {
+    tag: 'Research',
+    title: 'AI can earn human trust',
+    dek: 'Two papers on language, affiliation, and care.',
+    meta: 'CMU / Cornell · Research Asst. · 1.5y',
+    image: '/projects/ai-trust.png',
+    href: null,
+  },
+];
+
+function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: `${SPACE.xxxl}px ${SPACE.xl}px`,
-      overflowY: 'auto',
+      // Keep bottom-right corner clear for the BR nav arc (radius ~180px)
+      padding: `${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl}px`,
+      boxSizing: 'border-box',
+      pointerEvents: 'none',
     }}>
-      <BackgroundMatrix tint={q.tint as string} />
+      <div style={{
+        width: '100%', maxWidth: 780,
+        pointerEvents: 'auto',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: SPACE.md,
+        }}>
+          {GALLERY_ITEMS.map((item, i) => (
+            <div
+              key={i}
+              onClick={() => item.href && window.open(item.href, '_blank', 'noopener,noreferrer')}
+              style={{
+                display: 'flex', flexDirection: 'column',
+                border: '1px solid var(--line)',
+                borderRadius: 8, overflow: 'hidden',
+                background: 'var(--surface)',
+                cursor: item.href ? 'pointer' : 'default',
+                transition: 'box-shadow .2s, transform .2s cubic-bezier(.2,.7,.2,1)',
+              }}
+              onMouseEnter={(e) => {
+                if (!item.href) return;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(31,30,27,0.09)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <div style={{
+                aspectRatio: '16 / 9',
+                background: `url(${item.image}) center/cover no-repeat rgba(31,30,27,0.03)`,
+                borderBottom: '1px solid var(--line)',
+                flexShrink: 0,
+              }} />
+              <div style={{ padding: `${SPACE.sm}px ${SPACE.md}px ${SPACE.md}px`, flex: 1 }}>
+                <div style={{
+                  fontFamily: 'var(--mono)', fontSize: 9,
+                  letterSpacing: 0.8, textTransform: 'uppercase',
+                  color: 'var(--ink-3)', marginBottom: SPACE.xs,
+                }}>
+                  {item.tag}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--serif)', fontStyle: 'italic',
+                  fontSize: 14, lineHeight: 1.35,
+                  color: 'var(--ink)',
+                }}>
+                  {item.title}
+                </div>
+                <div style={{
+                  marginTop: SPACE.xs,
+                  fontFamily: 'var(--mono)', fontSize: 9,
+                  letterSpacing: 0.4, textTransform: 'uppercase',
+                  color: 'var(--ink-4)',
+                }}>
+                  {item.meta}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -3048,14 +3247,18 @@ function BackgroundMatrix({ tint: _tint }: { tint: string }) {
   }, [minYear, maxYear]);
 
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const cellSize = 26;
-  // Wider gap spreads the year rows across the same width as the thumbnail
-  // strip above, so the matrix and the thumbnails read as one block.
-  const cellGap = 30;
-  const yearLabelW = 56;
+  // Compact GitHub-style cells — the matrix is a secondary cue under the
+  // primary visual (the thumbnails), so it stays tight rather than spread.
+  const cellSize = 18;
+  const cellGap = 10;
+  const yearLabelW = 52;
   // Total matrix width = year-label gutter + 12 cells + 11 inter-cell gaps.
-  // The thumbnail row uses this same value so both align.
+  // Used to center the compact matrix inside the wider thumbnail-led column.
   const matrixW = yearLabelW + 12 * cellSize + 11 * cellGap;
+  // Wider container so the thumbnail row carries the visual weight. Sized so
+  // each of the 4 thumbnail slots clears ~250px wide — large enough that the
+  // images, not the dots, are the focal point of the section.
+  const containerW = 1120;
   // Active cells fill at this opacity so the three tints stay readable
   // side-by-side without one dominating purely by saturation.
   const ACTIVE_FILL_PCT = 70;
@@ -3071,7 +3274,7 @@ function BackgroundMatrix({ tint: _tint }: { tint: string }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', gap: SPACE.xl,
-      width: matrixW,
+      width: containerW,
       alignItems: 'stretch',
     }}>
       {/* Thumbnails strip — sits above the matrix, same width. When hovering
@@ -3117,7 +3320,7 @@ function BackgroundMatrix({ tint: _tint }: { tint: string }) {
         })}
       </div>
 
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', width: matrixW, margin: '0 auto' }}>
         {/* Month labels — sit above the cell columns, aligned via left padding
             equal to the year-label gutter. */}
         <div style={{
@@ -3260,51 +3463,6 @@ function BackgroundMatrix({ tint: _tint }: { tint: string }) {
             }} />
             <span>{CATEGORY_LABEL[cat]}</span>
           </span>
-        ))}
-      </div>
-      </div>
-
-      {/* Right column: thumbnails of the roles active in the hovered cell.
-          Reserves a fixed width so the matrix doesn't shift when nothing is
-          hovered. Items without an image render a tinted placeholder swatch
-          in their category color. */}
-      <div style={{
-        flex: '0 0 280px',
-        minHeight: 220,
-        display: 'flex', flexDirection: 'column', gap: SPACE.md,
-        opacity: hoveredItems.length > 0 ? 1 : 0,
-        transition: 'opacity .2s',
-        pointerEvents: 'none',
-      }}>
-        {hoveredItems.map((it) => (
-          <div key={it.id} style={{
-            display: 'flex', flexDirection: 'column', gap: 6,
-          }}>
-            <div style={{
-              width: '100%', aspectRatio: '4 / 3',
-              borderRadius: 8, overflow: 'hidden',
-              border: `1px solid color-mix(in srgb, ${CATEGORY_TINT[it.category]} 40%, transparent)`,
-              background: it.image
-                ? `url(${it.image}) center/cover no-repeat var(--surface)`
-                : `linear-gradient(135deg, color-mix(in srgb, ${CATEGORY_TINT[it.category]} 30%, transparent), color-mix(in srgb, ${CATEGORY_TINT[it.category]} 8%, transparent))`,
-              position: 'relative',
-            }}>
-              {!it.image && (
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
-                }} />
-              )}
-            </div>
-            <div style={{
-              fontFamily: 'var(--sans)', fontSize: 11,
-              color: 'var(--ink-3)', textAlign: 'left',
-              lineHeight: 1.3,
-            }}>
-              <span style={{ color: CATEGORY_TINT[it.category] }}>● </span>
-              {it.role} <span style={{ color: 'var(--ink-4)' }}>· {it.org}</span>
-            </div>
-          </div>
         ))}
       </div>
     </div>

@@ -61,6 +61,7 @@ export type Signal = {
   when: string;
   changed: string;
   tint: string;
+  href?: string;
 };
 
 export type Company = {
@@ -102,6 +103,12 @@ export type QuadrantItem = {
   previews?: PreviewChip[];
   /** When true, render the link with target=_blank — for CTA items pointing off-site. */
   external?: boolean;
+  /** When true, clicking the scatter dot expands the previews inline on the page
+   *  instead of opening the article drawer. Used for items where the content
+   *  *is* the images — the dot becomes a small gallery in place. */
+  expandsInline?: boolean;
+  /** Optional OG-style card shown on hover — platform name, post title, body snippet, optional screenshot. */
+  cardPreview?: { platform?: string; title: string; body: string; image?: string };
 };
 
 export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatter' | 'statement';
@@ -111,7 +118,12 @@ export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatt
  *  modal on click. The href follows the standard `#article:<slug>` convention. */
 export type StatementSegment =
   | { type: 'text'; text: string }
-  | { type: 'phrase'; text: string; href: string; tint: string };
+  | {
+      type: 'phrase';
+      text: string;
+      href: string;
+      tint: string;
+    };
 
 /** Labels for the scatter plot's axes. Tuples are [low, high] — i.e. [left, right] and [top, bottom]. */
 export type QuadrantAxes = {

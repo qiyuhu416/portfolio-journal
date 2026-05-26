@@ -11,10 +11,16 @@ tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
   - { id: errors,         label: "Designing for errors" }
-  - { id: easy-inference, label: "Easy inference: phone call agent" }
+  - { id: easy-inference, label: "Case study: phone call agent" }
   - { id: relationship,   label: "Designing the relationship" }
-  - { id: hard-inference, label: "Hard inference: elder care AI" }
-  - { id: feeling,        label: "Design the feeling" }
+  - { id: hard-inference, label: "Case study: elder care Bot" }
+  - { id: feeling,        label: "Designing the feeling" }
+  - { id: co-writing,     label: "Case study: Human–AI co-writing tool" }
+experiences:
+  - { name: "Apple",                    href: "https://www.apple.com", role: "GenAI Prototyper",             period: "May 2025 – present" }
+  - { name: "The Mentoring Partnership", href: "#",                    role: "Conversational AI",            period: "Feb 2024 – Aug 2024" }
+  - { name: "CMU AI-CARING",            href: "#",                    role: "Conversational AI Researcher", period: "Aug 2023 – Aug 2024" }
+  - { name: "Google × Cornell",         href: "#",                    role: "UX Designer",                  period: "Feb 2023 – May 2023" }
 tocIntro: "So, here are the angles I'll work through:"
 ---
 
@@ -49,7 +55,7 @@ At first, I thought designing AI was mostly about making the AI smarter, but her
 
 <InlineTOC />
 
-<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(easy inferences)</span></h2>
+<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if easy inferences)</span></h2>
 <h3 id="easy-inference">Case study: phone call agent prototype to elicit errors</h3>
 
 <p>AI is never perfect (yet). Please.</p>
@@ -235,7 +241,7 @@ Sometimes the experience of recovering from an error matters more than preventin
 <hr/>
 
 
-<h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(hard inferences)</span></h2>
+<h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if hard inferences)</span></h2>
 <h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
 
 
@@ -292,9 +298,10 @@ The Overarching Research question: <em>How do we design AI that people trust?</e
   color: 'var(--article-tint, var(--ink-2))',
   whiteSpace: 'pre',
   overflowX: 'auto',
+  maxHeight: 480,
+  overflowY: 'auto',
 }}>
-{`conversation-flow · suggested by psychology research
-
+{`
 ┌──────────────────────────────────────────────────┐
 │ 1 · acknowledge the instruction                  │
 ├──────────────────────────────────────────────────┤
@@ -351,14 +358,12 @@ The Overarching Research question: <em>How do we design AI that people trust?</e
   Sketched response structure for when caregiver and elder goals conflict. Each line is a design hypothesis to test in user research, measuring trust before and after each step.
 </p>
 
+
 <Takeaway label="02">In high-inference scenarios, trust also means "I am not capable of doing this"</Takeaway>
-In eldercare, the trickest part is **when the older adult's health decline** as that would change a lot of things. 
-The bot is more than just a messanger, it is a party that knows information from both and can talk to both information, however, the elder might not want the bot to tell all the informatino to their caregiver.
 
-For example, the bot detects that the elder had a fall. The elder doesn't want their kid to worry so ask the bot to delete this information, but this information is important as it might impact the future health risk of this older adult. No clear agreement has been set during the onboardig. 
 
-If you were the bot. What would you do. 
 
+In eldercare, the trickiest part is when the older adult's health declines — that changes a lot of things. The bot is more than just a messenger; it's a party that knows information from both sides and can talk to both. But the elder might not want the bot to tell everything to their caregiver.
 <details style={{
   margin: '24px 0 32px',
   borderLeft: '2px solid var(--article-tint, var(--ink-3))',
@@ -398,9 +403,24 @@ If you were the bot. What would you do.
       We narrowed to <em>"best interest"</em>, broad enough to cover the scenarios, specific enough to actually design around.
     </p>
   </div>
+
 </details>
 
-This is a tricky questions even for humans, and when we design it, we also need to consider various cases:
+For example: the bot detects that the elder had a fall. The elder doesn't want their kid to worry, so asks the bot to delete this information. But this information is important — it might impact the future health risk of this older adult. No clear agreement was set during onboarding.
+
+<p style={{
+  fontFamily: 'var(--serif)',
+  fontStyle: 'italic',
+  fontSize: 24,
+  lineHeight: 1.4,
+  textAlign: 'center',
+  margin: '40px 0',
+  color: 'var(--ink)',
+}}>
+  If you were the bot, what would you do?
+</p>
+
+This is a tricky question even for humans, and when we design it, we also need to consider various cases:
 
 
 <pre style={{

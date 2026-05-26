@@ -80,6 +80,7 @@
         "href": "#article:vibe-coding-meetup-at-apple-park",
         "x": 0.55,
         "y": 0.78,
+        "expandsInline": true,
         "previews": [
           { "label": "Event" },
           { "label": "Lunch" }
@@ -90,11 +91,18 @@
         "title": "Meet the stranger challenge",
         "dek": "Twenty minutes with someone I’ve never met, this is what made me start paying attention →",
         "meta": "ongoing",
-        "href": "#section:attention",
+        "href": "https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC9VQmgBUJmcvY5M6qarqb6mnsmaGP4EJz8",
         "kind": "cta",
+        "external": true,
         "count": "72",
         "x": 0.92,
-        "y": 0.50
+        "y": 0.50,
+        "cardPreview": {
+          "platform": "LinkedIn",
+          "title": "Title doesn’t matter",
+          "body": "Twenty minutes with someone I’ve never met. This is what made me start paying attention.",
+          "image": "/previews/linkedin-stranger-challenge.png"
+        }
       }
     ]
   },

@@ -5,7 +5,8 @@
     "who": "a designer at a coffee shop",
     "when": "Nov 2023",
     "changed": "Made me stop apologizing for hedging.",
-    "tint": "var(--warm)"
+    "tint": "var(--warm)",
+    "href": "#article:thinking-outside-the-box"
   },
   {
     "n": 22,
@@ -13,7 +14,8 @@
     "who": "a UX lead at a dinner",
     "when": "Jan 2024",
     "changed": "Reframed my whole intake ritual.",
-    "tint": "var(--cool)"
+    "tint": "var(--cool)",
+    "href": "#article:making-ai-feel-human"
   },
   {
     "n": 41,

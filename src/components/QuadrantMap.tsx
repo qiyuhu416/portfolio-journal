@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { NavFn } from '@/App';
-import { quadrants, signals, type Quadrant, type StatementSegment } from '@/content';
+import { quadrants, signals, bySlug, type Quadrant, type StatementSegment } from '@/content';
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
@@ -132,7 +132,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
           {layout === 'list' ? (
             <ListLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
           ) : layout === 'quotes' ? (
-            <QuotesLayout itemsOpacity={itemsOpacity} />
+            <QuotesLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
           ) : (
             <GalleryLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
           )}
@@ -223,6 +223,17 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
       }}
     >
       {seg.text}
+      <span
+        aria-hidden="true"
+        style={{
+          display: 'inline-block',
+          marginLeft: '0.25em',
+          transform: hover ? 'translate(2px, -2px)' : 'translate(0, 0)',
+          transition: 'transform .18s',
+        }}
+      >
+        ↗
+      </span>
     </a>
   );
 }
@@ -493,6 +504,10 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
  */
 function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  // Index of the dot whose previews are currently expanded inline. Only items
+  // with `expandsInline: true` participate; clicking one toggles open/close
+  // instead of routing to the article drawer.
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const plotItems = q.items.filter(
     (it) => typeof it.x === 'number' && typeof it.y === 'number',
   );
@@ -540,34 +555,112 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           );
         })()}
 
+        {/* OG-style card — floats to the left of a hovered CTA dot that has cardPreview */}
+        {hoverIdx !== null && (() => {
+          const it = plotItems[hoverIdx];
+          if (!it.cardPreview) return null;
+          const xPct = it.x! * 100;
+          const yPct = it.y! * 100;
+          const hoverSize = it.kind === 'cta' ? 140 + 12 : 140 + 40;
+          return (
+            <div style={{
+              position: 'absolute',
+              right: `calc(${100 - xPct}% + ${hoverSize / 2 + 16}px)`,
+              top: `${yPct}%`,
+              transform: 'translateY(-50%)',
+              width: 240,
+              background: 'var(--bg)',
+              border: '1px solid var(--line)',
+              borderRadius: 10,
+              overflow: 'hidden',
+              boxShadow: '0 8px 28px rgba(31,30,27,0.10)',
+              pointerEvents: 'none',
+              zIndex: 10,
+            }}>
+              {it.cardPreview.image ? (
+                <img
+                  src={it.cardPreview.image}
+                  alt={it.cardPreview.title}
+                  style={{ display: 'block', width: '100%', height: 'auto' }}
+                />
+              ) : (
+                <div style={{ padding: '14px 16px' }}>
+                  {it.cardPreview.platform && (
+                    <div style={{
+                      fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                      textTransform: 'uppercase', color: '#0077B5', marginBottom: 8,
+                    }}>
+                      {it.cardPreview.platform}
+                    </div>
+                  )}
+                  <div style={{
+                    fontFamily: 'var(--serif)', fontWeight: 400,
+                    fontSize: 15, lineHeight: 1.2, letterSpacing: -0.2,
+                    color: 'var(--ink)', marginBottom: 8,
+                  }}>
+                    {it.cardPreview.title}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--serif)', fontStyle: 'italic',
+                    fontSize: 13, lineHeight: 1.4, color: 'var(--ink-3)',
+                  }}>
+                    {it.cardPreview.body}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
+                    color: 'var(--ink-4)', marginTop: 12, textTransform: 'uppercase',
+                  }}>
+                    View post ↗
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {plotItems.map((it, i) => {
           const hovered = hoverIdx === i;
-          const dimmed = hoverIdx !== null && !hovered;
+          const expanded = expandedIdx === i;
+          const dimmed = hoverIdx !== null && !hovered && !expanded;
           const isCta = it.kind === 'cta';
           const external = it.external === true;
+          const expandsInline = it.expandsInline === true;
           // Article dots grow more on hover so the longer "question" dek
           // (revealed by the swipe) has room to breathe at a smaller font
           // without overflowing the circle. CTA dots keep the modest grow
-          // since their content doesn't change.
+          // since their content doesn't change. Expanded inline-gallery dots
+          // grow much larger so the previews read as a proper gallery, not
+          // a hover hint.
           const baseSize = 140;
-          const size = hovered ? baseSize + (isCta ? 12 : 40) : baseSize;
+          const size = expanded
+            ? 320
+            : hovered
+              ? baseSize + (isCta ? 12 : 40)
+              : baseSize;
 
           return (
             <a key={i} href={it.href}
                target={external ? '_blank' : undefined}
                rel={external ? 'noreferrer' : undefined}
-               onClick={(e) => { if (!external) dispatchItemClick(e, it.href, onNav); }}
+               onClick={(e) => {
+                 if (expandsInline) {
+                   e.preventDefault();
+                   setExpandedIdx(expanded ? null : i);
+                   return;
+                 }
+                 if (!external) dispatchItemClick(e, it.href, onNav);
+               }}
                onMouseEnter={() => setHoverIdx(i)}
                onMouseLeave={() => setHoverIdx(null)}
                style={{
                  position: 'absolute',
                  left: `${it.x! * 100}%`, top: `${it.y! * 100}%`,
                  width: size, height: size,
-                 marginLeft: -size / 2, marginTop: -size / 2,
+                 transform: 'translate(-50%, -50%)',
                  textDecoration: 'none',
                  cursor: 'pointer',
                  opacity: dimmed ? 0.55 : 1,
-                 transition: 'opacity .2s, width .25s cubic-bezier(.2,.7,.2,1), height .25s cubic-bezier(.2,.7,.2,1), margin .25s cubic-bezier(.2,.7,.2,1)',
+                 transition: 'opacity .2s, width .25s cubic-bezier(.2,.7,.2,1), height .25s cubic-bezier(.2,.7,.2,1)',
                  zIndex: hovered ? 2 : 1,
                  // The dot itself: a filled circle for articles, an outlined
                  // ring for CTA. Title text sits inside the circle, centered.
@@ -583,7 +676,8 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                  // entrance never bleed past the circle edge.
                  overflow: 'hidden',
                }}>
-              {/* Title (rest state) — swipes UP on hover. */}
+              {/* Title (rest state) — swipes UP on hover. Also fades fully out
+                  when this dot is expanded inline so the gallery has the stage. */}
               <span style={{
                 position: 'absolute',
                 left: 0, right: 0,
@@ -595,7 +689,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                 textAlign: 'center',
                 textWrap: 'balance',
                 pointerEvents: 'none',
-                opacity: hovered && !isCta ? 0 : 1,
+                opacity: expanded ? 0 : (hovered && !isCta ? 0 : 1),
                 transform: hovered && !isCta ? 'translateY(-14px)' : 'translateY(0)',
                 transition: 'opacity .2s ease, transform .28s cubic-bezier(.2,.7,.2,1)',
               }}>
@@ -605,8 +699,9 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                 )}
               </span>
               {/* Dek (the question) — swipes UP into view on hover. Italic
-                  serif so the question reads as a thought, not a label. */}
-              {it.dek && !isCta && (
+                  serif so the question reads as a thought, not a label.
+                  Suppressed while expanded so the gallery isn't crowded. */}
+              {it.dek && !isCta && !expanded && (
                 <span style={{
                   position: 'absolute',
                   left: 0, right: 0,
@@ -626,7 +721,9 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   {it.dek}
                 </span>
               )}
-              {it.previews && it.previews.length > 0 && (
+              {/* Hover-preview strip (small thumbs below the circle) — hidden
+                  while expanded since the expanded gallery covers the same job. */}
+              {it.previews && it.previews.length > 0 && !expanded && (
                 <div style={{
                   position: 'absolute',
                   top: '100%', left: '50%',
@@ -669,6 +766,58 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   ))}
                 </div>
               )}
+              {/* Inline gallery — fills the (now-larger) circle with the
+                  previews as actual images. Visible only when this dot is in
+                  its expanded state. Clicking the dot again collapses it. */}
+              {expandsInline && expanded && it.previews && it.previews.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 18,
+                  display: 'grid',
+                  gridTemplateColumns: it.previews.length > 1 ? '1fr 1fr' : '1fr',
+                  gap: 6,
+                  pointerEvents: 'none',
+                }}>
+                  {it.previews.map((p, pi) => (
+                    <div key={pi} style={{
+                      position: 'relative',
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      background: p.src
+                        ? `url(${p.src}) center/cover no-repeat`
+                        : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 36%, transparent), color-mix(in srgb, ${q.tint} 10%, transparent))`,
+                    }}>
+                      {!p.src && (
+                        <>
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'repeating-linear-gradient(45deg, transparent 0 8px, rgba(255,255,255,0.16) 8px 9px)',
+                          }} />
+                          {p.label && (
+                            <div style={{
+                              position: 'absolute', left: 0, right: 0, bottom: 8,
+                              textAlign: 'center',
+                              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1,
+                              color: '#fff', textTransform: 'uppercase',
+                            }}>
+                              {p.label}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Tiny close affordance — shows on the expanded dot only. */}
+              {expandsInline && expanded && (
+                <span style={{
+                  position: 'absolute', top: 8, right: 12,
+                  fontFamily: 'var(--mono)', fontSize: 14,
+                  color: 'rgba(255,255,255,0.7)',
+                  pointerEvents: 'none',
+                }}>×</span>
+              )}
             </a>
           );
         })}
@@ -681,54 +830,116 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
  * Quotes — quotes others have said, and what they changed in me.
  * Editorial: large italic numeral, blockquote, small attribution, impact paragraph.
  * Pulled from signals.json so there's one source of truth for "what others changed."
+ * When a signal has an `href` pointing to an article, hovering reveals a mini
+ * article preview card — tinted with the article's own surface + tint.
  */
-function QuotesLayout({ itemsOpacity }: { itemsOpacity: number }) {
+function QuotesLayout({ onNav, itemsOpacity }: LayoutProps) {
+  const [hoveredN, setHoveredN] = useState<number | null>(null);
+
   return (
     <div style={{
       opacity: itemsOpacity, transition: 'opacity .3s',
       borderTop: '1px solid var(--line)',
     }}>
-      {signals.map((s) => (
-        <div key={s.n} style={{
-          display: 'grid',
-          gridTemplateColumns: '64px 1fr',
-          gap: 28,
-          padding: '18px 0 16px',
-          borderBottom: '1px solid var(--line)',
-          alignItems: 'baseline',
-        }}>
-          <div style={{
-            fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400,
-            fontSize: 32, lineHeight: 0.9, letterSpacing: -0.8,
-            color: s.tint,
-          }}>
-            {String(s.n).padStart(2, '0')}
-          </div>
-          <div>
-            <blockquote style={{
-              fontFamily: 'var(--serif)', fontWeight: 400,
-              fontSize: 'clamp(18px, 1.6vw, 22px)', lineHeight: 1.22,
-              letterSpacing: -0.3, margin: 0, color: 'var(--ink)',
-              textWrap: 'balance',
+      {signals.map((s) => {
+        const hovered = hoveredN === s.n;
+        const linkedArticle = s.href?.startsWith('#article:')
+          ? bySlug[s.href.slice(9)]
+          : null;
+
+        return (
+          <div key={s.n}
+            onMouseEnter={() => setHoveredN(s.n)}
+            onMouseLeave={() => setHoveredN(null)}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '64px 1fr',
+              gap: 28,
+              padding: '18px 0 16px',
+              borderBottom: '1px solid var(--line)',
+              alignItems: 'baseline',
             }}>
-              &ldquo;{s.text}&rdquo;
-            </blockquote>
             <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: 'var(--ink-4)', marginTop: 8,
+              fontFamily: 'var(--serif)', fontStyle: 'italic', fontWeight: 400,
+              fontSize: 32, lineHeight: 0.9, letterSpacing: -0.8,
+              color: s.tint,
             }}>
-              {s.who} · {s.when}
+              {String(s.n).padStart(2, '0')}
             </div>
-            <p style={{
-              fontFamily: 'var(--serif)', fontStyle: 'italic',
-              fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)',
-              margin: '10px 0 0', maxWidth: 540, textWrap: 'pretty',
-            }}>
-              {s.changed}
-            </p>
+            <div>
+              <blockquote style={{
+                fontFamily: 'var(--serif)', fontWeight: 400,
+                fontSize: 'clamp(18px, 1.6vw, 22px)', lineHeight: 1.22,
+                letterSpacing: -0.3, margin: 0, color: 'var(--ink)',
+                textWrap: 'balance',
+              }}>
+                &ldquo;{s.text}&rdquo;
+              </blockquote>
+              <div style={{
+                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+                textTransform: 'uppercase', color: 'var(--ink-4)', marginTop: 8,
+              }}>
+                {s.who} · {s.when}
+              </div>
+              <p style={{
+                fontFamily: 'var(--serif)', fontStyle: 'italic',
+                fontSize: 14, lineHeight: 1.5, color: 'var(--ink-2)',
+                margin: '10px 0 0', maxWidth: 540, textWrap: 'pretty',
+              }}>
+                {s.changed}
+              </p>
+              {linkedArticle && (
+                <a
+                  href={s.href}
+                  onClick={(e) => { e.preventDefault(); onNav('article:' + linkedArticle.meta.slug); }}
+                  style={{
+                    display: 'block',
+                    marginTop: 14,
+                    padding: '10px 14px 12px',
+                    background: linkedArticle.meta.surface,
+                    borderRadius: 6,
+                    borderLeft: `3px solid ${linkedArticle.meta.tint}`,
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    opacity: hovered ? 1 : 0,
+                    transform: hovered ? 'translateY(0)' : 'translateY(5px)',
+                    transition: 'opacity .2s ease, transform .25s cubic-bezier(.2,.7,.2,1)',
+                    pointerEvents: hovered ? 'auto' : 'none',
+                  }}
+                >
+                  <div style={{
+                    fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                    textTransform: 'uppercase', color: linkedArticle.meta.tint,
+                    marginBottom: 5,
+                  }}>
+                    {linkedArticle.meta.quality} · {linkedArticle.meta.readtime} min read
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--serif)', fontWeight: 400,
+                    fontSize: 16, lineHeight: 1.15, letterSpacing: -0.3,
+                    color: 'var(--ink)', display: 'flex', alignItems: 'baseline', gap: 6,
+                  }}>
+                    {linkedArticle.meta.title}
+                    <span style={{
+                      display: 'inline-block',
+                      transform: hovered ? 'translateX(3px)' : 'translateX(0)',
+                      transition: 'transform .2s',
+                      color: linkedArticle.meta.tint,
+                    }}>→</span>
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--serif)', fontStyle: 'italic',
+                    fontSize: 13, lineHeight: 1.45, color: 'var(--ink-3)',
+                    marginTop: 3, textWrap: 'pretty',
+                  }}>
+                    {linkedArticle.meta.dek}
+                  </div>
+                </a>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div style={{
         padding: '28px 0 0',
         fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15,

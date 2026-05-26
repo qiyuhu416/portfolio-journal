@@ -13,6 +13,10 @@ sections:
   - { id: prototype, label: "What is a prototype" }
   - { id: artifact,  label: "Not all prototypes need be …" }
   - { id: pitfalls,  label: "The AI pitfalls" }
+experiences:
+  - { name: "Apple",                    href: "https://www.apple.com",         role: "GenAI Prototyper",  period: "May 2025 – present" }
+  - { name: "Archetype AI",             href: "https://www.archetypeai.io",    role: "AI Design Fellow",  period: "Summer 2024" }
+  - { name: "The Mentoring Partnership", href: "#",                            role: "Conversational AI", period: "Feb 2024 – Aug 2024" }
 ---
 
 {/*
@@ -29,6 +33,7 @@ making-ai-feel-human=03 until you renumber in quadrants.json).
 import { Figure } from '@/components/Figure'
 import { Aside } from '@/components/Aside'
 import { InlineTOC } from '@/components/InlineTOC'
+import aiFatigue from './images/ai-fatigue.png'
 
 <p>Honestly, this article is also a prototype. A way for me to think through a question in public.</p>
 
@@ -99,10 +104,9 @@ Right now: sometimes I use tools like Stitch for fast brainstorming. Sometimes I
 Languages change. Frameworks change. Interfaces change.
 </p>
 
-<blockquote>
+<p>
 You see, this whole process is a prototype. We are all in the prototyping phase of human–AI interaction.
-</blockquote>
-
+</p>
 
 <hr />
 
@@ -189,22 +193,6 @@ Maybe to 100% duplicate a screen you’ve already made somewhere else, or to use
 Prototypes are not production. Prototypes are expected to be built, not used (unless unless). Sometimes the fastest way to understand an interaction is to actually build it.
 </p>
 
-<p>
-I also found that the expectation of prototyping goals is different.
-</p>
-
-<p>
-At an early-stage startup, I worked as what people now call a “vibe coder.” It felt more like being an explorer. I was encouraged to move fast and fail fast. I shipped to staging, which got merged to prod every week. There was one week I shipped four features.
-</p>
-
-<p>
-In larger organizations, the role shifts a bit. The prototype becomes an alignment tool across teams — so more focus on the testing side.
-</p>
-
-<p>
-So many things at Apple are under NDA, so I can’t share details. But through conversations with friends and teammates, I keep finding this mindset useful.
-</p>
-
 
 <hr />
 
@@ -215,6 +203,8 @@ So many things at Apple are under NDA, so I can’t share details. But through c
 <p>
 May 5 is an interesting day I want to mark, as we are now discussing AI fatigue and where not to use AI. I think it might mean a turning point for something.
 </p>
+
+<Figure fig="01" src={aiFatigue} alt="A two-column table titled ‘I feel… / When AI is used for…’ pairing feelings (Bypassed, Reluctant to decide, Distanced, Not human, Don’t want AI here, Drained) with quoted reasons people gave for each." caption="AI fatigue, by feeling — collected from people I’ve been talking with." />
 
 <p>
 If you’ve tried the prompt from the beginning of this article, you probably know what I mean.

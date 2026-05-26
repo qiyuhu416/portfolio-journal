@@ -13,12 +13,24 @@ sections:
   - { id: curiosity, label: "Curiosity, not FOMO" }
   - { id: prompts,   label: "One block of prompts" }
   - { id: question,  label: "The question that stuck" }
+experiences:
+  - { name: "Apple",    href: "https://www.apple.com", role: "GenAI Prototyper",        period: "May 2025 – present" }
+  - { name: "Meetfood", href: "#",                     role: "Founding Product Designer", period: "Mar 2021 – Dec 2022" }
+  - { name: "Cornell",  href: "#",                     role: "Physical Computing",       period: "Jan 2023 – May 2023" }
 ---
 
 import { Figure } from '@/components/Figure'
 import { InlineTOC } from '@/components/InlineTOC'
+import { PeopleRow } from '@/components/PeopleRow'
 
-<p>One day I was on a Caltrain heading into Palo Alto.</p>
+import paloAlto from './videos/palo-alto.mov'
+import socialMediaInspo from './videos/social-media-inspo.mp4'
+import handMagicInspo from './videos/hand-magic-inspo.mov'
+import voiceExperiment from './videos/voice.mov'
+import handGestureExperiment from './videos/hand-gesture.mov'
+import birthdayCard from './videos/birthday-card.mov'
+
+<p>I would like to be working on things I genuinelly enjoy doing, even things that I am happy to do even if not getting paid. For the most part this is for my own benefit </p>
 
 <InlineTOC />
 
@@ -26,7 +38,7 @@ import { InlineTOC } from '@/components/InlineTOC'
 
 I had this idea stuck in my head and wanted to make it, a small playful thing just for fun. So I did it, with After Effects.
 
-<Figure fig="01" placeholder alt="After Effects word animation made on Caltrain" caption="The animation I made, a whole-day After Effects detour, looped." />
+<Figure fig="01" src={paloAlto} alt="After Effects word animation made on Caltrain" caption="The animation I made, a whole-day After Effects detour, looped." />
 
 But it took me almost the whole day... learnt After Effect from 0 just to create that.
 
@@ -34,12 +46,9 @@ So no you know why I like vibe-coding so much. Once you have some ideas (especia
 
 On another day For example, one day I was also browsing on social media, and I saw this post:
 
-(rednote post)
+<Figure src={socialMediaInspo} alt="Social-media post that caught my eye" caption="The post that caught my eye, scrolling." />
 
 and it was created with only one block of prompts!
-
-(rednote post)
-
 
 
 
@@ -71,18 +80,23 @@ Getting back to the palo alto example. Another day I saw a post of someone using
 
 It looked complicated. Then I scrolled into the comments and saw: *it was one block of prompts with Google AI studio*.
 
-It is very easy to duplicate a similar effect, but now i have the tool and prompt structure, what do I really wanna create?
+It is very easy to duplicate a similar effect
+
+See what I've created:
+<Figure src={handMagicInspo} alt="Hand-gesture post inspired by a magic movie" caption="And this one — a hand-gesture move from a magic movie, built with a single block of prompts." />
+
+But now i have the tool and prompt structure, what else is possible?
 
 Uses model to brainstorm the possibility (link to first article), and this user mind map is super helpful to explore the modality:
 
 (insert image)
 
-See what I've created:
-<Figure fig="02" placeholder alt="Voice-control experiment" caption="Voice control experiment." />
+<Figure fig="02" src={voiceExperiment} alt="Voice-control experiment" caption="Voice control experiment." />
 
-<Figure fig="03" placeholder alt="Hand gesture experiment" caption="Hand gesture piece #2, this time steering a small drawing." />
+Once that has started, it became unstoppable.
+<Figure fig="03" src={handGestureExperiment} alt="Hand gesture experiment" caption="Hand gesture piece #2, this time steering a small drawing." />
 
-<Figure fig="04" placeholder alt="Camera-capture experiment" caption="Camera capture: me, looking at the thing, and the thing looking back." />
+<Figure fig="04" src={birthdayCard} alt="Camera-capture experiment" caption="Birthday Card Prototyped with Figma Make" />
 
 
 <h2 id="question">§4 · It needs people. </h2>
@@ -94,5 +108,4 @@ I've joined the commmunity that other people have initiated,and also initiated c
 
 This whole article was something I shared during one of the sharing session with teh team. I hope me and my friends can all have real fun with what they are doing.
 
-(list of people with bubbles who have impacted me to form a mindset i like)
-Mia; Yize; Huaze; Peiwen; Samar; Sharif; Lewis
+<PeopleRow names={['Mia', 'Yize', 'Huaze', 'Peiwen', 'Samar', 'Sharif', 'Lewis']} />

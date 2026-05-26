@@ -10,6 +10,10 @@ import { editMdxPlugin } from './vite-plugin-edit-mdx';
 const root = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  // .mov isn't in Vite's default static-asset list (mp4/webm/ogg are), but
+  // article videos arrive from screen recordings as .mov. Register it so
+  // `import foo from './videos/x.mov'` resolves to a URL string at build.
+  assetsInclude: ['**/*.mov'],
   plugins: [
     {
       enforce: 'pre',

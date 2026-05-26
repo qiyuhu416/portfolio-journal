@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDrawer } from '@/routes/DrawerContext';
 import { ArticleProvider } from '@/routes/ArticleContext';
+import { ExperienceChip } from '@/components/ExperienceChip';
 import { bySlug, findQuadrantBySlug } from '@/content';
 
 export function ArticleDrawer() {
@@ -117,6 +118,19 @@ export function ArticleDrawer() {
             >
               {meta.dek}
             </p>
+            {meta.experiences && meta.experiences.length > 0 && (
+              <div style={{
+                display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
+                marginTop: 20, paddingBottom: 18,
+                borderBottom: '1px solid var(--line)',
+                fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)',
+              }}>
+                <span style={{ marginRight: 4 }}>Reflected from</span>
+                {meta.experiences.map((exp, i) => (
+                  <ExperienceChip key={i} exp={exp} tint={meta.tint} />
+                ))}
+              </div>
+            )}
             <div
               className={`article-body${isHomePageArticle ? ' peek-mode' : ''}`}
               style={{ marginTop: 28 }}
