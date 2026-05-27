@@ -579,7 +579,7 @@ function TypingField({ snap }: { snap: Snapshot }) {
   );
 }
 
-function FieldA({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: React.RefObject<HTMLSpanElement | null>; hideCursor?: boolean }) {
+function FieldA({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: React.RefObject<HTMLSpanElement>; hideCursor?: boolean }) {
   // Render the typed buffer with the highlight wash inline, and the chip as
   // a FLOATING annotation positioned BELOW the line via `position: absolute`
   // inside an anchor span. The text flows naturally — the chip never pushes
@@ -732,7 +732,7 @@ function FieldA({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: R
 // to here, and that's the moment the AI fires its analysis on Field A's
 // content. Intentionally empty (no typing happens here in the dialogue) —
 // it's the act of leaving Field A that matters.
-function FieldB({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: React.RefObject<HTMLSpanElement | null>; hideCursor?: boolean }) {
+function FieldB({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: React.RefObject<HTMLSpanElement>; hideCursor?: boolean }) {
   const isFocused = snap.cursorField === 'B';
   const cursorBlink = snap.silenceMs < 100 ? 1 : Math.floor((snap.silenceMs / 500) % 2);
   return (

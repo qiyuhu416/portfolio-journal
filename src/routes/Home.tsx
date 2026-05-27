@@ -1,41 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { NavFn } from '@/App';
 import { quadrants, bySlug, type Quadrant } from '@/content';
 import { QuadrantPanel } from '@/components/QuadrantMap';
-import backgroundData from '@content/background.json';
 
-type BackgroundItem = {
-  id: string;
-  weight: 'major' | 'normal' | 'minor';
-  kind: 'shipped' | 'research' | 'teaching' | 'coursework';
-  /** What kind of *muscle* this role built. The matrix paints each cell with
-   *  the dominant category's tint so the reader sees, at a glance, whether a
-   *  given period was technical-leaning, design-leaning, or research-leaning. */
-  category: 'technical' | 'design' | 'research';
-  start: string;
-  end: string | null;
-  role: string;
-  org: string;
-  blurb: string;
-  /** Optional thumbnail surfaced in the right-hand panel on hover. Roles
-   *  without an image render a placeholder swatch in the category tint. */
-  image?: string;
-};
-const BACKGROUND_ITEMS = backgroundData as BackgroundItem[];
-
-// Three category tints, drawn from the existing site palette so the matrix
-// stays in family with the rest of the home page (each quadrant already owns
-// one of these).
-const CATEGORY_TINT: Record<BackgroundItem['category'], string> = {
-  technical: 'var(--tint-bl)',  // attention quadrant blue — engineering blue
-  design:    'var(--tint-tl)',  // mirror quadrant warm — creative warm
-  research:  'var(--tint-br)',  // work quadrant plum — academic plum
-};
-const CATEGORY_LABEL: Record<BackgroundItem['category'], string> = {
-  technical: 'Technical',
-  design:    'Design',
-  research:  'Research',
-};
 
 type Props = { onNav: NavFn };
 
@@ -263,7 +230,7 @@ function hubPos(id: DotId, vw: number, vh: number): Pos {
 // qiyu → other → notice → make (left-to-right) — matches how the four nodes
 // read aloud.
 const LINE_ORDER: Record<DotId, number> = {
-  qiyu: 0, other: 1, notice: 2, make: 3,
+  qiyu: 0, other: 1, think: 2, create: 3,
 };
 const PREVIEW_LINE_Y_RATIO = 0.30;
 function previewLinePos(id: DotId, vw: number, vh: number): Pos {
@@ -425,7 +392,7 @@ function clusterRotationAtBase(p: number, hoveredArc: SectionId | null): number 
     let delta = toRot - fromRot;
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
-    const t = (p - HUB_HOLD_END) / (SECTION_RANGES.mirror[0] - HUB_HOLD_END);
+    const t = (p - HUB_HOLD_END) / (SECTION_RANGES.reflect[0] - HUB_HOLD_END);
     return fromRot + delta * smootherstep(clamp(t, 0, 1));
   }
   if (p >= SECTIONS_END) {
@@ -1428,7 +1395,7 @@ export function Home({ onNav }: Props) {
             seg.push(`${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)}`);
           }
           const axisD = seg.join(' ');
-          const tint = SECTION_BY_ID.practice.tint;
+          const tint = SECTION_BY_ID.experiment.tint;
           // Opacity ramps up as the corner arc's arcFade ramps down (same
           // smootherstep(extractT * 2) curve, mirrored). Now that the polyline
           // matches the corner arc geometrically at t=0, the cross-fade is
@@ -1759,7 +1726,7 @@ export function Home({ onNav }: Props) {
           const sweep = delta > 0 ? 1 : 0;
           const arcD = `M ${aPt.x},${aPt.y} A ${r},${r} 0 0 ${sweep} ${bPt.x},${bPt.y}`;
           const tint = SECTION_BY_ID[arcSection].tint;
-          const DOT_LABEL = { qiyu: 'Qiyu', make: 'Making', other: 'Others', notice: 'Noticing' } as const;
+          const DOT_LABEL = { qiyu: 'Qiyu', create: 'Making', other: 'Others', think: 'Noticing' } as const;
           // Live dot positions — for sections that EXTRACT dots (currently
           // just practice), these diverge from aPt/bPt as extractT grows.
           // Labels read these so they ride the dots out of the cluster
@@ -2582,23 +2549,23 @@ const LEARN_VALUE_LINKS: [string, string][] = [
 ];
 const LEARN_QUOTES: LearnQuote[] = [
   { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.',
-    who: ‘a designer at IDEO’,          value: ‘listen’,     pos: { x: 0.30, y: 0.20 },
-    articleSlug: ‘making-ai-feel-human’, sectionId: ‘relationship’ },
-  { quote: `When a teammate gets quiet, that’s usually the most important thing said all meeting.`,
-    who: ‘a research lead’,             value: ‘listen’,     pos: { x: 0.27, y: 0.50 },
-    articleSlug: ‘design-the-collaboration’, sectionId: ‘cross’ },
-  { quote: ‘Research is just listening with slightly better manners.’,
-    who: ‘a UX lead, Jan 2024’,         value: ‘listen’,     pos: { x: 0.30, y: 0.80 },
-    articleSlug: ‘making-ai-feel-human’, sectionId: ‘cant’ },
-  { quote: ‘The questions someone asks reveal more than the answers they give.’,
-    who: ‘a senior PM, on hiring’,      value: ‘underneath’, pos: { x: 0.70, y: 0.20 },
-    articleSlug: ‘thinking-outside-the-box’, sectionId: ‘see’ },
-  { quote: ‘Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.’,
-    who: ‘a draft from March’,          value: ‘underneath’, pos: { x: 0.73, y: 0.50 },
-    articleSlug: ‘how-i-use-ai-to-create’, sectionId: ‘pitfalls’ },
-  { quote: ‘Flexibility is what you leave room for on purpose, not what you failed to decide.’,
-    who: ‘a draft from March’,          value: ‘underneath’, pos: { x: 0.70, y: 0.80 },
-    articleSlug: ‘thinking-outside-the-box’, sectionId: ‘see’ },
+    who: 'a designer at IDEO',          value: 'listen',     pos: { x: 0.30, y: 0.20 },
+    articleSlug: 'making-ai-feel-human', sectionId: 'relationship' },
+  { quote: `When a teammate gets quiet, that's usually the most important thing said all meeting.`,
+    who: 'a research lead',             value: 'listen',     pos: { x: 0.27, y: 0.50 },
+    articleSlug: 'design-the-collaboration', sectionId: 'cross' },
+  { quote: 'Research is just listening with slightly better manners.',
+    who: 'a UX lead, Jan 2024',         value: 'listen',     pos: { x: 0.30, y: 0.80 },
+    articleSlug: 'making-ai-feel-human', sectionId: 'cant' },
+  { quote: 'The questions someone asks reveal more than the answers they give.',
+    who: 'a senior PM, on hiring',      value: 'underneath', pos: { x: 0.70, y: 0.20 },
+    articleSlug: 'thinking-outside-the-box', sectionId: 'see' },
+  { quote: "Sometimes we keep using a solution not because it is the best one, but because we've used it for a long time.",
+    who: 'a draft from March',          value: 'underneath', pos: { x: 0.73, y: 0.50 },
+    articleSlug: 'how-i-use-ai-to-create', sectionId: 'pitfalls' },
+  { quote: "Flexibility is what you leave room for on purpose, not what you failed to decide.",
+    who: 'a draft from March',          value: 'underneath', pos: { x: 0.70, y: 0.80 },
+    articleSlug: 'thinking-outside-the-box', sectionId: 'see' },
 ];
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // Mutable position state — keyed by node id (`q:${i}` or `v:${id}`).
@@ -3166,305 +3133,3 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
 // ─── Year × month activity matrix ────────────────────────────────────────────
 //
 // Rows: years (oldest at top). Cols: Jan→Dec. Each cell is colored by the
-// dominant *category* (technical / design / research) of roles active that
-// month — so the matrix tells, at a glance, "what kind of muscle Qiyu was
-// building when" rather than "how many things stacked up." Hover any cell to
-// see the actual roles.
-
-const WEIGHT_SCORE: Record<BackgroundItem['weight'], number> = {
-  major: 3,
-  normal: 2,
-  minor: 1,
-};
-
-// Find the category with the most weighted score in a cell. Ties go to the
-// first-listed item in the data, which is a stable order from the JSON.
-function dominantCategory(items: BackgroundItem[]): BackgroundItem['category'] | null {
-  if (items.length === 0) return null;
-  const totals: Record<BackgroundItem['category'], number> = { technical: 0, design: 0, research: 0 };
-  for (const it of items) totals[it.category] += WEIGHT_SCORE[it.weight];
-  let best: BackgroundItem['category'] = items[0].category;
-  let bestScore = -Infinity;
-  (Object.keys(totals) as BackgroundItem['category'][]).forEach((k) => {
-    if (totals[k] > bestScore) { bestScore = totals[k]; best = k; }
-  });
-  return best;
-}
-// Convert "YYYY-MM" → month-since-epoch (year * 12 + monthIndex). Used to
-// answer "is this role active in this cell?" with a single integer compare
-// per item, per cell.
-function monthIndex(s: string): number {
-  const [y, m] = s.split('-').map(Number);
-  return y * 12 + (m - 1);
-}
-function itemsActiveIn(year: number, month: number): BackgroundItem[] {
-  const target = year * 12 + month;
-  return BACKGROUND_ITEMS.filter((it) => {
-    const startIdx = monthIndex(it.start);
-    // Treat ongoing roles as continuing through the current month so the
-    // current cell stays lit until the role visibly ends.
-    const endStr = it.end ?? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const endIdx = monthIndex(endStr);
-    return target >= startIdx && target <= endIdx;
-  });
-}
-
-function BackgroundMatrix({ tint: _tint }: { tint: string }) {
-  void _tint; // The matrix paints with three category-tints, not the section tint.
-  const [hover, setHover] = useState<{ year: number; month: number } | null>(null);
-
-  // Year range derived from the data so it expands automatically as new
-  // entries are added; bounded to the earliest start and the latest end (or
-  // current year if any role is ongoing).
-  const { minYear, maxYear } = useMemo(() => {
-    let min = Infinity, max = -Infinity;
-    for (const it of BACKGROUND_ITEMS) {
-      const sy = parseInt(it.start.split('-')[0], 10);
-      const ey = it.end ? parseInt(it.end.split('-')[0], 10) : new Date().getFullYear();
-      if (sy < min) min = sy;
-      if (ey > max) max = ey;
-    }
-    return { minYear: min, maxYear: max };
-  }, []);
-
-  type Cell = {
-    year: number;
-    month: number;
-    items: BackgroundItem[];
-    category: BackgroundItem['category'] | null;
-  };
-  const cellRows = useMemo(() => {
-    const out: Cell[][] = [];
-    for (let year = minYear; year <= maxYear; year++) {
-      const row: Cell[] = [];
-      for (let month = 0; month < 12; month++) {
-        const items = itemsActiveIn(year, month);
-        row.push({ year, month, items, category: dominantCategory(items) });
-      }
-      out.push(row);
-    }
-    return out;
-  }, [minYear, maxYear]);
-
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  // Compact GitHub-style cells — the matrix is a secondary cue under the
-  // primary visual (the thumbnails), so it stays tight rather than spread.
-  const cellSize = 18;
-  const cellGap = 10;
-  const yearLabelW = 52;
-  // Total matrix width = year-label gutter + 12 cells + 11 inter-cell gaps.
-  // Used to center the compact matrix inside the wider thumbnail-led column.
-  const matrixW = yearLabelW + 12 * cellSize + 11 * cellGap;
-  // Wider container so the thumbnail row carries the visual weight. Sized so
-  // each of the 4 thumbnail slots clears ~250px wide — large enough that the
-  // images, not the dots, are the focal point of the section.
-  const containerW = 1120;
-  // Active cells fill at this opacity so the three tints stay readable
-  // side-by-side without one dominating purely by saturation.
-  const ACTIVE_FILL_PCT = 70;
-
-  const hoveredCell = hover ? cellRows[hover.year - minYear]?.[hover.month] ?? null : null;
-  const hoveredItems = hoveredCell?.items ?? [];
-
-  // Reserve a slot count for the thumbnail strip so the layout doesn't jump
-  // between months with 0, 1, 2, or 4 concurrent roles. 4 fits the busiest
-  // months in the data (Spring 2023); 0-item months show an empty quiet row.
-  const THUMB_SLOTS = 4;
-
-  return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', gap: SPACE.xl,
-      width: containerW,
-      alignItems: 'stretch',
-    }}>
-      {/* Thumbnails strip — sits above the matrix, same width. When hovering
-          a cell with N active roles, the first N slots fade in with that
-          role's thumbnail; remaining slots stay quiet placeholders so the
-          row stays one consistent shape. */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${THUMB_SLOTS}, 1fr)`,
-        gap: SPACE.md,
-      }}>
-        {Array.from({ length: THUMB_SLOTS }, (_, i) => {
-          const it = hoveredItems[i];
-          if (!it) {
-            return (
-              <div key={i} style={{
-                aspectRatio: '4 / 3',
-                background: 'rgba(31,30,27,0.03)',
-                border: '1px dashed rgba(31,30,27,0.08)',
-                borderRadius: 8,
-              }} />
-            );
-          }
-          return (
-            <div key={it.id} style={{
-              aspectRatio: '4 / 3',
-              borderRadius: 8, overflow: 'hidden',
-              border: `1px solid color-mix(in srgb, ${CATEGORY_TINT[it.category]} 40%, transparent)`,
-              background: it.image
-                ? `url(${it.image}) center/cover no-repeat var(--surface)`
-                : `linear-gradient(135deg, color-mix(in srgb, ${CATEGORY_TINT[it.category]} 30%, transparent), color-mix(in srgb, ${CATEGORY_TINT[it.category]} 8%, transparent))`,
-              position: 'relative',
-              transition: 'opacity .2s',
-            }}>
-              {!it.image && (
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.18) 14px 15px)',
-                }} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ position: 'relative', width: matrixW, margin: '0 auto' }}>
-        {/* Month labels — sit above the cell columns, aligned via left padding
-            equal to the year-label gutter. */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: `${yearLabelW}px repeat(12, ${cellSize}px)`,
-          columnGap: cellGap,
-          alignItems: 'center',
-          marginBottom: 6,
-          fontFamily: 'var(--sans)', fontSize: 9, letterSpacing: 0.4,
-          color: 'var(--ink-4)', textTransform: 'uppercase',
-        }}>
-          <span />
-          {months.map((m) => (
-            <span key={m} style={{ textAlign: 'center' }}>{m}</span>
-          ))}
-        </div>
-
-        {/* Year rows — one per year in range. Each row: year label + 12 cells. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: cellGap }}>
-          {cellRows.map((row) => (
-            <div key={row[0].year} style={{
-              display: 'grid',
-              gridTemplateColumns: `${yearLabelW}px repeat(12, ${cellSize}px)`,
-              columnGap: cellGap,
-              alignItems: 'center',
-            }}>
-              <span style={{
-                fontFamily: 'var(--sans)', fontSize: 11,
-                color: 'var(--ink-3)', textAlign: 'right', paddingRight: 4,
-              }}>
-                {row[0].year}
-              </span>
-              {row.map((cell) => {
-                const isHovered = hover && hover.year === cell.year && hover.month === cell.month;
-                const onlyMinor = cell.items.length > 0 && cell.items.every((it) => it.weight === 'minor');
-                const cellTint = cell.category ? CATEGORY_TINT[cell.category] : null;
-                return (
-                  <div
-                    key={cell.month}
-                    onMouseEnter={() => setHover({ year: cell.year, month: cell.month })}
-                    onMouseLeave={() => setHover(null)}
-                    style={{
-                      width: cellSize, height: cellSize, borderRadius: '50%',
-                      background: !cellTint
-                        ? 'rgba(31,30,27,0.05)'
-                        : onlyMinor
-                          ? 'transparent'
-                          : `color-mix(in srgb, ${cellTint} ${ACTIVE_FILL_PCT}%, transparent)`,
-                      // Coursework-only months get a dashed outline in the
-                      // category color rather than a solid fill — same
-                      // category cue, lighter visual weight.
-                      border: !cellTint
-                        ? '1px solid rgba(31,30,27,0.06)'
-                        : onlyMinor
-                          ? `1px dashed ${cellTint}`
-                          : 'none',
-                      boxShadow: isHovered && cellTint
-                        ? `0 0 0 2px color-mix(in srgb, ${cellTint} 50%, transparent)`
-                        : 'none',
-                      transition: 'box-shadow .15s',
-                    }}
-                  />
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Hover panel — pinned below the grid so cells don't shift. Each
-            role is tagged with its category color so the link between cell
-            and list reads instantly. */}
-        {hover && (() => {
-          const cell = cellRows[hover.year - minYear]?.[hover.month];
-          if (!cell || cell.items.length === 0) return (
-            <div style={{
-              marginTop: 14, minHeight: 48,
-              fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-4)',
-              fontStyle: 'italic',
-            }}>
-              {months[hover.month]} {hover.year} · nothing logged
-            </div>
-          );
-          return (
-            <div style={{
-              marginTop: 14, minHeight: 48,
-              display: 'flex', flexDirection: 'column', gap: 6,
-            }}>
-              <div style={{
-                fontFamily: 'var(--sans)',
-                fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-                letterSpacing: TYPE.kicker.tracking,
-                textTransform: 'uppercase', color: 'var(--ink-3)',
-              }}>
-                {months[hover.month]} {hover.year} · {cell.items.length} active
-              </div>
-              {cell.items.map((it) => (
-                <div key={it.id} style={{
-                  fontFamily: 'var(--serif)', fontSize: 13, lineHeight: 1.4,
-                  color: 'var(--ink-2)',
-                  opacity: it.weight === 'minor' ? 0.7 : 1,
-                }}>
-                  <span style={{ color: CATEGORY_TINT[it.category], fontStyle: 'italic' }}>
-                    {CATEGORY_LABEL[it.category].toLowerCase()}
-                  </span>
-                  {' · '}
-                  <span>{it.role}</span>
-                  <span style={{ color: 'var(--ink-3)' }}>{' · '}{it.org}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
-        {!hover && (
-          <div style={{
-            marginTop: 14, minHeight: 48,
-            fontFamily: 'var(--serif)', fontStyle: 'italic',
-            fontSize: 13, lineHeight: 1.4, color: 'var(--ink-4)',
-          }}>
-            Hover a cell to see what was active that month.
-          </div>
-        )}
-      </div>
-
-      {/* Category legend — moved below the chart. The only key the matrix
-          needs now: which color means which kind of work. */}
-      <div style={{
-        display: 'inline-flex', alignItems: 'center',
-        gap: SPACE.lg, marginTop: SPACE.md,
-        fontFamily: 'var(--sans)',
-        fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-        letterSpacing: TYPE.kicker.tracking,
-        textTransform: 'uppercase',
-        color: 'var(--ink-3)',
-      }}>
-        {(['technical','design','research'] as BackgroundItem['category'][]).map((cat) => (
-          <span key={cat} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              width: 12, height: 12, borderRadius: '50%',
-              background: `color-mix(in srgb, ${CATEGORY_TINT[cat]} ${ACTIVE_FILL_PCT}%, transparent)`,
-            }} />
-            <span>{CATEGORY_LABEL[cat]}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
