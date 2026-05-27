@@ -1286,7 +1286,10 @@ export function Home({ onNav }: Props) {
             selection state. */}
         {sectionVis > 0 && (() => {
           const section = SECTION_BY_ID[activeSection];
-          const targetQ = quadrants.find((q) => q.id === activeSection);
+          const SECTION_TO_QUADRANT: Record<string, string> = {
+            reflect: 'mirror', experiment: 'practice', hear: 'attention', collaborate: 'work',
+          };
+          const targetQ = quadrants.find((q) => q.id === (SECTION_TO_QUADRANT[activeSection] ?? activeSection));
           if (!targetQ) return null;
           return (
             <div style={{
