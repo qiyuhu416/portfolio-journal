@@ -162,7 +162,7 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
       // remains on each side and the block reads as *centered* rather than
       // flush-against-the-edge. clamp's 75vw track keeps the column 75% of
       // the viewport (~12.5% gutter on each side) until 1100px takes over.
-      maxWidth: 'min(1100px, 75vw)',
+      maxWidth: 'min(780px, 58vw)',
       // margin: 0 auto is redundant under flex-center but harmless; explicit
       // here so the block also self-centers if rendered outside a flex parent.
       margin: '0 auto',
@@ -217,6 +217,7 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
         // where the text ends — otherwise the trailing comma in the next
         // segment looks like it's floating away from the phrase.
         padding: '0.08em 0',
+        whiteSpace: 'nowrap',
         boxDecorationBreak: 'clone',
         WebkitBoxDecorationBreak: 'clone',
         transition: 'background .18s, color .18s',
@@ -618,6 +619,158 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           );
         })()}
 
+        {/* Orbital satellite circles — image-cropped circles orbiting the hovered dot.
+            Each satellite is a direct child of the plot container, positioned with calc()
+            so the browser never has to paint outside a zero-size ancestor. */}
+        {hoverIdx !== null && (() => {
+          const it = plotItems[hoverIdx];
+          if (!it.previews || it.previews.length === 0 || expandedIdx === hoverIdx) return null;
+          const dotHoverRadius = (it.kind === 'cta' ? 140 + 12 : 140 + 40) / 2;
+          const satSize = 56;
+          const satR = satSize / 2;
+          const orbitR = dotHoverRadius + 14 + satR;
+          const n = it.previews.length;
+          const startDeg = -45;
+          return it.previews.map((p, pi) => {
+            const deg = n === 1 ? 0 : startDeg + pi * (360 / n);
+            const rad = deg * Math.PI / 180;
+            const x = orbitR * Math.cos(rad);
+            const y = orbitR * Math.sin(rad);
+            return (
+              <div key={pi} style={{
+                position: 'absolute',
+                left: `calc(${it.x! * 100}% + ${x - satR}px)`,
+                top: `calc(${it.y! * 100}% + ${y - satR}px)`,
+                width: satSize, height: satSize,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '2px solid var(--bg)',
+                background: p.src
+                  ? `url(${p.src}) center/cover no-repeat`
+                  : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 28%, transparent), color-mix(in srgb, ${q.tint} 8%, transparent))`,
+                boxShadow: '0 4px 14px rgba(31,30,27,0.14)',
+                pointerEvents: 'none',
+                zIndex: 3,
+              }}>
+                {!p.src && p.label && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 1,
+                    textTransform: 'uppercase', color: 'var(--ink-4)',
+                  }}>
+                    {p.label}
+                  </div>
+                )}
+              </div>
+            );
+          });
+        })()}
+
+        {/* Event timeline — appears when hovering a dot that has an `events` array.
+            Renders a dashed x-axis near the bottom of the plot area, one circle per
+            event (positioned at its date x and vertical y), and a dashed vertical
+            line from each circle down to the axis.  */}
+        {hoverIdx !== null && (() => {
+          const it = plotItems[hoverIdx];
+          if (!it.events || it.events.length === 0) return null;
+
+          const events = it.events;
+          // Date range: span from the earliest event to one month past the latest.
+          const parseDate = (s: string) => {
+            const [y, m] = s.split('-').map(Number);
+            return y * 12 + m;
+          };
+          const months = events.map((e) => parseDate(e.date));
+          const minM = Math.min(...months);
+          const maxM = Math.max(...months) + 1;
+          const dateToX = (d: string) => (parseDate(d) - minM) / (maxM - minM);
+
+          const fmtDate = (s: string) => {
+            const [y, m] = s.split('-').map(Number);
+            return new Date(y, m - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          };
+
+          // Deduplicate x-axis tick dates.
+          const tickDates = [...new Set(events.map((e) => e.date))];
+
+          // Layout constants (fraction of the plot container).
+          const axisY = 0.88;       // where the dashed x-axis sits
+          const plotLeft = 0.08;    // left margin for the timeline
+          const plotRight = 0.92;   // right margin
+          const baseR = 44;         // base circle radius in px
+
+          return (
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 4,
+            }}>
+              {/* Dashed x-axis */}
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
+                <line
+                  x1={`${plotLeft * 100}%`} y1={`${axisY * 100}%`}
+                  x2={`${plotRight * 100}%`} y2={`${axisY * 100}%`}
+                  stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="3 6"
+                />
+                {tickDates.map((d) => {
+                  const xPct = plotLeft + dateToX(d) * (plotRight - plotLeft);
+                  return (
+                    <text key={d}
+                      x={`${xPct * 100}%`} y={`${(axisY + 0.055) * 100}%`}
+                      textAnchor="middle"
+                      style={{ fontFamily: 'var(--sans)', fontSize: 11, fill: 'var(--ink-3)' }}
+                    >
+                      {fmtDate(d)}
+                    </text>
+                  );
+                })}
+              </svg>
+
+              {/* Event circles + vertical drop lines */}
+              {events.map((ev, ei) => {
+                const xFrac = plotLeft + dateToX(ev.date) * (plotRight - plotLeft);
+                // `ev.y` is 0 (near axis) → 1 (top of visible area, above axis)
+                const circleFrac = axisY - (ev.y ?? 0.5) * (axisY - 0.05);
+                const r = baseR * (ev.r ?? 1);
+                return (
+                  <div key={ei}>
+                    {/* Vertical drop line from circle bottom to axis */}
+                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
+                      <line
+                        x1={`${xFrac * 100}%`} y1={`${(circleFrac + 0.01) * 100}%`}
+                        x2={`${xFrac * 100}%`} y2={`${axisY * 100}%`}
+                        stroke="var(--ink-4)" strokeWidth="1" strokeDasharray="2 5"
+                      />
+                    </svg>
+                    {/* Circle */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `${xFrac * 100}%`,
+                      top: `${circleFrac * 100}%`,
+                      width: r * 2, height: r * 2,
+                      marginLeft: -r, marginTop: -r,
+                      borderRadius: '50%',
+                      background: 'color-mix(in srgb, var(--ink) 18%, transparent)',
+                      border: '1px solid var(--line)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: 10, boxSizing: 'border-box',
+                    }}>
+                      {ev.name && (
+                        <span style={{
+                          fontFamily: 'var(--sans)', fontSize: 11, lineHeight: 1.25,
+                          color: 'var(--ink-2)', textAlign: 'center',
+                          textWrap: 'balance',
+                        }}>
+                          {ev.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+
         {plotItems.map((it, i) => {
           const hovered = hoverIdx === i;
           const expanded = expandedIdx === i;
@@ -721,51 +874,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   {it.dek}
                 </span>
               )}
-              {/* Hover-preview strip (small thumbs below the circle) — hidden
-                  while expanded since the expanded gallery covers the same job. */}
-              {it.previews && it.previews.length > 0 && !expanded && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%', left: '50%',
-                  transform: 'translateX(-50%)',
-                  marginTop: 18,
-                  display: 'flex', gap: 8, flexWrap: 'wrap',
-                  justifyContent: 'center',
-                  width: 280,
-                  opacity: hovered ? 1 : 0,
-                  transition: 'opacity .22s',
-                  pointerEvents: 'none',
-                }}>
-                  {it.previews.map((p, pi) => (
-                    <div key={pi} style={{ width: 60, textAlign: 'center' }}>
-                      <div style={{
-                        width: 60, height: 44, borderRadius: 4,
-                        background: p.src
-                          ? `url(${p.src}) center/cover no-repeat`
-                          : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 28%, transparent), color-mix(in srgb, ${q.tint} 8%, transparent))`,
-                        border: '1px solid var(--line)',
-                        position: 'relative', overflow: 'hidden',
-                      }}>
-                        {!p.src && (
-                          <div style={{
-                            position: 'absolute', inset: 0,
-                            background: 'repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,0.18) 6px 7px)',
-                          }} />
-                        )}
-                      </div>
-                      {p.label && (
-                        <div style={{
-                          fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
-                          color: 'var(--ink-4)', marginTop: 5,
-                          textTransform: 'uppercase', lineHeight: 1.2,
-                        }}>
-                          {p.label}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Orbital satellites rendered as plot-container siblings below — not here. */}
               {/* Inline gallery — fills the (now-larger) circle with the
                   previews as actual images. Visible only when this dot is in
                   its expanded state. Clicking the dot again collapses it. */}

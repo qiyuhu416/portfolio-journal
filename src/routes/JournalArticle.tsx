@@ -136,11 +136,6 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
   const backdropAlpha = 0.32 * (1 - modalT);
 
   // hero: padded "modal" at top → full-bleed as you scroll through the first ~260px
-  const baseHeroT = clamp(scrollTop / 260, 0, 1);
-  const heroT = baseHeroT * (1 - exitDeflate);
-  const heroPadX = 40 * (1 - heroT);
-  const heroPadTop = 32 * (1 - heroT);
-  const heroRadius = 8 * (1 - heroT);
 
   // scroll tracking — also resets to top when slug changes so clicking
   // "Next" doesn't leave you stranded at the bottom of the new article.
@@ -604,42 +599,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
             </button>
           </div>
 
-          {/* hero figure — padded like a modal at rest, expands full-bleed on scroll */}
-          <figure
-            style={{
-              margin: 0,
-              padding: `${heroPadTop}px ${heroPadX}px 0`,
-            }}
-          >
-            <div
-              style={{
-                height: 420,
-                background: meta.surface,
-                borderRadius: heroRadius,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px)',
-              }} />
-              <div style={{
-                position: 'absolute', top: 22, left: 26,
-                fontFamily: 'var(--mono)', fontSize: 10, color: meta.tint,
-                letterSpacing: 0.5, opacity: 0.8,
-              }}>
-                {meta.num} · {meta.quality.toUpperCase()}
-              </div>
-              <div style={{
-                position: 'absolute', bottom: 22, right: 26,
-                fontFamily: 'var(--mono)', fontSize: 10, color: meta.tint,
-                letterSpacing: 0.6, opacity: 0.7,
-              }}>
-                {meta.date} · {meta.readtime} min
-              </div>
-            </div>
-          </figure>
+          {/* hero image placeholder removed — add back when media is ready */}
 
           {(() => {
             const useSplit = meta.layout === 'split' && viewportW >= SPLIT_MIN_WIDTH;

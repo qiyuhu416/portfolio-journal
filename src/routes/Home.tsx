@@ -586,6 +586,8 @@ export function Home({ onNav }: Props) {
   );
   const [smoothScrollY, setSmoothScrollY] = useState(0);
   const rawScrollRef = useRef(0);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSettlingRef = useRef(false);
   const [hoveredDot, setHoveredDot] = useState<DotId | null>(null);
   const [statusIdx, setStatusIdx] = useState(0);
   // (Cluster rotation is now computed directly from scroll progress via
@@ -716,7 +718,53 @@ export function Home({ onNav }: Props) {
       setViewportW(window.innerWidth);
       setViewportH(window.innerHeight);
     };
-    const onScroll = () => { rawScrollRef.current = window.scrollY; };
+    // Settled anchor positions — the natural resting plateaus between
+    // transition bands. When scroll stops mid-transition (momentum scroll
+    // overshooting into a ramp), we snap to the nearest anchor so dots always
+    // land in a fully-resolved state rather than freezing half-extracted.
+    const EASE_RANGE = 0.018;
+    const SETTLE_ANCHORS = [
+      0,
+      HERO_END,
+      DOTS_AT_HUB,
+      HUB_FADE_END,
+      HUB_HOLD_END,
+      CORNER_SETTLE_END,
+      ...Object.values(SECTION_RANGES).flatMap(([lo, hi]) => [
+        lo + EASE_RANGE,        // dots fully extracted (section entered)
+        (lo + hi) / 2,          // mid-plateau — comfortable reading position
+        hi - EASE_RANGE,        // still in section, about to exit
+      ]),
+      SECTIONS_END,
+      END_CONVERGE_END,
+      END_HOLD_END,
+      1.0,
+    ];
+
+    const settle = () => {
+      const vh = window.innerHeight;
+      const tourPx = vh * 8;
+      const p = clamp(window.scrollY / tourPx, 0, 1);
+      let nearest = SETTLE_ANCHORS[0];
+      let minDist = Math.abs(p - nearest);
+      for (const a of SETTLE_ANCHORS) {
+        const d = Math.abs(p - a);
+        if (d < minDist) { minDist = d; nearest = a; }
+      }
+      // Only snap if we're meaningfully inside a ramp (not already settled)
+      if (minDist > 0.002) {
+        isSettlingRef.current = true;
+        window.scrollTo({ top: nearest * tourPx, behavior: 'smooth' });
+        setTimeout(() => { isSettlingRef.current = false; }, 700);
+      }
+    };
+
+    const onScroll = () => {
+      rawScrollRef.current = window.scrollY;
+      if (isSettlingRef.current) return;
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = setTimeout(settle, 180);
+    };
     window.addEventListener('resize', onResize);
     window.addEventListener('scroll', onScroll, { passive: true });
     rawScrollRef.current = window.scrollY;
@@ -736,6 +784,7 @@ export function Home({ onNav }: Props) {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(raf);
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     };
   }, []);
 
@@ -1115,7 +1164,7 @@ export function Home({ onNav }: Props) {
                 const d = `M ${start.x},${start.y} A ${ring.r},${ring.r} 0 0 1 ${end.x},${end.y}`;
                 return (
                   <path key={s.id} d={d}
-                    stroke="transparent" strokeWidth={32} fill="none"
+                    stroke="transparent" strokeWidth={14} fill="none"
                     style={{
                       pointerEvents: hitActive ? 'stroke' : 'none',
                       cursor: 'pointer',
@@ -1982,7 +2031,7 @@ export function Home({ onNav }: Props) {
                         d={hitD}
                         fill="none"
                         stroke="transparent"
-                        strokeWidth={40}
+                        strokeWidth={14}
                         style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
                         onMouseEnter={() => setHoveredArc(s.id)}
                         onMouseLeave={() => setHoveredArc(null)}
@@ -2864,6 +2913,9 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
           const lit = isQuoteLit(i, q);
           const dotOpacity = opacityFor(lit, 0.7);
           const showText = lit === true;
+          // Article card only surfaces when hovering this specific quote dot —
+          // not when a linked value hub lights it from a distance.
+          const showArticleCard = hoveredId === id;
           const p = displayPos(id, i);
           const isLeft = (positions[id]?.x ?? q.pos.x) < 0.5;
           return (
@@ -2958,6 +3010,10 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
                         borderRight: isLeft ? `3px solid ${article.meta.tint}` : 'none',
                         cursor: 'pointer',
                         textAlign: isLeft ? 'right' : 'left',
+                        opacity: showArticleCard ? 1 : 0,
+                        transform: showArticleCard ? 'translateY(0)' : 'translateY(4px)',
+                        transition: 'opacity .2s ease, transform .2s ease',
+                        pointerEvents: showArticleCard ? 'auto' : 'none',
                       }}
                     >
                       <div style={{
@@ -3006,50 +3062,50 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
 const GALLERY_ITEMS = [
   {
     tag: '0 → 1',
-    title: 'Shopping doesn\'t have to start with a search',
-    dek: 'Watch · create · purchase. Six business partners, one app.',
+    impact: 'App launch 0-> 1 with six business partners',
     meta: 'Meetfood · Founding UX · 1.5y',
-    image: '/projects/meetfood.png',
-    href: 'https://www.key-you.com/projects/app-launch',
+    image: '/projects/meetfood-product.png',
+    logo: '/logos/meetfood.png',
+    href: 'https://www.key-you-who.com/projects/app-launch',
   },
   {
     tag: 'GenAI',
-    title: 'AI doesn\'t have to be complex',
-    dek: 'Research-to-prototype. SUS 86.3.',
+    impact: 'Research-to-prototype in 4 months (SUS 86.3)',
     meta: 'Google Cloud · UX · 4mo',
-    image: '/projects/google-cloud.png',
-    href: 'https://www.key-you.com/projects/google-cloud',
+    image: '/projects/google-cloud-product.png',
+    logo: '/logos/google-cloud.png',
+    href: 'https://www.key-you-who.com/projects/google-cloud',
   },
   {
     tag: 'Conversational AI',
-    title: 'AI can be a design tool',
-    dek: 'A working call agent built in a week of prompt engineering.',
+    impact: 'A working call agent built in a week of prompt engineering.',
     meta: 'The Mentoring Partnership · Solo AI · 1wk',
-    image: '/projects/call-agent.png',
-    href: 'https://www.key-you.com/projects/prototyping-with-ai',
+    image: '/projects/mentoring-product.png',
+    logo: '/logos/mentoring.png',
+    href: 'https://www.key-you-who.com/projects/prototyping-with-ai',
   },
   {
     tag: 'Service design',
-    title: 'Design can be a research tool',
-    dek: 'Hi-fi prototypes drove adoption. SUS 90.3.',
-    meta: 'Pittsburgh Parking Authority · Service design · 4mo',
-    image: '/projects/research-tool.png',
-    href: 'https://www.key-you.com/projects/design-as-a-research-tool',
+    impact: 'Hi-fi prototypes drove real-world adoption (SUS 90.3)',
+    meta: 'Automotus · Pittsburgh Parking · 4mo',
+    image: '/projects/automotus-product.png',
+    logo: '/logos/automotus.png',
+    href: 'https://www.key-you-who.com/projects/design-as-a-research-tool',
   },
   {
     tag: 'Physical AI',
-    title: 'AI doesn\'t have to stay on a screen',
-    dek: 'Embedding diagnostic AI into a clinical workflow.',
-    meta: 'Roche · Service design · 1mo',
-    image: '/projects/roche.png',
+    impact: 'Embedding diagnostic AI into a clinical workflow',
+    meta: 'Archetype AI × Roche · 1mo',
+    image: '/projects/roche-product.png',
+    logo: '/logos/archetype-roche.png',
     href: 'https://www.linkedin.com/posts/tantara_its-a-wrap-for-the-inaugural-strange-design-ugcPost-7229713649941028865-kYh4/',
   },
   {
     tag: 'Research',
-    title: 'AI can earn human trust',
-    dek: 'Two papers on language, affiliation, and care.',
-    meta: 'CMU / Cornell · Research Asst. · 1.5y',
-    image: '/projects/ai-trust.png',
+    impact: 'Two papers on language, affiliation, and AI care',
+    meta: 'CMU AI-CARING / Cornell · 1.5y',
+    image: '/projects/ai-caring-product.png',
+    logo: '/logos/ai-caring.png',
     href: null,
   },
 ];
@@ -3058,76 +3114,97 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      // Keep bottom-right corner clear for the BR nav arc (radius ~180px)
-      padding: `${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl + SPACE.xxl}px ${SPACE.xxxl}px`,
+      
+      // right padding keeps content clear of the BR nav arc
+      padding: `${SPACE.xl}px`,
       boxSizing: 'border-box',
       pointerEvents: 'none',
     }}>
       <div style={{
-        width: '100%', maxWidth: 780,
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        columnGap: SPACE.xl,
+        rowGap: SPACE.xxl,
+        maxWidth: 900,
+        margin: '0 auto',
         pointerEvents: 'auto',
+        // Right column starts lower for a staggered feel
+        gridTemplateRows: 'repeat(2, 1fr)',
+        height: '100%',
       }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: SPACE.md,
-        }}>
-          {GALLERY_ITEMS.map((item, i) => (
+        {GALLERY_ITEMS.map((item, i) => {
+          const col = i % 3;
+          return (
             <div
               key={i}
               onClick={() => item.href && window.open(item.href, '_blank', 'noopener,noreferrer')}
               style={{
-                display: 'flex', flexDirection: 'column',
-                border: '1px solid var(--line)',
-                borderRadius: 8, overflow: 'hidden',
-                background: 'var(--surface)',
                 cursor: item.href ? 'pointer' : 'default',
-                transition: 'box-shadow .2s, transform .2s cubic-bezier(.2,.7,.2,1)',
+                display: 'flex', flexDirection: 'column',
+                // Subtle stagger: center col slightly lower, right col more so
+                paddingTop: col === 1 ? 10 : col === 2 ? 20 : 0,
+                minHeight: 0,
               }}
               onMouseEnter={(e) => {
-                if (!item.href) return;
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(31,30,27,0.09)';
+                const imgs = e.currentTarget.querySelectorAll('img');
+                const product = imgs[0] as HTMLImageElement | undefined;
+                const logo = imgs[1] as HTMLImageElement | undefined;
+                if (product && item.href) product.style.transform = 'scale(1.04)';
+                if (logo) { logo.style.filter = 'grayscale(0)'; logo.style.opacity = '1'; logo.style.transform = 'scale(1.2)'; }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                const imgs = e.currentTarget.querySelectorAll('img');
+                const product = imgs[0] as HTMLImageElement | undefined;
+                const logo = imgs[1] as HTMLImageElement | undefined;
+                if (product) product.style.transform = 'scale(1)';
+                if (logo) { logo.style.filter = 'grayscale(1)'; logo.style.opacity = '0.4'; logo.style.transform = 'scale(1)'; }
               }}
             >
-              <div style={{
-                aspectRatio: '16 / 9',
-                background: `url(${item.image}) center/cover no-repeat rgba(31,30,27,0.03)`,
-                borderBottom: '1px solid var(--line)',
-                flexShrink: 0,
-              }} />
-              <div style={{ padding: `${SPACE.sm}px ${SPACE.md}px ${SPACE.md}px`, flex: 1 }}>
+              <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                <img
+                  src={item.image}
+                  alt={item.meta}
+                  style={{
+                    display: 'block', width: '100%', height: '100%',
+                    objectFit: 'contain',
+                    objectPosition: 'center bottom',
+                    transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
+                  }}
+                />
+              </div>
+              <div style={{ paddingTop: 10, flexShrink: 0 }}>
+                <img
+                  src={item.logo}
+                  alt=""
+                  style={{
+                    display: 'block',
+                    height: 14, width: 'auto', maxWidth: 110,
+                    objectFit: 'contain',
+                    filter: 'grayscale(1)',
+                    opacity: 0.4,
+                    marginBottom: 4,
+                    transition: 'filter .25s ease, opacity .25s ease, transform .25s cubic-bezier(.2,.7,.2,1)',
+                    transformOrigin: 'left center',
+                  }}
+                />
                 <div style={{
                   fontFamily: 'var(--mono)', fontSize: 9,
-                  letterSpacing: 0.8, textTransform: 'uppercase',
-                  color: 'var(--ink-3)', marginBottom: SPACE.xs,
+                  letterSpacing: 1.1, textTransform: 'uppercase',
+                  color: 'var(--ink-3)',
                 }}>
                   {item.tag}
                 </div>
                 <div style={{
-                  fontFamily: 'var(--serif)', fontStyle: 'italic',
-                  fontSize: 14, lineHeight: 1.35,
-                  color: 'var(--ink)',
+                  marginTop: 4,
+                  fontFamily: 'var(--serif)', fontSize: 13, lineHeight: 1.45,
+                  color: 'var(--ink-2)',
                 }}>
-                  {item.title}
-                </div>
-                <div style={{
-                  marginTop: SPACE.xs,
-                  fontFamily: 'var(--mono)', fontSize: 9,
-                  letterSpacing: 0.4, textTransform: 'uppercase',
-                  color: 'var(--ink-4)',
-                }}>
-                  {item.meta}
+                  {item.impact}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

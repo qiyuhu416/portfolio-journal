@@ -3,25 +3,21 @@ slug: designing-ai-products
 num: "02"
 quality: Restraint
 title: Designing Next-Gen AI experiences
-titleHtml: "Designing Next-Gen AI Products (and Experiences)"
+titleHtml: "Designing Next-Gen AI Products (& Experiences)"
 dek: Either easy inferences with great performance, or hard inferences with fair performance.
 date: Apr 2026
 readtime: 8
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: errors,         label: "Designing for errors" }
-  - { id: easy-inference, label: "Case study: phone call agent" }
-  - { id: relationship,   label: "Designing the relationship" }
-  - { id: hard-inference, label: "Case study: elder care Bot" }
-  - { id: feeling,        label: "Designing the feeling" }
-  - { id: co-writing,     label: "Case study: Human–AI co-writing tool" }
+  - { id: errors,         label: "Designing for errors (case study: phone call agent)" }
+  - { id: relationship,   label: "Designing the relationship (case study: elder care Bot (research @AI CARING))" }
+  - { id: feeling,        label: "Designing the feeling (case study: Human–AI co-writing tool)" }
 experiences:
   - { name: "Apple",                    href: "https://www.apple.com", role: "GenAI Prototyper",             period: "May 2025 – present" }
   - { name: "The Mentoring Partnership", href: "#",                    role: "Conversational AI",            period: "Feb 2024 – Aug 2024" }
-  - { name: "CMU AI-CARING",            href: "#",                    role: "Conversational AI Researcher", period: "Aug 2023 – Aug 2024" }
-  - { name: "Google × Cornell",         href: "#",                    role: "UX Designer",                  period: "Feb 2023 – May 2023" }
-tocIntro: "So, here are the angles I'll work through:"
+  - { name: "AI-Caring Research",                 href: "https://ai-caring.org/", role: "Conversational AI Researcher", period: "Aug 2023 – Aug 2024" }
+  - { name: "Google",                    href: "https://www.google.com", role: "UX Designer",                  period: "Feb 2023 – May 2023" }
 ---
 
 
@@ -45,22 +41,17 @@ import testingSession from './images/testing-session.png'
     But once AI entered the room, we started seeing ourselves from the outside.
 </p>
 
-<blockquote>
-Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
 
-— Prof. John Zimmerman
-</blockquote>
-
-At first, I thought designing AI was mostly about making the AI smarter, but here I'd like to share some reflections based on work in both academia and industry:
+Designing AI is not always about making the AI smarter, it's always mapping the UX to the current tech capability. Sharing some reflections from my work in academia and industry:
 
 <InlineTOC />
 
-<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if easy inferences)</span></h2>
+<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has easy inferences)</span></h2>
 <h3 id="easy-inference">Case study: phone call agent prototype to elicit errors</h3>
 
 <p>AI is never perfect (yet). Please.</p>
 
-<p>Maybe part of the reason was AI was trained based on human data, and humans are not that perfect either</p>
+<p>Maybe part of the reason was AI was trained based on human data, and humans are not that perfect either.</p>
 
 
 <Sidebar label="Welcome to the adult world">
@@ -78,11 +69,11 @@ At first, I thought designing AI was mostly about making the AI smarter, but her
 </Sidebar>
 
 <p>
-Similar to humans, AI may misinterpret, convey the wrong information, or mislead people the wrong way.
+Therefore, the design focus should be: 
 </p>
 
 <p>
-Therefore, the design focus should be: <strong>where will it fail? which failures are okay? how do we handle them?</strong>
+<strong>Where will it fail? Which failures are okay? How do we handle them?</strong>
 </p>
 
 <p>
@@ -93,7 +84,7 @@ It was to surface what could go wrong before it actually goes wrong.
 
 
 <p>
-Solo prototyper, some rule-based logics from client interviews, 2 days to finish, 1 hour to test, but many interesting findings:
+Solo prototyper, some rule-based logic from client interviews, 2 days to finish, 1 hour to test, but many interesting findings:
 </p>
 
 <Sidebar label="The prototype, with ChatGPT audio mode as my tool">
@@ -241,44 +232,40 @@ Sometimes the experience of recovering from an error matters more than preventin
 <hr/>
 
 
-<h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if hard inferences)</span></h2>
+<h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has hard inferences)</span></h2>
 <h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
 
 
 <p>
-If we look at the evolution of HCI, it has always been about relationships:
+If we look at the evolution of HCI, it has always been about relationships.
 </p>
 
-<Sidebar label="Evolution of HCI">
-  <p style={{
-    textAlign: 'center',
-    fontSize: 18,
-    lineHeight: 1.7,
-    margin: 0,
-    color: 'var(--ink)',
-    textWrap: 'balance',
-  }}>
-    <strong>humans adapt to machines</strong>
-    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(terminal)</span>
-    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', margin: '0 4px' }}>→</span>
-    {' '}<strong>machines adapt to humans</strong>
-    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(GUI)</span>
-    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', margin: '0 4px' }}>→</span>
-    {' '}<strong>humans &amp; machines work together</strong>
-    {' '}<span style={{ color: 'var(--article-tint, var(--ink-3))', fontWeight: 500 }}>(AI agents)</span>
-  </p>
-</Sidebar>
+<p>
+humans adapt to machines (terminal) → machines adapt to humans (GUI) → humans & machines work together (AI agents)
+</p>
 
 <Aside>
 Interestingly we’re now back to terminal again (hello, Claude Code)
 </Aside>
 
+
 <p>We design human–AI relationships by borrowing from human–human relationships.</p>
 
-<p><strong>BUT HUMANS ARE COMPLICATED.</strong> And human–human relationships are even more complicated.</p>
-
 <p>
-The Overarching Research question: <em>How do we design AI that people trust?</em>
+<strong>BUT HUMANS ARE COMPLICATED.</strong> And human–human relationships are even more complicated.
+So one overarching research question:
+</p>
+
+<p style={{
+  fontFamily: 'var(--serif)',
+  fontStyle: 'italic',
+  fontSize: 24,
+  lineHeight: 1.4,
+  textAlign: 'center',
+  margin: '40px 0',
+  color: 'var(--ink)',
+}}>
+  How do we minimize the gap between what AI says & what human understands, and designing AI that humans trust?
 </p>
 
 <Takeaway label="01">Trust can be scripted.</Takeaway>
@@ -406,7 +393,7 @@ In eldercare, the trickiest part is when the older adult's health declines — t
 
 </details>
 
-For example: the bot detects that the elder had a fall. The elder doesn't want their kid to worry, so asks the bot to delete this information. But this information is important — it might impact the future health risk of this older adult. No clear agreement was set during onboarding.
+Again, we can't imagine the things we don't know. So we imagine the human-AI interaction based on the current human-human interaction.
 
 <p style={{
   fontFamily: 'var(--serif)',
@@ -423,33 +410,75 @@ For example: the bot detects that the elder had a fall. The elder doesn't want t
 This is a tricky question even for humans, and when we design it, we also need to consider various cases:
 
 
-<pre style={{
-  background: 'var(--surface)',
-  border: '1px solid var(--line)',
-  borderRadius: 10,
-  padding: '28px 32px',
-  margin: '24px 0 12px',
-  fontFamily: 'var(--mono)',
-  fontSize: 12,
-  lineHeight: 1.9,
-  color: 'var(--article-tint, var(--ink-2))',
-  whiteSpace: 'pre',
-  overflowX: 'auto',
-}}>
-{`variables · what shapes the bot's decision
-
-affiliation   : kid               | caregiver      | elder             | neutral
-present       : kid               | caregiver      | elder
-health        : healthy           | MCI
-recurrence    : never             | a few times    | a lot
-fraud-aware   : yes               | no             | not sure
-finances      : cares about money | low-income
-bot tenure    : short             | long
-elder goal    : stay at home      | appear capable | financial freedom
-              | avoid embarrassment | for the son's best interest
-hide reason   : family conflict   | privacy
-`}
-</pre>
+<div style={{ margin: '24px 0 12px', overflowX: 'auto' }}>
+  <table style={{
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontFamily: 'var(--mono)',
+    fontSize: 12,
+    lineHeight: 1.75,
+  }}>
+    <thead>
+      <tr style={{ background: 'var(--surface)' }}>
+        <th style={{
+          textAlign: 'left',
+          padding: '8px 20px',
+          color: 'var(--ink-3)',
+          fontWeight: 400,
+          letterSpacing: 0.6,
+          textTransform: 'uppercase',
+          fontSize: 10,
+          borderBottom: '1px solid var(--line)',
+        }}>variable</th>
+        <th style={{
+          textAlign: 'left',
+          padding: '8px 20px',
+          color: 'var(--ink-3)',
+          fontWeight: 400,
+          letterSpacing: 0.6,
+          textTransform: 'uppercase',
+          fontSize: 10,
+          borderBottom: '1px solid var(--line)',
+        }}>possible values</th>
+      </tr>
+    </thead>
+    <tbody>
+      {[
+        { name: 'affiliation',  values: ['kid', 'caregiver', 'elder', 'neutral'] },
+        { name: 'present',      values: ['kid', 'caregiver', 'elder'] },
+        { name: 'health',       values: ['healthy', 'MCI'] },
+        { name: 'recurrence',   values: ['never', 'a few times', 'a lot'] },
+        { name: 'fraud-aware',  values: ['yes', 'no', 'not sure'] },
+        { name: 'finances',     values: ['cares about money', 'low-income'] },
+        { name: 'bot tenure',   values: ['short', 'long'] },
+        { name: 'elder goal',   values: ['stay at home', 'appear capable', 'financial freedom', 'avoid embarrassment', "for the son's best interest"] },
+        { name: 'hide reason',  values: ['family conflict', 'privacy'] },
+      ].map((row, i) => (
+        <tr key={row.name} style={{ background: i % 2 === 0 ? 'var(--surface)' : 'transparent' }}>
+          <td style={{
+            padding: '10px 20px',
+            color: 'var(--article-tint, var(--ink-2))',
+            whiteSpace: 'nowrap',
+            verticalAlign: 'top',
+            borderBottom: '1px solid var(--line)',
+          }}>{row.name}</td>
+          <td style={{
+            padding: '10px 20px',
+            color: 'var(--ink-2)',
+            borderBottom: '1px solid var(--line)',
+          }}>
+            {row.values.map((v, j) => (
+              <span key={v}>
+                {j > 0 && <span style={{ color: 'var(--ink-3)', margin: '0 6px' }}>·</span>}
+                {v}
+              </span>
+            ))}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
 <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ink-3)', margin: '0 0 32px' }}>
   Variables the bot would need to weigh to make the call alone. The combinatorial space is the point — no fixed script covers all paths.
@@ -484,8 +513,8 @@ hide reason   : family conflict   | privacy
 2. shares the info without elder's permission
 3. no bot-kid conflict; elder's health gets assurance
 4. elder-bot conflict (elder may think bot isn't working
-   → less interaction; elder loses trust on bot);
-   kid-elder conflict (elder loses trust on the kid)
+   → less interaction; elder loses trust in the bot);
+   kid-elder conflict (elder loses trust in the kid)
 5. kid feels the bot's loyalty
    → confident about the bot's previous work
 6. kid worries about the elder's health
@@ -509,7 +538,7 @@ This is essentially a question about tradeoffs: respect, privacy, well-being, et
 </p>
 
 <p>
-Again, We design human–AI relationships by borrowing from human–human relationships. Just like you can't expect one person to do everything, you can't expect that bot to handle all the situations. 
+Again, we design human–AI relationships by borrowing from human–human relationships. Just like you can't expect one person to do everything, you can't expect that bot to handle all the situations. 
 </p>
 
 <hr/>
@@ -517,12 +546,9 @@ Again, We design human–AI relationships by borrowing from human–human relati
 <h2 id="feeling">§3 · Designing the feeling</h2>
 <h3 id="co-writing">Case study: Human–AI co-writing tool (vibe-coder @startup)</h3>
 
-<p>
-“What matters is the unseen.” — Little Prince
-</p>
 
 <p>
-Feeling is human, contextual, and weirdly hard to describe.
+My fav book, The Little Prince, says “What matters is the unseen.” But feeling is human, contextual, and weirdly hard to describe.
 </p>
 
 <p>
@@ -541,9 +567,9 @@ In HCI, there is a method called task analysis. You break down a seemingly simpl
   <div style={{
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'left',
     gap: 14,
-    textAlign: 'center',
+    textAlign: 'left',
   }}>
     <div style={{ fontSize: 17, lineHeight: 1.5 }}>you think about what to write</div>
 
@@ -692,19 +718,19 @@ Is AI leading? Waiting? Watching? Interrupting? Quietly supporting?
 </p>
 
 <p>
-I prototyped each option and asked people to use them while thinking out loud, noting down when they ignored, accepted, hesitated, or rewrote.
+Result of this project was that I prototyped each option for A/B testing, as in startups we "research through launching."
 </p>
+
 
 <p>
-The results were interesting — we found a relationship between the type of sentence and the preference of AI trigger.
+It was an interesting learning experience that ties back to this rule of thumb: 
 </p>
 
-<Aside>
-But at startups, we do research through launching.
-</Aside>
+<blockquote>
+Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
 
-<p>
-So we moved with adding a button to collect click rate, to test that. <strong>This is just the first step.</strong>
-</p>
+— Prof. John Zimmerman
+</blockquote>
+
 
 

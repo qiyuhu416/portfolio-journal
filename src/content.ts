@@ -109,6 +109,11 @@ export type QuadrantItem = {
   expandsInline?: boolean;
   /** Optional OG-style card shown on hover — platform name, post title, body snippet, optional screenshot. */
   cardPreview?: { platform?: string; title: string; body: string; image?: string };
+  /** Individual event instances — when present, hovering this scatter dot reveals a
+   *  timeline: each entry becomes a small circle with a vertical line to the time axis.
+   *  `date` is "YYYY-MM". `r` is relative radius (1 = default small). `y` is the circle's
+   *  vertical position on the timeline (0 = bottom near axis, 1 = top of visible area). */
+  events?: { name: string; date: string; r?: number; y?: number }[];
 };
 
 export type QuadrantLayout = 'list' | 'gallery' | 'quotes' | 'projects' | 'scatter' | 'statement';

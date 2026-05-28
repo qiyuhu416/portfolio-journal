@@ -66,10 +66,10 @@
         "x": 0.28,
         "y": 0.32,
         "previews": [
-          { "label": "AE" },
-          { "label": "Voice" },
-          { "label": "Gesture" },
-          { "label": "Camera" }
+          { "label": "AE",      "src": "/previews/making-design-fun/ae.jpg" },
+          { "label": "Voice",   "src": "/previews/making-design-fun/voice.jpg" },
+          { "label": "Gesture", "src": "/previews/making-design-fun/gesture.jpg" },
+          { "label": "Camera",  "src": "/previews/making-design-fun/camera.jpg" }
         ]
       },
       {
@@ -84,6 +84,12 @@
         "previews": [
           { "label": "Event" },
           { "label": "Lunch" }
+        ],
+        "events": [
+          { "name": "vibe coding @Apple Park", "date": "2025-10", "r": 0.65, "y": 0.30 },
+          { "name": "When to NOT use AI",      "date": "2025-12", "r": 0.85, "y": 0.72 },
+          { "name": "",                         "date": "2026-01", "r": 1.10, "y": 0.52 },
+          { "name": "When to NOT use AI",      "date": "2026-01", "r": 0.75, "y": 0.78 }
         ]
       },
       {
