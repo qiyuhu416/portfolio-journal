@@ -1259,8 +1259,9 @@ export function Home({ onNav }: Props) {
                     position: 'absolute',
                     left: labelX, top: labelY,
                     transform,
-                    fontFamily: 'var(--sans)',
-                    fontSize: 12, fontWeight: 400,
+                    fontFamily: 'var(--mono)',
+                    fontSize: 10, letterSpacing: 1.4,
+                    textTransform: 'uppercase',
                     color: 'var(--ink-2)', whiteSpace: 'nowrap',
                   }}>{l.text}</div>
                 );
@@ -1587,15 +1588,13 @@ export function Home({ onNav }: Props) {
                     transform:
                       l.anchor === 'middle' ? 'translateX(-50%)' :
                       l.anchor === 'end' ? 'translateX(-100%)' : 'none',
-                    fontFamily: 'var(--sans)',
-                    // Bump the cardinal label up from 14 → 17px as the corner
-                    // nav blooms (navMapT 0 → 1) so the labels read as nav
-                    // affordances, not faint captions, in dark mode.
-                    fontSize: lerp(13, 15, navMapT),
-                    fontWeight: 400,
+                    fontFamily: 'var(--mono)',
+                    fontSize: lerp(9, 10, navMapT),
+                    letterSpacing: 1.4,
+                    textTransform: 'uppercase',
                     color: 'var(--ink-3)',
                     whiteSpace: 'nowrap',
-                    transition: 'color .25s ease, font-size .25s ease, font-weight .25s ease',
+                    transition: 'color .25s ease, font-size .25s ease',
                   }}>{l.text}</div>
                 );
               })}
@@ -3124,16 +3123,16 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         columnGap: SPACE.xl,
-        rowGap: SPACE.xxl,
+        rowGap: 0,
         maxWidth: 900,
         margin: '0 auto',
         pointerEvents: 'auto',
-        // Right column starts lower for a staggered feel
-        gridTemplateRows: 'repeat(2, 1fr)',
-        height: '100%',
+        alignItems: 'start',
       }}>
         {GALLERY_ITEMS.map((item, i) => {
-          const col = i % 3;
+          // Per-item vertical scatter — each card gets its own offset so the
+          // grid feels like objects dropped on a surface rather than a table.
+          const itemOffsets = [0, 60, 30, 80, 20, 50];
           return (
             <div
               key={i}
@@ -3141,8 +3140,7 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
               style={{
                 cursor: item.href ? 'pointer' : 'default',
                 display: 'flex', flexDirection: 'column',
-                // Subtle stagger: center col slightly lower, right col more so
-                paddingTop: col === 1 ? 10 : col === 2 ? 20 : 0,
+                paddingTop: itemOffsets[i] ?? 0,
                 minHeight: 0,
               }}
               onMouseEnter={(e) => {

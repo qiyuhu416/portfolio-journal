@@ -167,10 +167,6 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
       // here so the block also self-centers if rendered outside a flex parent.
       margin: '0 auto',
     }}>
-      {/* The italic "The mirror." label that used to render here was
-          duplicating the section subheading shown at the top of the viewport
-          by Home (kicker + section title). Removed to prevent the same
-          label appearing twice on the same page. */}
       <p style={{
         fontFamily: 'var(--sans)', fontWeight: 500,
         fontSize: 'clamp(24px, 3.2vw, 56px)',
@@ -228,9 +224,9 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
         aria-hidden="true"
         style={{
           display: 'inline-block',
-          marginLeft: '0.25em',
-          transform: hover ? 'translate(2px, -2px)' : 'translate(0, 0)',
-          transition: 'transform .18s',
+          marginLeft: '0.2em',
+          fontSize: '0.8em',
+          verticalAlign: 'super',
         }}
       >
         ↗
