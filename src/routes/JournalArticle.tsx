@@ -128,8 +128,9 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
   // modal → fullscreen on scroll (reversed by exitDeflate when user bottom-overscrolls)
   const baseModalT = clamp(scrollTop / 280, 0, 1);
   const modalT = baseModalT * (1 - exitDeflate);
-  const restMaxWidth = 1140;
-  const gutterX = Math.max(32, (viewportW - restMaxWidth) / 2) * (1 - modalT);
+  const restMaxWidth = 1120;
+  const minGutter = viewportW < 768 ? 24 : 160;
+  const gutterX = Math.max(minGutter, (viewportW - restMaxWidth) / 2) * (1 - modalT);
   const gutterY = 40 * (1 - modalT);
   const modalRadius = 14 * (1 - modalT);
   const modalShadow = `0 ${30 * (1 - modalT)}px ${80 * (1 - modalT)}px rgba(31,30,27,${0.18 * (1 - modalT)})`;

@@ -97,7 +97,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
     <div style={{
       position: 'absolute',
       top: 0, bottom: 0, left: 0, right: 0,
-      padding: '20px 48px',
+      padding: '0 160px 160px',
       opacity,
       overflowY: 'auto',
       pointerEvents: opacity > 0.5 ? 'auto' : 'none',
@@ -105,7 +105,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
       <div style={{
         maxWidth: maxW,
         margin: '0 auto',
-        paddingTop: 64,
+        paddingTop: 88,
         textAlign: 'center',
       }}>
         {/* The axis-pair tag (e.g. "OTHERS · NOTICING") used to render here as
@@ -1058,72 +1058,137 @@ function QuotesLayout({ onNav, itemsOpacity }: LayoutProps) {
 
 type IconProps = { activeIdx: number; onJump: (i: number) => void };
 
+// The 4 cardinal axis endpoints, in cross order: top, right, bottom, left.
+// Each section activates exactly the two that bound its quadrant.
+const CARDINALS = ['top', 'right', 'bottom', 'left'] as const;
+type Cardinal = typeof CARDINALS[number];
+const CARDINAL_LABEL: Record<Cardinal, string> = {
+  top: 'Qiyu', right: 'Create', bottom: 'Others', left: 'Think',
+};
+// Which two cardinals are active for each quadrant position.
+const POS_ACTIVE: Record<string, [Cardinal, Cardinal]> = {
+  TL: ['top', 'left'],
+  TR: ['top', 'right'],
+  BL: ['bottom', 'left'],
+  BR: ['bottom', 'right'],
+};
+
 export function InlineMapIcon({ activeIdx, onJump }: IconProps) {
   const [hover, setHover] = useState(false);
-  const size = hover ? 160 : 28;
-  const pad = hover ? 14 : 4;
-  const cellW = (size - pad * 2) / 2;
-  const cellH = (size - pad * 2) / 2;
+
+  const activeQ = quadrants[activeIdx];
+  const activeCardinals: Cardinal[] = activeQ ? POS_ACTIVE[activeQ.pos] ?? [] : [];
+  const isCardinalActive = (c: Cardinal) => activeCardinals.includes(c);
+
+  // ——— Collapsed geometry ———
+  // 4 dots in a tight cross, no center dot.
+  // dot_r=5, arm=18 → diameter 10px, span = (arm + dot_r) * 2 = 46px.
+  const C_DOT_R = 5;
+  const C_ARM   = 18;
+  const C_SPAN  = (C_ARM + C_DOT_R) * 2;   // 46
+  const C_CX    = C_SPAN / 2;
+  const C_CY    = C_SPAN / 2;
+
+  // ——— Hover geometry ———
+  // Same cross, scaled up. Labels overflow the container (overflow: visible).
+  const H_ARM        = 52;
+  const H_DOT_R_ACT  = 8;   // active dot radius
+  const H_DOT_R_IDLE = 6;   // inactive dot radius
+  const H_SPAN       = (H_ARM + H_DOT_R_ACT) * 2;
+  const H_CX         = H_SPAN / 2;
+  const H_CY         = H_SPAN / 2;
+
+  const span = hover ? H_SPAN : C_SPAN;
+  const cx   = hover ? H_CX  : C_CX;
+  const cy   = hover ? H_CY  : C_CY;
+
+  const dotCenter = (c: Cardinal): { x: number; y: number } => {
+    const arm = hover ? H_ARM : C_ARM;
+    if (c === 'top')    return { x: cx,       y: cy - arm };
+    if (c === 'right')  return { x: cx + arm, y: cy       };
+    if (c === 'bottom') return { x: cx,       y: cy + arm };
+    return                        { x: cx - arm, y: cy       };
+  };
+
+  // Map cardinal → quadrant index for click nav (pick the nearer quadrant when
+  // two share a cardinal — preference is the active one first, else index order).
+  const cardinalToIdx = (c: Cardinal): number => {
+    const matches = quadrants
+      .map((q, i) => ({ q, i }))
+      .filter(({ q }) => (POS_ACTIVE[q.pos] ?? []).includes(c));
+    const active = matches.find(({ i }) => i === activeIdx);
+    return (active ?? matches[0])?.i ?? 0;
+  };
 
   return (
-    <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
-        position: 'relative', width: size, height: size,
-        background: hover ? 'rgba(250,248,243,0.98)' : 'transparent',
-        border: hover ? '1px solid var(--line)' : 'none',
-        borderRadius: 6,
-        padding: pad,
-        transition: 'width .25s cubic-bezier(.2,.7,.2,1), height .25s cubic-bezier(.2,.7,.2,1), padding .25s, background .2s, border .2s',
-        boxShadow: hover ? '0 10px 30px rgba(31,30,27,0.08)' : 'none',
-        cursor: hover ? 'default' : 'pointer',
-        zIndex: hover ? 60 : 1,
+        position: 'relative',
+        width: span, height: span,
         flexShrink: 0,
-      }}>
-      <div style={{ position: 'absolute', left: pad, right: pad, top: '50%', height: 1, background: 'var(--ink-3)' }} />
-      <div style={{ position: 'absolute', top: pad, bottom: pad, left: '50%', width: 1, background: 'var(--ink-3)' }} />
-      {quadrants.map((q, i) => {
-        const col = (q.pos === 'TL' || q.pos === 'BL') ? 0 : 1;
-        const row = (q.pos === 'TL' || q.pos === 'TR') ? 0 : 1;
-        const isActive = i === activeIdx;
+        cursor: 'pointer',
+        zIndex: hover ? 60 : 1,
+        overflow: 'visible',
+        transition: 'width .3s cubic-bezier(.2,.7,.2,1), height .3s cubic-bezier(.2,.7,.2,1)',
+      }}
+    >
+      {/* Arms — only rendered in hover state */}
+      {hover && CARDINALS.map((c) => {
+        const active = isCardinalActive(c);
+        const dc = dotCenter(c);
+        const lineStyle: React.CSSProperties = {
+          position: 'absolute',
+          background: active ? 'var(--ink)' : 'rgba(31,30,27,0.18)',
+          transition: 'background .2s',
+        };
+        if (c === 'top')    return <div key={c} style={{ ...lineStyle, left: cx - 0.5, top: dc.y + H_DOT_R_ACT, width: 1, height: H_ARM - H_DOT_R_ACT }} />;
+        if (c === 'right')  return <div key={c} style={{ ...lineStyle, left: cx, top: cy - 0.5, width: H_ARM - H_DOT_R_ACT, height: 1 }} />;
+        if (c === 'bottom') return <div key={c} style={{ ...lineStyle, left: cx - 0.5, top: cy, width: 1, height: H_ARM - H_DOT_R_ACT }} />;
+        return                      <div key={c} style={{ ...lineStyle, left: dc.x + H_DOT_R_ACT, top: cy - 0.5, width: H_ARM - H_DOT_R_ACT, height: 1 }} />;
+      })}
+
+      {/* Cardinal dots */}
+      {CARDINALS.map((c) => {
+        const active = hover ? isCardinalActive(c) : false;
+        const r  = hover ? (active ? H_DOT_R_ACT : H_DOT_R_IDLE) : C_DOT_R;
+        const dc = dotCenter(c);
+
         return (
-          <button key={q.id} onClick={(e) => { e.stopPropagation(); onJump(i); }}
+          <button
+            key={c}
+            onClick={(e) => { e.stopPropagation(); onJump(cardinalToIdx(c)); }}
             style={{
               position: 'absolute',
-              left: pad + col * cellW, top: pad + row * cellH,
-              width: cellW, height: cellH,
-              background: 'transparent', border: 'none', padding: 0,
-              cursor: 'pointer', fontFamily: 'inherit', color: 'inherit',
-            }}>
-            {isActive && (
-              <div style={{
-                position: 'absolute',
-                width: hover ? 8 : 6, height: hover ? 8 : 6, borderRadius: '50%',
-                background: q.tint,
-                left: col === 0 ? (hover ? 6 : '50%') : 'auto',
-                right: col === 1 ? (hover ? 6 : '50%') : 'auto',
-                top: row === 0 ? (hover ? 6 : '50%') : 'auto',
-                bottom: row === 1 ? (hover ? 6 : '50%') : 'auto',
-                transform: hover ? 'none' : `translate(${col === 0 ? '-50%' : '50%'}, ${row === 0 ? '-50%' : '50%'})`,
-                transition: 'all .25s',
-              }} />
-            )}
-            {hover && (
-              <div style={{
-                position: 'absolute',
-                left: col === 0 ? 6 : 'auto', right: col === 1 ? 6 : 'auto',
-                top: row === 0 ? 20 : 'auto', bottom: row === 1 ? 8 : 'auto',
-                maxWidth: cellW - 14,
-                textAlign: col === 0 ? 'left' : 'right',
-              }}>
-                <div style={{
-                  fontFamily: 'var(--serif)', fontSize: 11, lineHeight: 1.1, letterSpacing: -0.1,
-                  color: isActive ? q.tint : 'var(--ink-2)',
-                  fontWeight: isActive ? 500 : 400,
-                }}>{q.label}</div>
-              </div>
-            )}
-          </button>
+              left: dc.x - r, top: dc.y - r,
+              width: r * 2, height: r * 2,
+              borderRadius: '50%',
+              background: hover && active ? 'var(--ink)' : 'rgba(31,30,27,0.38)',
+              border: 'none', padding: 0, cursor: 'pointer',
+              transition: 'left .3s cubic-bezier(.2,.7,.2,1), top .3s cubic-bezier(.2,.7,.2,1), width .3s, height .3s, background .2s',
+            }}
+          />
         );
+      })}
+
+      {/* Labels — only active cardinals in hover state */}
+      {hover && CARDINALS.filter(isCardinalActive).map((c) => {
+        const dc = dotCenter(c);
+        const r  = H_DOT_R_ACT;
+        const labelStyle: React.CSSProperties = {
+          position: 'absolute',
+          fontFamily: 'var(--serif)', fontWeight: 400,
+          fontSize: 'clamp(18px, 1.6vw, 26px)',
+          lineHeight: 1, letterSpacing: -0.5,
+          color: 'var(--ink)',
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+        };
+        if (c === 'top')   return <div key={c} style={{ ...labelStyle, left: dc.x - r, bottom: span - dc.y + r + 6 }}>{CARDINAL_LABEL[c]}</div>;
+        if (c === 'right') return <div key={c} style={{ ...labelStyle, left: dc.x + r + 10, top: dc.y - r }}>{CARDINAL_LABEL[c]}</div>;
+        if (c === 'bottom') return <div key={c} style={{ ...labelStyle, left: dc.x - r, top: dc.y + r + 6 }}>{CARDINAL_LABEL[c]}</div>;
+        return                     <div key={c} style={{ ...labelStyle, right: span - dc.x + r + 10, top: dc.y - r }}>{CARDINAL_LABEL[c]}</div>;
       })}
     </div>
   );
