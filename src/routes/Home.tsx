@@ -231,9 +231,11 @@ export function Home({ onNav }: Props) {
   const driverHeight = tourScrollPx + vh * 1.5;
   const progress = clamp(smoothScrollY / tourScrollPx, 0, 1);
 
-  // Box geometry — centered, 36% of the shorter viewport dimension.
+  // Box geometry — centered, 56% of the shorter viewport dimension.
+  // Larger box = crosshair arms are long enough that inner-quadrant labels
+  // have breathing room between the intersection and the endpoint dot.
   const cx = vw / 2, cy = vh / 2;
-  const boxSize = Math.min(vw, vh) * 0.36;
+  const boxSize = Math.min(vw, vh) * 0.56;
   const half = boxSize / 2;
   const boxX = cx - half, boxY = cy - half;
 
@@ -396,32 +398,21 @@ export function Home({ onNav }: Props) {
           <AxisDot key={cfg.label}
             x={dotPositions[i].x} y={dotPositions[i].y}
             label={cfg.label} dir={cfg.dir} tint={cfg.tint}
-            dotVis={1} labelVis={crosshairLineVis}
+            dotVis={1 - sectionBodyT} labelVis={crosshairLineVis}
             dotSize={dotSize} dotColor={dotColor}
           />
         ))}
 
-        {/* Quadrant labels — centered within the outer space of each quadrant.
-            Each quadrant's outer space is the region between the axis endpoint
-            and the viewport edge. Centering there keeps labels clearly "in"
-            their quadrant without crowding the axis lines. */}
+        {/* Quadrant labels — centered within each inner quadrant cell,
+            i.e. the viewport is divided at (cx, cy) into 4 cells and the
+            label sits at each cell's center. */}
         {quadLabelVis > 0 && QUAD_LABELS.map((ql) => {
           const col = ql.cell[1] === 'L' ? 0 : 1;
           const row = ql.cell[0] === 'T' ? 0 : 1;
-          const sec  = SECTIONS.find((s) => s.cell === ql.cell);
-          const tint = sec?.tint ?? 'var(--ink-3)';
 
-          // Center of each outer quadrant space.
-          // Col 0 (left): outer x-range is [0, cx−half]  → center at (cx−half)/2
-          // Col 1 (right): outer x-range is [cx+half, vw] → center at cx+half+(vw−cx−half)/2
-          // Row 0 (top):  outer y-range is [0, cy−half]
-          // Row 1 (bottom): outer y-range is [cy+half, vh]
-          const midX = col === 0
-            ? (cx - half) / 2
-            : cx + half + (vw - cx - half) / 2;
-          const midY = row === 0
-            ? (cy - half) / 2
-            : cy + half + (vh - cy - half) / 2;
+          // Inner arm centers: halfway between the crosshair intersection and the endpoint dot.
+          const midX = col === 0 ? cx - half / 2 : cx + half / 2;
+          const midY = row === 0 ? cy - half / 2 : cy + half / 2;
 
           return (
             <div key={ql.cell} style={{
@@ -431,7 +422,7 @@ export function Home({ onNav }: Props) {
               opacity: quadLabelVis,
               pointerEvents: 'none', zIndex: 7,
               textAlign: 'center',
-              width: Math.min(cx - half - SPACE.lg * 2, 220),
+              width: Math.min(half * 0.8, 280),
             }}>
               <div style={{
                 fontFamily: 'var(--serif)', fontWeight: 400,
@@ -441,26 +432,16 @@ export function Home({ onNav }: Props) {
               }}>
                 {ql.text}
               </div>
-              <div style={{
-                fontFamily: 'var(--mono)',
-                fontSize: 9, letterSpacing: '0.12em',
-                textTransform: 'uppercase', color: tint,
-                marginTop: SPACE.sm,
-                lineHeight: 1.6,
-              }}>
-                {sec?.axisPair[0]}<br />
-                <span style={{ opacity: 0.7 }}>×</span> {sec?.axisPair[1]}
-              </div>
             </div>
           );
         })}
 
-        {/* "through connecting the dots…" — between horizontal axis and
-            bottom dot; well clear of the BL/BR quadrant labels. */}
+        {/* "through connecting the dots…" — below the bottom axis dot,
+            outside the quadrant grid. */}
         {connectingTextVis > 0 && (
           <div style={{
             position: 'absolute',
-            top: cy + half * 0.45,
+            top: cy + half + 32,
             left: '50%', transform: 'translateX(-50%)',
             opacity: connectingTextVis,
             fontFamily: 'var(--serif)', fontStyle: 'italic',
@@ -1675,7 +1656,7 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
         {GALLERY_ITEMS.map((item, i) => {
           // Per-item vertical scatter — each card gets its own offset so the
           // grid feels like objects dropped on a surface rather than a table.
-          const itemOffsets = [0, 60, 30, 80, 20, 50];
+          const itemOffsets = [0, 0, 0, 0, 0, 0];
           return (
             <div
               key={i}
