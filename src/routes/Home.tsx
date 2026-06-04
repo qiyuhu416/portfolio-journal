@@ -153,6 +153,7 @@ export function Home({ onNav }: Props) {
     typeof window !== 'undefined' ? window.innerHeight : 800,
   );
   const [smoothScrollY, setSmoothScrollY] = useState(0);
+  const [isBoxHovered, setIsBoxHovered] = useState(false);
   const rawScrollRef = useRef(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSettlingRef = useRef(false);
@@ -230,12 +231,13 @@ export function Home({ onNav }: Props) {
   const tourScrollPx = vh * 6;
   const driverHeight = tourScrollPx + vh * 1.5;
   const progress = clamp(smoothScrollY / tourScrollPx, 0, 1);
+  const headerTop = Math.round(vh * 0.10);
 
   // Box geometry — centered, 56% of the shorter viewport dimension.
   // Larger box = crosshair arms are long enough that inner-quadrant labels
   // have breathing room between the intersection and the endpoint dot.
-  const cx = vw / 2, cy = vh / 2;
-  const boxSize = Math.min(vw, vh) * 0.56;
+  const cx = vw / 2, cy = vh / 2 - 32;
+  const boxSize = Math.min(vw, vh) * 0.32;
   const half = boxSize / 2;
   const boxX = cx - half, boxY = cy - half;
 
@@ -281,7 +283,7 @@ export function Home({ onNav }: Props) {
   // no size or shape change, just translation. NAV_SP = C_ARM in
   // InlineMapIcon so the handoff at HEADER_END is seamless.
   const NAV_SP  = 18; // matches InlineMapIcon C_ARM
-  const navY    = lerp(cy, HEADER_H / 2, headerT);
+  const navY    = lerp(cy, headerTop + HEADER_H / 2, headerT);
   // Cross layout: top / right / bottom / left — same geometry as InlineMapIcon.
   const navDots = [
     { x: cx,          y: navY - NAV_SP }, // top    (Qiyu)
@@ -354,7 +356,8 @@ export function Home({ onNav }: Props) {
             letterSpacing: '-0.02em', lineHeight: 1.2,
             textAlign: 'center', margin: 0,
             padding: `0 ${SPACE.xl}px`,
-            opacity: Math.max(0, 1 - boxFillT * 2.5),
+            opacity: isBoxHovered ? 0 : Math.max(0, 1 - boxFillT * 2.5),
+            transition: 'opacity 0.3s ease',
           }}>
             Think outside the box
           </p>
@@ -368,22 +371,44 @@ export function Home({ onNav }: Props) {
           pointerEvents: 'none', zIndex: 4, overflow: 'visible',
           opacity: crosshairLineVis,
         }}>
-          {/* Box fill — fades as boxFillT → 1 */}
+          {/* Box fill — fades as boxFillT → 1, or immediately on hover */}
           <rect x={boxX} y={boxY} width={boxSize} height={boxSize}
-            fill="var(--ink)" opacity={1 - boxFillT} />
-          {/* Top border — slides down from cy-half to cy */}
-          <line x1={cx - half} y1={topY} x2={cx + half} y2={topY}
-            stroke="var(--ink)" strokeWidth={1.5} />
-          {/* Bottom border — slides up from cy+half to cy */}
-          <line x1={cx - half} y1={bottomY} x2={cx + half} y2={bottomY}
-            stroke="var(--ink)" strokeWidth={1.5} />
-          {/* Left border — slides right from cx-half to cx */}
-          <line x1={leftX} y1={cy - half} x2={leftX} y2={cy + half}
-            stroke="var(--ink)" strokeWidth={1.5} />
-          {/* Right border — slides left from cx+half to cx */}
-          <line x1={rightX} y1={cy - half} x2={rightX} y2={cy + half}
-            stroke="var(--ink)" strokeWidth={1.5} />
+            fill="var(--ink)"
+            style={{ opacity: isBoxHovered ? 0 : 1 - boxFillT, transition: 'opacity 0.35s ease' }} />
+          {/* Border lines — extend beyond corners on hover via CSS scale */}
+          {(() => {
+            const hSx = isBoxHovered && morphT < 0.01 ? 1.35 : 1;
+            const hSy = isBoxHovered && morphT < 0.01 ? 1.35 : 1;
+            const lineTransition = 'transform 0.3s ease';
+            return (<>
+              <line x1={cx - half} y1={topY} x2={cx + half} y2={topY}
+                stroke="var(--ink)" strokeWidth={1.5}
+                style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleX(${hSx})`, transition: lineTransition }} />
+              <line x1={cx - half} y1={bottomY} x2={cx + half} y2={bottomY}
+                stroke="var(--ink)" strokeWidth={1.5}
+                style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleX(${hSx})`, transition: lineTransition }} />
+              <line x1={leftX} y1={cy - half} x2={leftX} y2={cy + half}
+                stroke="var(--ink)" strokeWidth={1.5}
+                style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleY(${hSy})`, transition: lineTransition }} />
+              <line x1={rightX} y1={cy - half} x2={rightX} y2={cy + half}
+                stroke="var(--ink)" strokeWidth={1.5}
+                style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleY(${hSy})`, transition: lineTransition }} />
+            </>);
+          })()}
         </svg>
+
+        {/* Hover detection zone — transparent div over the box, only active before scroll begins */}
+        {morphT < 0.01 && (
+          <div
+            style={{
+              position: 'absolute', left: boxX, top: boxY,
+              width: boxSize, height: boxSize,
+              zIndex: 5, cursor: 'default',
+            }}
+            onMouseEnter={() => setIsBoxHovered(true)}
+            onMouseLeave={() => setIsBoxHovered(false)}
+          />
+        )}
 
         {/* Axis dots — present from the start, outside the border by DOT_GAP.
             Converge inward to border midpoints as the sides collapse (morphT).
@@ -441,7 +466,7 @@ export function Home({ onNav }: Props) {
         {connectingTextVis > 0 && (
           <div style={{
             position: 'absolute',
-            top: cy + half + 32,
+            top: cy + half + 64,
             left: '50%', transform: 'translateX(-50%)',
             opacity: connectingTextVis,
             fontFamily: 'var(--serif)', fontStyle: 'italic',
@@ -453,27 +478,12 @@ export function Home({ onNav }: Props) {
           </div>
         )}
 
-        {/* Section panels — sit below the header bar */}
-        {sectionVis > 0 && (
-          <div style={{
-            position: 'absolute', top: HEADER_H, left: 0, right: 0, bottom: 0,
-            opacity: sectionVis, zIndex: 10,
-          }}>
-            <SectionView
-              section={SECTION_BY_ID[activeSection]}
-              q={activeQ}
-              onNav={onNav}
-              onSectionJump={jumpToSection}
-            />
-          </div>
-        )}
-
-        {/* Header bar — the 4 dots animate into place at the center here.
-            The dots are rendered by AxisDot (at their dotPositions), so the
-            bar just provides the background strip and section label. */}
-        {headerBarVis > 0 && (() => {
+        {/* ── Inset container — single source of truth for all page margins.
+            Both header and content live here so they share the same 160px
+            inset on all four sides automatically. Content gets flex:1 so it
+            fills exactly to the bottom edge (no hardcoded bottom padding). */}
+        {(sectionVis > 0 || headerBarVis > 0) && (() => {
           const sec = SECTION_BY_ID[activeSection];
-          // Which two cardinal positions are active for the current section.
           const activeCells: Record<SectionId, ['top'|'right'|'bottom'|'left', 'top'|'right'|'bottom'|'left']> = {
             reflect:     ['top', 'left'],
             experiment:  ['top', 'right'],
@@ -483,18 +493,11 @@ export function Home({ onNav }: Props) {
           const active = activeCells[activeSection];
           const isActive = (c: 'top'|'right'|'bottom'|'left') => active.includes(c);
           const navIdxFor = (c: 'top'|'right'|'bottom'|'left') => {
-            const map = { top: 'reflect', right: 'experiment', bottom: 'hear', left: 'collaborate' } as const;
-            // Jump to the section that activates this cardinal AND is adjacent to current.
-            const all = (['top','right','bottom','left'] as const)
-              .flatMap(c2 => activeCells[map[c]])
-              .includes(c as never);
-            // Simple: jump to the section whose activeCells include this cardinal.
             const match = (Object.keys(activeCells) as SectionId[]).find(id =>
               activeCells[id].includes(c),
             );
             return match;
           };
-          // Cross geometry constants (must match nav dot positions).
           const NAV_R = 5; const NAV_ARM = 18;
           const DOT_POS = {
             top:    { x: 0,        y: -NAV_ARM },
@@ -507,64 +510,86 @@ export function Home({ onNav }: Props) {
 
           return (
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: HEADER_H,
-              opacity: headerBarVis, zIndex: 15,
-              borderBottom: sectionVis > 0.05 ? '1px solid var(--line)' : 'none',
+              position: 'absolute',
+              top: headerTop, bottom: Math.round(vw * 0.12),
+              left: headerTop, right: headerTop,
+              zIndex: 10,
+              display: 'flex', flexDirection: 'column',
               pointerEvents: 'none',
             }}>
-              {/* Axis pair — left, 160px from edge */}
+              {/* Header row — 3-column grid so the nav icon is always pinned
+                  to the exact horizontal center regardless of label widths. */}
               <div style={{
-                position: 'absolute', left: 160,
-                top: '50%', transform: 'translateY(-50%)',
-                opacity: navOpacity,
-                fontFamily: 'var(--sans)', fontWeight: 500,
-                fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: sec.tint,
+                height: HEADER_H, flexShrink: 0,
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                alignItems: 'center',
+                opacity: headerBarVis,
+                pointerEvents: 'none',
               }}>
-                {sec.axisPair[0]} × {sec.axisPair[1]}
+                <div style={{
+                  opacity: navOpacity,
+                  fontFamily: 'var(--sans)', fontWeight: 500,
+                  fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: sec.tint,
+                  textAlign: 'right', paddingRight: 20,
+                }}>
+                  {sec.axisPair[0]} × {sec.axisPair[1]}
+                </div>
+
+                <div style={{
+                  position: 'relative', flexShrink: 0,
+                  opacity: navOpacity,
+                  pointerEvents: 'auto',
+                  width: (NAV_ARM + NAV_R) * 2,
+                  height: (NAV_ARM + NAV_R) * 2,
+                }}>
+                  {cardinals.map((c) => {
+                    const dp = DOT_POS[c];
+                    const isAct = isActive(c);
+                    const dcx = NAV_ARM + NAV_R + dp.x;
+                    const dcy = NAV_ARM + NAV_R + dp.y;
+                    const targetId = navIdxFor(c);
+                    return (
+                      <div key={c}
+                        onClick={() => targetId && jumpToSection(targetId)}
+                        style={{
+                          position: 'absolute',
+                          left: dcx - NAV_R, top: dcy - NAV_R,
+                          width: NAV_R * 2, height: NAV_R * 2,
+                          borderRadius: '50%',
+                          background: isAct ? 'var(--ink)' : 'rgba(31,30,27,0.35)',
+                          cursor: 'pointer',
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div style={{
+                  opacity: navOpacity,
+                  fontFamily: 'var(--serif)', fontStyle: 'italic',
+                  fontSize: 13, color: 'var(--ink-3)',
+                  paddingLeft: 20,
+                }}>
+                  {sec.activity}
+                </div>
               </div>
 
-              {/* Center nav cross — active dots dark, inactive grey */}
+              {/* Content — fills remaining height. position:relative anchors
+                  every child's position:absolute,inset:0 layout. */}
               <div style={{
-                position: 'absolute', left: '50%', top: '50%',
-                transform: 'translate(-50%, -50%)',
-                opacity: navOpacity,
-                pointerEvents: 'auto',
-                width: (NAV_ARM + NAV_R) * 2,
-                height: (NAV_ARM + NAV_R) * 2,
+                flex: 1, position: 'relative', overflow: 'hidden',
+                paddingTop: viewportW >= 768 ? 40 : 16,
+                opacity: sectionVis,
+                pointerEvents: sectionVis > 0.05 ? 'auto' : 'none',
               }}>
-                {cardinals.map((c) => {
-                  const dp = DOT_POS[c];
-                  const active = isActive(c);
-                  const cx = NAV_ARM + NAV_R + dp.x;
-                  const cy = NAV_ARM + NAV_R + dp.y;
-                  const targetId = navIdxFor(c);
-                  return (
-                    <div
-                      key={c}
-                      onClick={() => targetId && jumpToSection(targetId)}
-                      style={{
-                        position: 'absolute',
-                        left: cx - NAV_R, top: cy - NAV_R,
-                        width: NAV_R * 2, height: NAV_R * 2,
-                        borderRadius: '50%',
-                        background: active ? 'var(--ink)' : 'rgba(31,30,27,0.35)',
-                        cursor: 'pointer',
-                      }}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Activity description — right, 160px from edge */}
-              <div style={{
-                position: 'absolute', right: 160,
-                top: '50%', transform: 'translateY(-50%)',
-                opacity: navOpacity,
-                fontFamily: 'var(--serif)', fontStyle: 'italic',
-                fontSize: 13, color: 'var(--ink-3)',
-              }}>
-                {sec.activity}
+                <SectionView
+                  section={SECTION_BY_ID[activeSection]}
+                  q={activeQ}
+                  onNav={onNav}
+                  onSectionJump={jumpToSection}
+                />
               </div>
             </div>
           );
@@ -812,7 +837,7 @@ function CreateScatter({
   };
   // Plot interior insets — far enough from the axis lines that the circles
   // breathe without overlapping the axis dots themselves.
-  const inset = { top: 88, right: 160, bottom: 160, left: 160 };
+  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
 
   // Crosshair draw-in animation. drawProgress 0 → 1 over ~280ms when hover
   // begins; back to 0 over ~180ms when hover ends. Lines lerp their far
@@ -1242,12 +1267,12 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // suppressed for the dragged node (cursor stays planted) and for the
   // hub-of-the-dragged-quote case (so connected lines don't visibly jitter
   // around the cursor anchor).
-  const t = floatTick * 0.012;
+  const t = floatTick * 0.016;
   const driftFor = (id: string, idx: number) => {
     if (draggedId === id) return { dx: 0, dy: 0 };
     return {
-      dx: Math.sin(t + idx * 1.3) * 0.005,
-      dy: Math.cos(t * 0.85 + idx * 1.7) * 0.004,
+      dx: Math.sin(t + idx * 1.3) * 0.018,
+      dy: Math.cos(t * 0.85 + idx * 1.7) * 0.014,
     };
   };
   const displayPos = (id: string, idx: number) => {
@@ -1305,9 +1330,6 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      padding: `88px 160px 160px`,
-      // Clip so a dragged node can't visually escape the viewport even
-      // mid-gesture; the inner clamp also enforces this in coords.
       overflow: 'hidden',
     }}>
       <div
@@ -1432,9 +1454,6 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
           const lit = isQuoteLit(i, q);
           const dotOpacity = opacityFor(lit, 0.7);
           const showText = lit === true;
-          // Article card only surfaces when hovering this specific quote dot —
-          // not when a linked value hub lights it from a distance.
-          const showArticleCard = hoveredId === id;
           const p = displayPos(id, i);
           const isLeft = (positions[id]?.x ?? q.pos.x) < 0.5;
           return (
@@ -1511,57 +1530,6 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
                 }}>
                   <span>{q.who}</span>
                 </cite>
-                {/* Article preview card — visible when the cluster is lit.
-                    Tinted with the article's own surface + tint colors so
-                    it reads as a physical thing you can pick up, not a link. */}
-                {linked && (() => {
-                  const article = q.articleSlug ? bySlug[q.articleSlug] : undefined;
-                  if (!article) return null;
-                  return (
-                    <div
-                      onClick={(e) => { e.stopPropagation(); onNav(`article:${article.meta.slug}${q.sectionId ? `:${q.sectionId}` : ''}`); }}
-                      style={{
-                        marginTop: SPACE.sm,
-                        padding: '8px 12px 10px',
-                        background: article.meta.surface,
-                        borderRadius: 6,
-                        borderLeft: isLeft ? 'none' : `3px solid ${article.meta.tint}`,
-                        borderRight: isLeft ? `3px solid ${article.meta.tint}` : 'none',
-                        cursor: 'pointer',
-                        textAlign: isLeft ? 'right' : 'left',
-                        opacity: showArticleCard ? 1 : 0,
-                        transform: showArticleCard ? 'translateY(0)' : 'translateY(4px)',
-                        transition: 'opacity .2s ease, transform .2s ease',
-                        pointerEvents: showArticleCard ? 'auto' : 'none',
-                      }}
-                    >
-                      <div style={{
-                        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
-                        textTransform: 'uppercase', color: article.meta.tint,
-                        marginBottom: 4,
-                      }}>
-                        {article.meta.quality} · {article.meta.readtime} min read
-                      </div>
-                      <div style={{
-                        fontFamily: 'var(--serif)', fontWeight: 400,
-                        fontSize: 14, lineHeight: 1.2, letterSpacing: -0.2,
-                        color: 'var(--ink)',
-                        display: 'flex', alignItems: 'baseline', gap: 5,
-                        flexDirection: isLeft ? 'row-reverse' : 'row',
-                      }}>
-                        <span style={{ color: article.meta.tint }}>{isLeft ? '←' : '→'}</span>
-                        {article.meta.title}
-                      </div>
-                      <div style={{
-                        fontFamily: 'var(--serif)', fontStyle: 'italic',
-                        fontSize: 12, lineHeight: 1.4, color: 'var(--ink-3)',
-                        marginTop: 2, textWrap: 'pretty',
-                      }}>
-                        {article.meta.dek}
-                      </div>
-                    </div>
-                  );
-                })()}
               </div>
                 );
               })()}
@@ -1639,7 +1607,6 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      padding: `88px 160px 160px`,
       boxSizing: 'border-box',
       pointerEvents: 'none',
     }}>
@@ -1654,9 +1621,6 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
         alignItems: 'start',
       }}>
         {GALLERY_ITEMS.map((item, i) => {
-          // Per-item vertical scatter — each card gets its own offset so the
-          // grid feels like objects dropped on a surface rather than a table.
-          const itemOffsets = [0, 0, 0, 0, 0, 0];
           return (
             <div
               key={i}
@@ -1664,7 +1628,6 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
               style={{
                 cursor: item.href ? 'pointer' : 'default',
                 display: 'flex', flexDirection: 'column',
-                paddingTop: itemOffsets[i] ?? 0,
                 minHeight: 0,
               }}
               onMouseEnter={(e) => {
@@ -1675,7 +1638,7 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                   if (item.hoverImage) product.src = item.hoverImage;
                   if (item.href) product.style.transform = 'scale(1.04)';
                 }
-                if (logo) { logo.style.filter = 'grayscale(0)'; logo.style.opacity = '1'; logo.style.transform = 'scale(1.2)'; }
+                if (logo) { logo.style.width = '20%'; logo.style.opacity = '0.9'; }
               }}
               onMouseLeave={(e) => {
                 const imgs = e.currentTarget.querySelectorAll('img');
@@ -1685,10 +1648,11 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                   if (item.hoverImage) product.src = item.image;
                   product.style.transform = 'scale(1)';
                 }
-                if (logo) { logo.style.filter = 'grayscale(1)'; logo.style.opacity = '0.4'; logo.style.transform = 'scale(1)'; }
+                if (logo) { logo.style.width = '10%'; logo.style.opacity = '0.45'; }
               }}
             >
-              <div style={{ height: 220, overflow: 'hidden', borderRadius: 4 }}>
+              {/* Image + logo overlay */}
+              <div style={{ height: 220, overflow: 'hidden', borderRadius: 4, position: 'relative' }}>
                 <img
                   src={item.image}
                   alt={item.meta}
@@ -1699,35 +1663,27 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                     transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
                   }}
                 />
-              </div>
-              <div style={{ paddingTop: 10, flexShrink: 0 }}>
                 <img
                   src={item.logo}
                   alt=""
                   style={{
-                    display: 'block',
-                    height: 14, width: 'auto', maxWidth: 110,
+                    position: 'absolute', bottom: 8, left: 8,
+                    width: '10%', height: 'auto',
                     objectFit: 'contain',
                     filter: 'grayscale(1)',
-                    opacity: 0.4,
-                    marginBottom: 4,
-                    transition: 'filter .25s ease, opacity .25s ease, transform .25s cubic-bezier(.2,.7,.2,1)',
-                    transformOrigin: 'left center',
+                    opacity: 0.45,
+                    transition: 'width .4s cubic-bezier(.2,.7,.2,1), opacity .25s ease',
                   }}
                 />
+              </div>
+              {/* Tag only — no description */}
+              <div style={{ paddingTop: 8, flexShrink: 0 }}>
                 <div style={{
                   fontFamily: 'var(--mono)', fontSize: 9,
                   letterSpacing: 1.1, textTransform: 'uppercase',
                   color: 'var(--ink-3)',
                 }}>
                   {item.tag}
-                </div>
-                <div style={{
-                  marginTop: 4,
-                  fontFamily: 'var(--serif)', fontSize: 13, lineHeight: 1.45,
-                  color: 'var(--ink-2)',
-                }}>
-                  {item.impact}
                 </div>
               </div>
             </div>

@@ -63,8 +63,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
   if (layout === 'scatter') {
     return (
       <div style={{
-        position: 'absolute',
-        top: 0, bottom: 0, left: 0, right: 0,
+        height: '100%',
         opacity,
         pointerEvents: opacity > 0.5 ? 'auto' : 'none',
       }}>
@@ -78,12 +77,11 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
   if (layout === 'statement') {
     return (
       <div style={{
-        position: 'absolute',
-        top: 0, bottom: 0, left: 0, right: 0,
+        height: '100%',
         opacity,
         pointerEvents: opacity > 0.5 ? 'auto' : 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '60px 64px',
+        padding: '40px 0',
       }}>
         <StatementLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
       </div>
@@ -95,9 +93,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
 
   return (
     <div style={{
-      position: 'absolute',
-      top: 0, bottom: 0, left: 0, right: 0,
-      padding: '0 160px 160px',
+      height: '100%',
       opacity,
       overflowY: 'auto',
       pointerEvents: opacity > 0.5 ? 'auto' : 'none',
@@ -105,7 +101,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
       <div style={{
         maxWidth: maxW,
         margin: '0 auto',
-        paddingTop: 88,
+        paddingTop: 40,
         textAlign: 'center',
       }}>
         {/* The axis-pair tag (e.g. "OTHERS · NOTICING") used to render here as
