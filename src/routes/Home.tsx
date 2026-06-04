@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { NavFn } from '@/App';
-import { quadrants, bySlug, type Quadrant } from '@/content';
+import { quadrants, type Quadrant } from '@/content';
 import { QuadrantPanel } from '@/components/QuadrantMap';
 
 
@@ -70,8 +70,6 @@ function activeSectionFromProgress(p: number): SectionId {
 }
 
 // ——— Design tokens ———
-// CORNER_CX=50 preserved for CreateScatter's axis projection math.
-const CORNER_CX = 50;
 
 const TYPE = {
   display:   { size: 'clamp(40px, 7vw, 96px)',   weight: 400, tracking: '-0.025em', lineHeight: 1.0 },
@@ -385,7 +383,7 @@ export function Home({ onNav }: Props) {
 
 
   // Scroll hint — visible only at the very start.
-  const scrollHintVis = clamp(1 - progress / 0.04, 0, 1);
+
 
   // Jump helpers — scroll to mid-point of a section's range.
   const jumpToSection = (id: SectionId) => {
@@ -890,15 +888,6 @@ function CreateScatter({
   // pixel coords for the SVG, so we can lerp endpoints toward off-container
   // axis positions cleanly. ResizeObserver keeps it in sync on viewport changes.
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({ w: 0, h: 0 });
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(([e]) => {
-      setDims({ w: e.contentRect.width, h: e.contentRect.height });
-    });
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
 
   return (
     <div ref={containerRef} style={{
