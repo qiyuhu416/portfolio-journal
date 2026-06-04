@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { NavFn } from '@/App';
 import { quadrants, signals, bySlug, type Quadrant, type StatementSegment } from '@/content';
 
@@ -63,7 +63,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
   if (layout === 'scatter') {
     return (
       <div style={{
-        height: '100%',
+        position: 'relative', height: '100%',
         opacity,
         pointerEvents: opacity > 0.5 ? 'auto' : 'none',
       }}>
@@ -189,45 +189,97 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
  */
 function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: 'phrase' }>; onNav: NavFn }) {
   const [hover, setHover] = useState(false);
-  // Resting wash: 38% gives enough chroma that the highlight reads as a
-  // colored block on parchment, not a grey redaction — calm because it's
-  // still translucent, playful because the hue is unmistakable.
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const anchorRef = useRef<HTMLAnchorElement>(null);
   const restingBg = `color-mix(in srgb, ${seg.tint} 38%, transparent)`;
+  const slug = seg.href.replace('#article:', '').split(':')[0];
+  const article = bySlug[slug];
+  const sections = article?.meta.sections ?? [];
+
+  useEffect(() => {
+    if (hover && anchorRef.current) {
+      setRect(anchorRef.current.getBoundingClientRect());
+    }
+  }, [hover]);
+
+  // Clamp popover so it never overflows the right viewport edge.
+  const popWidth = 260;
+  const popLeft = rect
+    ? Math.min(rect.left, window.innerWidth - popWidth - 16)
+    : 0;
+  const popTop = rect ? rect.bottom + 10 : 0;
+
   return (
-    <a
-      href={seg.href}
-      onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        background: hover ? seg.tint : restingBg,
-        color: hover ? 'var(--bg)' : 'var(--ink)',
-        textDecoration: 'none',
-        cursor: 'pointer',
-        // Vertical padding gives the highlight breathing room above/below the
-        // text; horizontal padding stays at 0 so the highlight ends exactly
-        // where the text ends — otherwise the trailing comma in the next
-        // segment looks like it's floating away from the phrase.
-        padding: '0.08em 0',
-        whiteSpace: 'nowrap',
-        boxDecorationBreak: 'clone',
-        WebkitBoxDecorationBreak: 'clone',
-        transition: 'background .18s, color .18s',
-      }}
-    >
-      {seg.text}
-      <span
-        aria-hidden="true"
+    <>
+      <a
+        ref={anchorRef}
+        href={seg.href}
+        onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
         style={{
-          display: 'inline-block',
-          marginLeft: '0.2em',
-          fontSize: '0.8em',
-          verticalAlign: 'super',
+          background: hover ? seg.tint : restingBg,
+          color: hover ? 'var(--bg)' : 'var(--ink)',
+          textDecoration: 'none',
+          cursor: 'pointer',
+          padding: '0.08em 0',
+          whiteSpace: 'nowrap',
+          boxDecorationBreak: 'clone',
+          WebkitBoxDecorationBreak: 'clone',
+          transition: 'background .18s, color .18s',
         }}
       >
-        ↗
-      </span>
-    </a>
+        {seg.text}
+        <span aria-hidden="true" style={{ display: 'inline-block', marginLeft: '0.2em', fontSize: '0.8em', verticalAlign: 'super' }}>↗</span>
+      </a>
+      {/* TOC popover — fixed so it escapes any overflow:hidden ancestor */}
+      {sections.length > 0 && hover && rect && (
+        <span
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+          style={{
+            position: 'fixed',
+            top: popTop,
+            left: popLeft,
+            width: popWidth,
+            zIndex: 9999,
+            background: 'var(--bg)',
+            border: `1px solid ${seg.tint}`,
+            borderRadius: 6,
+            padding: '12px 16px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+          }}
+        >
+          {sections.map((s, i) => (
+            <a
+              key={s.id}
+              href={seg.href}
+              onClick={(e) => dispatchItemClick(e, `${seg.href}:${s.id}`, onNav)}
+              style={{
+                display: 'flex', alignItems: 'baseline', gap: 10,
+                padding: '7px 0',
+                borderTop: i > 0 ? '1px solid var(--line)' : 'none',
+                textDecoration: 'none', cursor: 'pointer',
+                color: 'var(--ink)',
+                transition: 'color .15s',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = seg.tint; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--ink)'; }}
+            >
+              <span style={{
+                fontFamily: 'var(--serif)', fontStyle: 'italic',
+                fontSize: 13, color: 'var(--ink-4)', flexShrink: 0,
+              }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.35 }}>
+                {s.label}
+              </span>
+            </a>
+          ))}
+        </span>
+      )}
+    </>
   );
 }
 
@@ -508,13 +560,13 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
   // Panel-relative bounds of the plot area. The side touching the home crosshair
   // gets 80px of inset to meet the dashed line exactly; the opposite side is flush.
   // `headerReserve` keeps the quadrant's heading out of the plot region.
-  const headerReserve = 140;
+  const headerReserve = 40;
   const plotEdges: React.CSSProperties = (() => {
     switch (q.pos) {
-      case 'TR': return { left: 80, right: 0, top: headerReserve, bottom: 80 };
-      case 'TL': return { left: 0, right: 80, top: headerReserve, bottom: 80 };
-      case 'BR': return { left: 80, right: 0, top: 80, bottom: headerReserve };
-      case 'BL': return { left: 0, right: 80, top: 80, bottom: headerReserve };
+      case 'TR': return { left: 40, right: 0, top: headerReserve, bottom: 40 };
+      case 'TL': return { left: 0, right: 40, top: headerReserve, bottom: 40 };
+      case 'BR': return { left: 40, right: 0, top: 40, bottom: headerReserve };
+      case 'BL': return { left: 0, right: 40, top: 40, bottom: headerReserve };
     }
   })();
 

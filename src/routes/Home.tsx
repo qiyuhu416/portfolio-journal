@@ -46,7 +46,7 @@ const SECTIONS: {
 }[] = [
   { id: 'reflect',     title: 'to reflect',     axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu', activity: 'thinking who I am…',        activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
   { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Creating'], persona: 'Qiyu', activity: 'making things happen…',      activeDots: ['qiyu', 'create'], cell: 'TR', tint: 'var(--tint-tr)' },
-  { id: 'hear',        title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu', activity: 'hearing what others say…',   activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
+  { id: 'hear',        title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu', activity: 'learning from what others say…', activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
   { id: 'collaborate', title: 'to collaborate', axisPair: ['Others', 'Creating'], persona: 'Qiyu', activity: 'creating with others…',      activeDots: ['other', 'create'], cell: 'BR', tint: 'var(--tint-br)' },
 ];
 
@@ -88,10 +88,10 @@ const SPACE = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 } as con
 
 // Quadrant label text shown briefly in each quadrant after crosshair forms.
 const QUAD_LABELS: { cell: 'TL' | 'TR' | 'BL' | 'BR'; text: string }[] = [
-  { cell: 'TL', text: 'The mirror.' },
-  { cell: 'TR', text: 'The practice.' },
-  { cell: 'BL', text: 'Paying attention.' },
-  { cell: 'BR', text: 'The work.' },
+  { cell: 'TL', text: 'thinking who I am…' },
+  { cell: 'TR', text: 'making things happen…' },
+  { cell: 'BL', text: 'learning from what others say…' },
+  { cell: 'BR', text: 'creating with others…' },
 ];
 
 // ——— AxisDot ———
@@ -154,6 +154,11 @@ export function Home({ onNav }: Props) {
   );
   const [smoothScrollY, setSmoothScrollY] = useState(0);
   const [isBoxHovered, setIsBoxHovered] = useState(false);
+  const isBoxHoveredRef = useRef(false);
+  const [floatTime, setFloatTime] = useState(0);
+  const floatTimeRef = useRef(0);
+  const [convergeT, setConvergeT] = useState(0);
+  const convergeRef = useRef(0);
   const rawScrollRef = useRef(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSettlingRef = useRef(false);
@@ -215,6 +220,11 @@ export function Home({ onNav }: Props) {
         if (Math.abs(delta) < 0.3) return rawScrollRef.current;
         return prev + delta * 0.18;
       });
+      floatTimeRef.current += 0.016;
+      setFloatTime(floatTimeRef.current);
+      const convTarget = isBoxHoveredRef.current ? 1 : 0;
+      convergeRef.current += (convTarget - convergeRef.current) * 0.18;
+      setConvergeT(convergeRef.current);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -227,19 +237,24 @@ export function Home({ onNav }: Props) {
     };
   }, []);
 
+  useEffect(() => { isBoxHoveredRef.current = isBoxHovered; }, [isBoxHovered]);
+
   const vw = viewportW, vh = viewportH;
   const tourScrollPx = vh * 6;
-  const driverHeight = tourScrollPx + vh * 1.5;
+  const driverHeight = tourScrollPx * SECTIONS_END + vh;
   const progress = clamp(smoothScrollY / tourScrollPx, 0, 1);
   const headerTop = Math.round(vh * 0.10);
 
   // Box geometry — centered, 56% of the shorter viewport dimension.
   // Larger box = crosshair arms are long enough that inner-quadrant labels
   // have breathing room between the intersection and the endpoint dot.
-  const cx = vw / 2, cy = vh / 2 - 32;
+  const cx = vw / 2, cy = vh / 2;
   const boxSize = Math.min(vw, vh) * 0.32;
   const half = boxSize / 2;
   const boxX = cx - half, boxY = cy - half;
+  // Crosshair arms extend further than the box — during morph the span
+  // lerps from half (box edge) up to crosshairHalf (full axis length).
+  const crosshairHalf = Math.min(vw, vh) * 0.40;
 
   // Phase progress (smootherstepped — zero first+second derivative at endpoints
   // means no acceleration spikes when the user scrolls through a phase boundary).
@@ -268,21 +283,23 @@ export function Home({ onNav }: Props) {
   const bottomY = lerp(cy + half, cy, morphT);
   const leftX   = lerp(cx - half, cx, morphT);
   const rightX  = lerp(cx + half, cx, morphT);
+  // Arm half-span: box edge → crosshairHalf as morph completes.
+  const armHalf = lerp(half, crosshairHalf, morphT);
 
   // ── Dot positions ─────────────────────────────────────────────────────────
-  // Phase 1 (morph): outside box → crosshair endpoints.
+  // Phase 1 (morph): outside box → crosshair endpoints (crosshairHalf).
   const morphDots = [
-    { x: cx,              y: lerp(cy - half - DOT_GAP, cy - half, morphT) }, // top  (Qiyu)
-    { x: lerp(cx + half + DOT_GAP, cx + half, morphT), y: cy              }, // right (Making)
-    { x: cx,              y: lerp(cy + half + DOT_GAP, cy + half, morphT) }, // bottom (Others)
-    { x: lerp(cx - half - DOT_GAP, cx - half, morphT), y: cy              }, // left (Noticing)
+    { x: cx,              y: lerp(cy - half - DOT_GAP, cy - crosshairHalf, morphT) }, // top  (Qiyu)
+    { x: lerp(cx + half + DOT_GAP, cx + crosshairHalf, morphT), y: cy              }, // right (Making)
+    { x: cx,              y: lerp(cy + half + DOT_GAP, cy + crosshairHalf, morphT) }, // bottom (Others)
+    { x: lerp(cx - half - DOT_GAP, cx - crosshairHalf, morphT), y: cy              }, // left (Noticing)
   ];
 
   // Phase 2 (cluster): fly to cross nav icon at viewport center.
   // Phase 3 (header): nav icon slides to header strip as a rigid unit —
   // no size or shape change, just translation. NAV_SP = C_ARM in
   // InlineMapIcon so the handoff at HEADER_END is seamless.
-  const NAV_SP  = 18; // matches InlineMapIcon C_ARM
+  const NAV_SP  = 10; // matches InlineMapIcon C_ARM
   const navY    = lerp(cy, headerTop + HEADER_H / 2, headerT);
   // Cross layout: top / right / bottom / left — same geometry as InlineMapIcon.
   const navDots = [
@@ -292,11 +309,53 @@ export function Home({ onNav }: Props) {
     { x: cx - NAV_SP, y: navY          }, // left   (Noticing)
   ];
 
-  // Composite: morph phase → cluster/header phases.
-  const dotPositions = morphDots.map((mp, i) => ({
-    x: lerp(mp.x, navDots[i].x, clusterT),
-    y: lerp(mp.y, navDots[i].y, clusterT),
+  // ── Pre-scroll floating + hover convergence ──────────────────────────────
+  // Each dot floats gently around a base position. On hover, they spring to
+  // the box midpoints (matching the image reference). As scroll begins, the
+  // pre-morph positions blend into the scroll-driven morph animation.
+  const FLOAT_PARAMS = [
+    { ampX: 55, ampY: 45, freqX: 0.52, freqY: 0.41, phaseX: 0.0, phaseY: 1.3 },
+    { ampX: 45, ampY: 55, freqX: 0.40, freqY: 0.65, phaseX: 2.2, phaseY: 0.5 },
+    { ampX: 50, ampY: 40, freqX: 0.58, freqY: 0.50, phaseX: 1.1, phaseY: 2.7 },
+    { ampX: 40, ampY: 50, freqX: 0.46, freqY: 0.55, phaseX: 3.4, phaseY: 1.9 },
+  ] as const;
+  const floatBases = [
+    { x: cx - half * 0.3,  y: cy - half * 1.9  }, // Qiyu — well above box
+    { x: cx + half * 1.9,  y: cy - half * 0.4  }, // Making — far right
+    { x: cx + half * 0.4,  y: cy + half * 1.9  }, // Others — well below box
+    { x: cx - half * 2.0,  y: cy + half * 0.25 }, // Noticing — far left
+  ];
+  const boxMidpoints = [
+    { x: cx,        y: cy - half }, // top
+    { x: cx + half, y: cy        }, // right
+    { x: cx,        y: cy + half }, // bottom
+    { x: cx - half, y: cy        }, // left
+  ];
+  const floatingDots = floatBases.map((base, i) => {
+    const p = FLOAT_PARAMS[i];
+    return {
+      x: base.x + Math.sin(floatTime * p.freqX + p.phaseX) * p.ampX,
+      y: base.y + Math.sin(floatTime * p.freqY + p.phaseY) * p.ampY,
+    };
+  });
+  // Lerp floating → box midpoints on hover
+  const preMorphDots = floatingDots.map((fp, i) => ({
+    x: lerp(fp.x, boxMidpoints[i].x, convergeT),
+    y: lerp(fp.y, boxMidpoints[i].y, convergeT),
   }));
+
+  // Composite: pre-morph → morph phase → cluster/header phases.
+  const scrollBlendT = smootherstep(clamp(progress / BOX_UNFILL_END, 0, 1));
+  const dotPositions = preMorphDots.map((pre, i) => {
+    const scrollDriven = {
+      x: lerp(morphDots[i].x, navDots[i].x, clusterT),
+      y: lerp(morphDots[i].y, navDots[i].y, clusterT),
+    };
+    return {
+      x: lerp(pre.x, scrollDriven.x, scrollBlendT),
+      y: lerp(pre.y, scrollDriven.y, scrollBlendT),
+    };
+  });
 
   // Dot size: 7px at crosshair → 10px when cluster forms. Holds at 10px
   // through the header slide (rigid translation, no size change).
@@ -323,7 +382,7 @@ export function Home({ onNav }: Props) {
   // Quadrant labels + connecting text: appear when crosshair fully forms,
   // fade out as the cluster phase begins (crosshairLineVis = 1 - clusterT).
   const quadLabelVis      = smootherstep(clamp((morphT - 0.7) / 0.3, 0, 1)) * crosshairLineVis;
-  const connectingTextVis = smootherstep(clamp((morphT - 0.8) / 0.2, 0, 1)) * crosshairLineVis;
+
 
   // Scroll hint — visible only at the very start.
   const scrollHintVis = clamp(1 - progress / 0.04, 0, 1);
@@ -381,16 +440,16 @@ export function Home({ onNav }: Props) {
             const hSy = isBoxHovered && morphT < 0.01 ? 1.35 : 1;
             const lineTransition = 'transform 0.3s ease';
             return (<>
-              <line x1={cx - half} y1={topY} x2={cx + half} y2={topY}
+              <line x1={cx - armHalf} y1={topY} x2={cx + armHalf} y2={topY}
                 stroke="var(--ink)" strokeWidth={1.5}
                 style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleX(${hSx})`, transition: lineTransition }} />
-              <line x1={cx - half} y1={bottomY} x2={cx + half} y2={bottomY}
+              <line x1={cx - armHalf} y1={bottomY} x2={cx + armHalf} y2={bottomY}
                 stroke="var(--ink)" strokeWidth={1.5}
                 style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleX(${hSx})`, transition: lineTransition }} />
-              <line x1={leftX} y1={cy - half} x2={leftX} y2={cy + half}
+              <line x1={leftX} y1={cy - armHalf} x2={leftX} y2={cy + armHalf}
                 stroke="var(--ink)" strokeWidth={1.5}
                 style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleY(${hSy})`, transition: lineTransition }} />
-              <line x1={rightX} y1={cy - half} x2={rightX} y2={cy + half}
+              <line x1={rightX} y1={cy - armHalf} x2={rightX} y2={cy + armHalf}
                 stroke="var(--ink)" strokeWidth={1.5}
                 style={{ transformBox: 'fill-box', transformOrigin: 'center', transform: `scaleY(${hSy})`, transition: lineTransition }} />
             </>);
@@ -403,10 +462,11 @@ export function Home({ onNav }: Props) {
             style={{
               position: 'absolute', left: boxX, top: boxY,
               width: boxSize, height: boxSize,
-              zIndex: 5, cursor: 'default',
+              zIndex: 5, cursor: isBoxHovered ? 'pointer' : 'default',
             }}
             onMouseEnter={() => setIsBoxHovered(true)}
             onMouseLeave={() => setIsBoxHovered(false)}
+            onClick={() => window.scrollTo({ top: HEADER_END * tourScrollPx, behavior: 'smooth' })}
           />
         )}
 
@@ -416,17 +476,37 @@ export function Home({ onNav }: Props) {
             state that gives the viewer the conceptual key before the morph. */}
         {([
           { label: 'Qiyu',     dir: 'up'    as LabelDir, tint: 'var(--tint-tl)' },
-          { label: 'Making',   dir: 'right' as LabelDir, tint: 'var(--tint-tr)' },
+          { label: 'Creating', dir: 'right' as LabelDir, tint: 'var(--tint-tr)' },
           { label: 'Others',   dir: 'down'  as LabelDir, tint: 'var(--tint-bl)' },
-          { label: 'Noticing', dir: 'left'  as LabelDir, tint: 'var(--tint-tl)' },
+          { label: 'Thinking', dir: 'left'  as LabelDir, tint: 'var(--tint-tl)' },
         ] as const).map((cfg, i) => (
           <AxisDot key={cfg.label}
             x={dotPositions[i].x} y={dotPositions[i].y}
             label={cfg.label} dir={cfg.dir} tint={cfg.tint}
-            dotVis={1 - sectionBodyT} labelVis={crosshairLineVis}
+            dotVis={1 - sectionBodyT} labelVis={Math.max(crosshairLineVis, convergeT) * (1 - sectionBodyT)}
             dotSize={dotSize} dotColor={dotColor}
           />
         ))}
+
+        {/* "through connecting the dots" — centered in the box on hover */}
+        {convergeT > 0.05 && scrollBlendT < 0.5 && (
+          <div
+            style={{
+              position: 'absolute',
+              left: cx, top: cy,
+              transform: 'translate(-50%, -50%)',
+              opacity: convergeT * (1 - scrollBlendT * 2),
+              fontFamily: 'var(--serif)', fontWeight: 600,
+              fontSize: 'clamp(13px, 1.4vw, 20px)',
+              letterSpacing: '-0.02em', lineHeight: 1.25,
+              color: 'var(--ink-3)',
+              width: boxSize * 0.75, textAlign: 'center',
+              pointerEvents: 'none', zIndex: 7,
+            }}
+          >
+            through<br />connecting the dots
+          </div>
+        )}
 
         {/* Quadrant labels — centered within each inner quadrant cell,
             i.e. the viewport is divided at (cx, cy) into 4 cells and the
@@ -436,8 +516,8 @@ export function Home({ onNav }: Props) {
           const row = ql.cell[0] === 'T' ? 0 : 1;
 
           // Inner arm centers: halfway between the crosshair intersection and the endpoint dot.
-          const midX = col === 0 ? cx - half / 2 : cx + half / 2;
-          const midY = row === 0 ? cy - half / 2 : cy + half / 2;
+          const midX = col === 0 ? cx - crosshairHalf / 2 : cx + crosshairHalf / 2;
+          const midY = row === 0 ? cy - crosshairHalf / 2 : cy + crosshairHalf / 2;
 
           return (
             <div key={ql.cell} style={{
@@ -447,7 +527,7 @@ export function Home({ onNav }: Props) {
               opacity: quadLabelVis,
               pointerEvents: 'none', zIndex: 7,
               textAlign: 'center',
-              width: Math.min(half * 0.8, 280),
+              width: Math.min(half * 1.1, 360),
             }}>
               <div style={{
                 fontFamily: 'var(--serif)', fontWeight: 400,
@@ -461,22 +541,6 @@ export function Home({ onNav }: Props) {
           );
         })}
 
-        {/* "through connecting the dots…" — below the bottom axis dot,
-            outside the quadrant grid. */}
-        {connectingTextVis > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: cy + half + 64,
-            left: '50%', transform: 'translateX(-50%)',
-            opacity: connectingTextVis,
-            fontFamily: 'var(--serif)', fontStyle: 'italic',
-            fontSize: 'clamp(13px, 1.1vw, 16px)',
-            color: 'var(--ink-4)', whiteSpace: 'nowrap',
-            pointerEvents: 'none', zIndex: 7,
-          }}>
-            through connecting the dots…
-          </div>
-        )}
 
         {/* ── Inset container — single source of truth for all page margins.
             Both header and content live here so they share the same 160px
@@ -498,7 +562,7 @@ export function Home({ onNav }: Props) {
             );
             return match;
           };
-          const NAV_R = 5; const NAV_ARM = 18;
+          const NAV_R = 5; const NAV_ARM = 10;
           const DOT_POS = {
             top:    { x: 0,        y: -NAV_ARM },
             right:  { x: NAV_ARM,  y: 0 },
@@ -596,24 +660,6 @@ export function Home({ onNav }: Props) {
         })()}
 
         {/* Scroll hint — visible only at the very start */}
-        {scrollHintVis > 0 && (
-          <div style={{
-            position: 'absolute', bottom: SPACE.xl, left: '50%',
-            transform: 'translateX(-50%)',
-            opacity: scrollHintVis,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: SPACE.sm,
-            fontFamily: 'var(--sans)',
-            fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-            letterSpacing: TYPE.kicker.tracking, textTransform: 'uppercase',
-            color: 'var(--ink-3)', pointerEvents: 'none', zIndex: 40,
-          }}>
-            <span>scroll to explore</span>
-            <span style={{
-              width: 1, height: 20, background: 'var(--ink-4)',
-              animation: 'scrollHint 1.8s ease-in-out infinite',
-            }} />
-          </div>
-        )}
 
       </div>
 
@@ -837,35 +883,8 @@ function CreateScatter({
   };
   // Plot interior insets — far enough from the axis lines that the circles
   // breathe without overlapping the axis dots themselves.
-  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  const inset = { top: 0, right: 80, bottom: 80, left: 80 };
 
-  // Crosshair draw-in animation. drawProgress 0 → 1 over ~280ms when hover
-  // begins; back to 0 over ~180ms when hover ends. Lines lerp their far
-  // endpoint from the dot toward the axis based on this value, so the
-  // crosshair *projects* outward from the dot rather than just appearing.
-  // Labels at each axis end fade in during the last 30% of the draw, so
-  // the user reads "value lands HERE on this axis" as a sequence:
-  // line projects → label arrives.
-  const [drawProgress, setDrawProgress] = useState(0);
-  const drawRef = useRef(0);
-  useEffect(() => { drawRef.current = drawProgress; }, [drawProgress]);
-  useEffect(() => {
-    const target = hoverIdx !== null ? 1 : 0;
-    const startVal = drawRef.current;
-    let raf = 0;
-    let startTime = 0;
-    const tick = (now: number) => {
-      if (startTime === 0) startTime = now;
-      const elapsed = now - startTime;
-      const duration = target === 1 ? 280 : 180;
-      const t = Math.min(elapsed / duration, 1);
-      const eased = target === 1 ? 1 - Math.pow(1 - t, 3) : t;
-      setDrawProgress(startVal + (target - startVal) * eased);
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [hoverIdx]);
 
   // Container size — needed to convert dot fractional positions (0..1) into
   // pixel coords for the SVG, so we can lerp endpoints toward off-container
@@ -886,111 +905,12 @@ function CreateScatter({
       position: 'absolute',
       top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left,
     }}>
-      {/* Hover crosshair — dashed projection lines that PROJECT outward from
-          the hovered dot toward the two axes, animated over ~280ms with an
-          easeOutCubic curve. Once the lines reach the axes, two labels fade
-          in: the spectrum endpoint (e.g. "comfort zone" / "stretch") that
-          the dot's value sits closer to on each axis. Reads as: "this dot's
-          x value is on the [stretch] side of the axis; its y value is on the
-          [within myself] side." */}
-      {hoverIdx !== null && drawProgress > 0 && dims.w > 0 && (() => {
-        const it = plotItems[hoverIdx];
-        // Dot position in container-local pixel coords.
-        const dotX = dims.w * it.x!;
-        const dotY = dims.h * it.y!;
-        // Axis line positions in container-local coords. Y-axis (vertical
-        // qiyu axis) sits at viewport x = CORNER_CX, which is to the LEFT
-        // of the container by (inset.left - CORNER_CX). X-axis (horizontal
-        // make axis) sits at viewport y = vh - CORNER_CX, which is BELOW
-        // the container by (inset.bottom - CORNER_CX).
-        const yAxisX = -(inset.left - CORNER_CX);
-        const xAxisY = dims.h + (inset.bottom - CORNER_CX);
-        // Lerp the FAR endpoint of each line from the dot toward the axis.
-        const horizFarX = lerp(dotX, yAxisX, drawProgress);
-        const vertFarY  = lerp(dotY, xAxisY, drawProgress);
-        // Labels fade in during the last 30% of the draw. Use smootherstep
-        // so the fade itself eases (no sudden pop after the line arrives).
-        const labelOpacity = smootherstep(clamp((drawProgress - 0.7) / 0.3, 0, 1));
-        // Pick the spectrum endpoint label closer to the dot's value.
-        // Without axes data, fall back to no labels.
-        const xLabel = q.axes ? (it.x! < 0.5 ? q.axes.x[0] : q.axes.x[1]) : '';
-        const yLabel = q.axes ? (it.y! < 0.5 ? q.axes.y[0] : q.axes.y[1]) : '';
-        const tint = q.tint;
-        return (
-          <svg style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            pointerEvents: 'none', overflow: 'visible',
-          }}>
-            {/* Horizontal projection line: from dot leftward toward Y-axis */}
-            <line
-              x1={dotX} y1={dotY}
-              x2={horizFarX} y2={dotY}
-              stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="2 6" />
-            {/* Vertical projection line: from dot downward toward X-axis */}
-            <line
-              x1={dotX} y1={dotY}
-              x2={dotX} y2={vertFarY}
-              stroke="var(--ink-3)" strokeWidth="1" strokeDasharray="2 6" />
-            {/* Tick markers at the projection points (where the lines meet
-                the axes). Small filled circles in the section's tint, so
-                the user sees exactly WHERE the value lands. */}
-            <circle cx={yAxisX} cy={dotY} r={3.5}
-              fill={tint} opacity={labelOpacity} />
-            <circle cx={dotX} cy={xAxisY} r={3.5}
-              fill={tint} opacity={labelOpacity} />
-            {/* Y-axis label — at the Y-axis projection point. Sits INSIDE
-                the chart (right of the axis line) instead of in the left
-                gutter, because the gutter is ~72px wide and labels like
-                "GATHERS A ROOM" need ~180px. dy lifts it just above the
-                horizontal crosshair line so the label doesn't sit on top
-                of the line. */}
-            {yLabel && (
-              <text
-                x={yAxisX} y={dotY}
-                textAnchor="start"
-                dominantBaseline="alphabetic"
-                dx={10} dy={-6}
-                fill="var(--ink-2)"
-                opacity={labelOpacity}
-                style={{
-                  fontFamily: 'var(--mono)', fontSize: 10,
-                  letterSpacing: 1.4, textTransform: 'uppercase',
-                }}
-              >
-                {yLabel}
-              </text>
-            )}
-            {/* X-axis label — at the X-axis projection point. Sits BELOW
-                the tick (textAnchor=middle, dy=18), centered on the vertical
-                projection line. */}
-            {xLabel && (
-              <text
-                x={dotX} y={xAxisY}
-                textAnchor="middle"
-                dominantBaseline="hanging"
-                dy={10}
-                fill="var(--ink-2)"
-                opacity={labelOpacity}
-                style={{
-                  fontFamily: 'var(--mono)', fontSize: 10,
-                  letterSpacing: 1.4, textTransform: 'uppercase',
-                }}
-              >
-                {xLabel}
-              </text>
-            )}
-          </svg>
-        );
-      })()}
 
       {plotItems.map((it, i) => {
         const hovered = hoverIdx === i;
-        const dimmed = hoverIdx !== null && !hovered;
         // Circle size scales gently with viewport — fixed 150px crowds tight
         // layouts. clamp keeps it between 110 and 170.
         const baseSize = 'clamp(110px, 13vw, 170px)';
-        const sizeBoost = hovered ? 12 : 0;
         // CTA items jump to another section instead of opening an article.
         // They render in the destination quadrant's tint (indigo for the
         // Listening / Learn page) and carry a routing arrow + a small label
@@ -1040,7 +960,7 @@ function CreateScatter({
               // and the inner transform handles the hover scale, so we don't
               // have to recompute negative margins on every resize.
               width: baseSize, height: baseSize,
-              transform: `translate(-50%, -50%) scale(${1 + sizeBoost / 150})`,
+              transform: `translate(-50%, -50%) scale(${hovered ? 1.08 : 1})`,
               borderRadius: '50%',
               ...tone,
               display: 'flex', flexDirection: 'column',
@@ -1051,7 +971,7 @@ function CreateScatter({
               fontSize: TYPE.body.size, fontWeight: 500, lineHeight: 1.3,
               textDecoration: 'none',
               cursor: 'pointer',
-              opacity: dimmed ? 0.55 : 1,
+              opacity: 1,
               boxShadow: hovered
                 ? `0 0 0 8px color-mix(in srgb, ${bg} 14%, transparent)`
                 : 'none',
@@ -1071,35 +991,6 @@ function CreateScatter({
               }}>
                 → {jumpSection.title}
               </span>
-            )}
-            {/* Preview chips — small placeholder tiles below the circle that
-                hint at the article's content (gallery / event / sketches /
-                etc). Fade in on hover. */}
-            {it.previews && it.previews.length > 0 && (
-              <div style={{
-                position: 'absolute',
-                top: '100%', left: '50%',
-                transform: 'translateX(-50%)',
-                marginTop: SPACE.md,
-                display: 'flex', gap: SPACE.sm,
-                opacity: hovered ? 1 : 0,
-                transition: 'opacity .22s',
-                pointerEvents: 'none',
-              }}>
-                {it.previews.map((p, pi) => (
-                  <div key={pi} style={{
-                    width: 60, height: 44, borderRadius: SPACE.xs,
-                    background: 'var(--surface)',
-                    border: '1px solid var(--line)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--sans)',
-                    fontSize: TYPE.kicker.size, fontWeight: TYPE.kicker.weight,
-                    letterSpacing: TYPE.kicker.tracking,
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-3)',
-                  }}>{p.label ?? ''}</div>
-                ))}
-              </div>
             )}
           </a>
         );
@@ -1607,14 +1498,15 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
+      overflowY: 'auto',
       boxSizing: 'border-box',
       pointerEvents: 'none',
     }}>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        columnGap: SPACE.xl,
-        rowGap: 0,
+        columnGap: SPACE.lg,
+        rowGap: SPACE.lg,
         maxWidth: 900,
         margin: '0 auto',
         pointerEvents: 'auto',
@@ -1634,25 +1526,19 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                 const imgs = e.currentTarget.querySelectorAll('img');
                 const product = imgs[0] as HTMLImageElement | undefined;
                 const logo = imgs[1] as HTMLImageElement | undefined;
-                if (product) {
-                  if (item.hoverImage) product.src = item.hoverImage;
-                  if (item.href) product.style.transform = 'scale(1.04)';
-                }
-                if (logo) { logo.style.width = '20%'; logo.style.opacity = '0.9'; }
+                if (product && item.href) product.style.transform = 'scale(1.04)';
+                if (logo) logo.style.opacity = '1';
               }}
               onMouseLeave={(e) => {
                 const imgs = e.currentTarget.querySelectorAll('img');
                 const product = imgs[0] as HTMLImageElement | undefined;
                 const logo = imgs[1] as HTMLImageElement | undefined;
-                if (product) {
-                  if (item.hoverImage) product.src = item.image;
-                  product.style.transform = 'scale(1)';
-                }
-                if (logo) { logo.style.width = '10%'; logo.style.opacity = '0.45'; }
+                if (product) product.style.transform = 'scale(1)';
+                if (logo) logo.style.opacity = '0';
               }}
             >
-              {/* Image + logo overlay */}
-              <div style={{ height: 220, overflow: 'hidden', borderRadius: 4, position: 'relative' }}>
+              {/* Image + logo overlay (logo hidden until hover) */}
+              <div style={{ aspectRatio: '4/3', overflow: 'hidden', borderRadius: 4, position: 'relative' }}>
                 <img
                   src={item.image}
                   alt={item.meta}
@@ -1668,11 +1554,10 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                   alt=""
                   style={{
                     position: 'absolute', bottom: 8, left: 8,
-                    width: '10%', height: 'auto',
+                    width: '40%', height: 'auto',
                     objectFit: 'contain',
-                    filter: 'grayscale(1)',
-                    opacity: 0.45,
-                    transition: 'width .4s cubic-bezier(.2,.7,.2,1), opacity .25s ease',
+                    opacity: 0,
+                    transition: 'opacity .25s ease',
                   }}
                 />
               </div>
