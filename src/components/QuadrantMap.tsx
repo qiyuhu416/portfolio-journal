@@ -248,6 +248,7 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
             borderRadius: 6,
             padding: '12px 16px',
             boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+            textAlign: 'left',
           }}
         >
           {sections.map((s, i) => (
@@ -256,7 +257,7 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
               href={seg.href}
               onClick={(e) => dispatchItemClick(e, `${seg.href}:${s.id}`, onNav)}
               style={{
-                display: 'flex', alignItems: 'baseline', gap: 10,
+                display: 'flex', alignItems: 'flex-start', gap: 10,
                 padding: '7px 0',
                 borderTop: i > 0 ? '1px solid var(--line)' : 'none',
                 textDecoration: 'none', cursor: 'pointer',
@@ -272,8 +273,19 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
               }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.35 }}>
-                {s.label}
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.3 }}>
+                  {s.label}
+                </span>
+                {s.sub && (
+                  <span style={{
+                    fontFamily: 'var(--sans)', fontSize: 11,
+                    color: 'var(--ink-4)', lineHeight: 1.3,
+                    letterSpacing: '0.01em',
+                  }}>
+                    {s.sub}
+                  </span>
+                )}
               </span>
             </a>
           ))}

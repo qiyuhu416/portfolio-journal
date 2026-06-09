@@ -64,7 +64,7 @@
         "meta": "06 · 5 min",
         "href": "#article:making-design-fun",
         "x": 0.28,
-        "y": 0.32,
+        "y": 0.57,
         "previews": [
           { "label": "AE",      "src": "/previews/making-design-fun/ae.jpg" },
           { "label": "Voice",   "src": "/previews/making-design-fun/voice.jpg" },
@@ -79,7 +79,7 @@
         "meta": "04 · 3 min",
         "href": "#article:vibe-coding-meetup-at-apple-park",
         "x": 0.55,
-        "y": 0.78,
+        "y": 0.57,
         "expandsInline": true,
         "previews": [
           { "label": "Event" },
@@ -101,8 +101,8 @@
         "kind": "cta",
         "external": true,
         "count": "72",
-        "x": 0.92,
-        "y": 0.50,
+        "x": 0.88,
+        "y": 0.57,
         "cardPreview": {
           "platform": "LinkedIn",
           "title": "Title doesn’t matter",

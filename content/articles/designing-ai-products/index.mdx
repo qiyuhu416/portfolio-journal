@@ -10,9 +10,9 @@ readtime: 8
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: errors,         label: "Designing for errors (case study: phone call agent)" }
-  - { id: relationship,   label: "Designing the relationship (case study: elder care Bot (research @AI CARING))" }
-  - { id: feeling,        label: "Designing the feeling (case study: Human–AI co-writing tool)" }
+  - { id: errors,       label: "Designing for errors",        sub: "phone call agent" }
+  - { id: relationship, label: "Designing the relationship",  sub: "elder care Bot (research @AI CARING)" }
+  - { id: feeling,      label: "Designing the feeling",       sub: "Human–AI co-writing tool" }
 experiences:
   - { name: "Apple",                    href: "https://www.apple.com", role: "GenAI Prototyper",             period: "May 2025 – present" }
   - { name: "The Mentoring Partnership", href: "#",                    role: "Conversational AI",            period: "Feb 2024 – Aug 2024" }
@@ -37,12 +37,11 @@ import testingSession from './images/testing-session.png'
 <p>Since when did "humans" become a frequent word?</p>
 
 <p>
-    Pre-AI, we didn’t say “humans” this much, we were just... in it.
+    Pre-AI, we didn't say "humans" this much, we were just... in it.
     But once AI entered the room, we started seeing ourselves from the outside.
 </p>
 
-
-Designing AI is not always about making the AI smarter, it's always mapping the UX to the current tech capability. Sharing some reflections from my work in academia and industry:
+Designing AI is not always about making the AI smarter, it's always about mapping the UX to the current tech capability. Sharing some reflections from my work in academia and industry:
 
 <InlineTOC />
 
@@ -51,7 +50,7 @@ Designing AI is not always about making the AI smarter, it's always mapping the 
 
 <p>AI is never perfect (yet). Please.</p>
 
-<p>Maybe part of the reason was AI was trained based on human data, and humans are not that perfect either.</p>
+<p>Maybe part of the reason is that AI was trained on human data, and humans are not that perfect either.</p>
 
 
 <Sidebar label="Welcome to the adult world">
@@ -69,7 +68,7 @@ Designing AI is not always about making the AI smarter, it's always mapping the 
 </Sidebar>
 
 <p>
-Therefore, the design focus should be: 
+Therefore, the design focus should be:
 </p>
 
 <p>
@@ -77,15 +76,22 @@ Therefore, the design focus should be:
 </p>
 
 <p>
-I was exploring this solution for a non-profit to address their "too many repetitive questions but not enough staff" painpoint.
-The goal was not really to prove “AI works.”
-It was to surface what could go wrong before it actually goes wrong.
+I was exploring this solution for a non-profit to address their "too many repetitive questions but not enough staff" pain point.
+It is an easy-inference case as there is already a pre-existing script to follow (even closer to a rule-based AI than actual AI), but the error intolerance was very low.
 </p>
 
+<p>
+The client was special as they are in a typically no-AI field, and the trust bonding between them and their customers is very important.
+Therefore, the design goal was not really to prove "AI works." It was to surface what could go wrong before it actually goes wrong.
+</p>
 
 <p>
 Solo prototyper, some rule-based logic from client interviews, 2 days to finish, 1 hour to test, but many interesting findings:
 </p>
+
+<blockquote>
+Sometimes the experience of recovering from an error matters more than preventing it.
+</blockquote>
 
 <Sidebar label="The prototype, with ChatGPT audio mode as my tool">
   <Tabs items={[
@@ -223,11 +229,7 @@ Solo prototyper, some rule-based logic from client interviews, 2 days to finish,
   },
 ]} />
 
-This prototype turned our design exploration less about “accuracy” and more about recovery, handoff, and expectation-setting.
-
-<blockquote>
-Sometimes the experience of recovering from an error matters more than preventing it.
-</blockquote>
+This prototype turned our design exploration less about "accuracy" and more about recovery, handoff, and expectation-setting. We use AI to solve real user problems and want it to really be used.
 
 <hr/>
 
@@ -235,6 +237,10 @@ Sometimes the experience of recovering from an error matters more than preventin
 <h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has hard inferences)</span></h2>
 <h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
 
+
+<p>
+If the above example was AI–individual reaction, this one will be AI–group interaction. AI steps into an already-existing human web and learns to deal with relationships.
+</p>
 
 <p>
 If we look at the evolution of HCI, it has always been about relationships.
@@ -245,27 +251,13 @@ humans adapt to machines (terminal) → machines adapt to humans (GUI) → human
 </p>
 
 <Aside>
-Interestingly we’re now back to terminal again (hello, Claude Code)
+Interestingly we're now back to terminal again (hello, Claude Code)
 </Aside>
 
-
-<p>We design human–AI relationships by borrowing from human–human relationships.</p>
+<p>One aspect of the relationship is "trust." How do we minimize the gap between what AI says and what humans understand, and how do we design AI that humans trust?</p>
 
 <p>
-<strong>BUT HUMANS ARE COMPLICATED.</strong> And human–human relationships are even more complicated.
-So one overarching research question:
-</p>
-
-<p style={{
-  fontFamily: 'var(--serif)',
-  fontStyle: 'italic',
-  fontSize: 24,
-  lineHeight: 1.4,
-  textAlign: 'center',
-  margin: '40px 0',
-  color: 'var(--ink)',
-}}>
-  How do we minimize the gap between what AI says & what human understands, and designing AI that humans trust?
+This is a hard inference case. How would you explain to AI what "trust" is? We design human–AI relationships by borrowing from human–human relationships, but humans are complicated — human–human relationships are even <strong>MUCH MORE</strong> complicated. So most of this HCI research was about understanding humans.
 </p>
 
 <Takeaway label="01">Trust can be scripted.</Takeaway>
@@ -393,8 +385,6 @@ In eldercare, the trickiest part is when the older adult's health declines — t
 
 </details>
 
-Again, we can't imagine the things we don't know. So we imagine the human-AI interaction based on the current human-human interaction.
-
 <p style={{
   fontFamily: 'var(--serif)',
   fontStyle: 'italic',
@@ -407,7 +397,7 @@ Again, we can't imagine the things we don't know. So we imagine the human-AI int
   If you were the bot, what would you do?
 </p>
 
-This is a tricky question even for humans, and when we design it, we also need to consider various cases:
+This is a tricky question even for humans, and when we design it, we map out all the variables in the scenarios:
 
 
 <div style={{ margin: '24px 0 12px', overflowX: 'auto' }}>
@@ -527,18 +517,16 @@ This is a tricky question even for humans, and when we design it, we also need t
   Mapping outcomes for the elder care bot deciding whether to share information with the caregiver. The "long-term Yes / bad" branch is the one the bot can't reason through alone — it needs a human in the loop.
 </p>
 
-
-<blockquote>
-The harder question was: should the AI be the one doing this at all?
-</blockquote>
-
-
 <p>
-This is essentially a question about tradeoffs: respect, privacy, well-being, etc. 
+The conclusion highlights an important factor of "human in the loop."
 </p>
 
 <p>
-Again, we design human–AI relationships by borrowing from human–human relationships. Just like you can't expect one person to do everything, you can't expect that bot to handle all the situations. 
+Should the AI be the one doing this at all? Of course not — the "long-term Yes / bad" branch is the one the bot can't reason through alone. This is essentially a question about tradeoffs: respect, privacy, well-being, etc. Compared to "having the bot solve every problem," participants said that they value those factors more.
+</p>
+
+<p>
+lol it was fun to explore this soft problem with a logical lens
 </p>
 
 <hr/>
@@ -548,19 +536,19 @@ Again, we design human–AI relationships by borrowing from human–human relati
 
 
 <p>
-My fav book, The Little Prince, says “What matters is the unseen.” But feeling is human, contextual, and weirdly hard to describe.
+My fav book, The Little Prince, says "What matters is the unseen." But feeling is human, contextual, and weirdly hard to describe.
 </p>
 
 <p>
-The AI’s goal was to reactively correct errors as users wrote.
+As a user of Claude Code, did you notice that it waits patiently and quietly on the side when it wants to ask for your permission with something but you were busy typing? Every time I noticed that, I always think "wow what a polite and cute AI."
 </p>
 
-<blockquote>
-The writer shouldn’t think about the AI. They should just feel supported and write better.
-</blockquote>
+<p>
+Step back from a design perspective, and you can see that those feelings can be designed through micro-level features.
+</p>
 
 <p>
-In HCI, there is a method called task analysis. You break down a seemingly simple task into super nuanced steps. 
+In HCI, there is a method called task analysis. You break down a seemingly simple task into super nuanced steps. I used that to design a human–AI co-writing experience. The AI's goal was to reactively correct errors as users wrote.
 </p>
 
 <Sidebar label="What is actually 'writing'">
@@ -679,15 +667,10 @@ So, the timing of AI intervention = the foundation of the feeling
           dialogue={[
             { kind: 'type', text: 'this is sentence 1, this is sentence 2, this is sentence 3. okay done.', cps: 35 },
             { kind: 'pause', ms: 700 },
-            // User clicks away to a different field — cursor flies out of
-            // the typing window, into the NOTE field below. This is the
-            // BLUR EVENT that the AI's trigger listens for.
             { kind: 'focus', toField: 'B', ms: 900 },
-            // AI fires its analysis on Field A (which the user just left).
             { kind: 'highlight', pattern: 'this is sentence 2,', ms: 1 },
             { kind: 'chip', text: 'this should be removed.', ms: 1 },
             { kind: 'pause', ms: 2000 },
-            // User comes back to the original field to respond.
             { kind: 'focus', toField: 'A', ms: 800 },
             { kind: 'type', text: " why didn't you tell me earlier?", cps: 32 },
             { kind: 'pause', ms: 1600 },
@@ -718,12 +701,11 @@ Is AI leading? Waiting? Watching? Interrupting? Quietly supporting?
 </p>
 
 <p>
-Result of this project was that I prototyped each option for A/B testing, as in startups we "research through launching."
+Result of this project was that I prototyped each option for A/B testing, as in startups we "research through launching." But the goal was that "the writer shouldn't think about the AI. They should just feel supported and write better."
 </p>
 
-
 <p>
-It was an interesting learning experience that ties back to this rule of thumb: 
+Ties back to this rule of thumb:
 </p>
 
 <blockquote>
@@ -731,6 +713,5 @@ Most successful AI products are either easy inferences with great performance, o
 
 — Prof. John Zimmerman
 </blockquote>
-
 
 

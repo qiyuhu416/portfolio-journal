@@ -3,7 +3,7 @@ import signalsData from '@content/signals.json';
 import quadrantsData from '@content/quadrants.json';
 import loopsSpectrumData from '@content/loops-spectrum.json';
 
-export type ArticleSection = { id: string; label: string };
+export type ArticleSection = { id: string; label: string; sub?: string };
 
 export type ArticleLayout = 'centered' | 'split';
 
