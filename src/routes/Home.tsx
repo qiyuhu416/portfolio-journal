@@ -20,7 +20,8 @@ function smootherstep(t: number) { return t * t * t * (t * (t * 6 - 15) + 10); }
 //   Header   (CLUSTER_END → HEADER_END):        nav icon travels to header strip
 //   Sections (HEADER_END → SECTIONS_END):       four section pages
 const BOX_UNFILL_END = 0.10;
-const BOX_MORPH_END  = 0.26;
+const MORPH_START    = 0.20;  // dwell in converged state: BOX_UNFILL_END → MORPH_START
+const BOX_MORPH_END  = 0.32;
 const OVERVIEW_END   = 0.32;  // crosshair overview beat ends
 const CLUSTER_END    = 0.38;  // 4-dot nav icon formed at viewport center
 const HEADER_END     = 0.43;  // nav icon arrived at header
@@ -34,6 +35,15 @@ const HEADER_H = 72; // px
 // ——— Sections ———
 type SectionId = 'reflect' | 'experiment' | 'hear' | 'collaborate';
 
+// ——— Single source of truth for all activity descriptions ———
+// Used in: section headers, quadrant overview labels, and box dot-hover text.
+const SECTION_ACTIVITIES: Record<SectionId, string> = {
+  reflect:     'thinking who I am…',
+  experiment:  'making things happen…',
+  hear:        'learning from what others say…',
+  collaborate: 'creating with others…',
+};
+
 const SECTIONS: {
   id: SectionId;
   title: string;
@@ -44,10 +54,10 @@ const SECTIONS: {
   cell: 'TL' | 'TR' | 'BL' | 'BR';
   tint: string;
 }[] = [
-  { id: 'reflect',     title: 'to reflect',     axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu', activity: 'thinking who I am…',        activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
-  { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Creating'], persona: 'Qiyu', activity: 'making things happen…',      activeDots: ['qiyu', 'create'], cell: 'TR', tint: 'var(--tint-tr)' },
-  { id: 'hear',        title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu', activity: 'learning from what others say…', activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
-  { id: 'collaborate', title: 'to collaborate', axisPair: ['Others', 'Creating'], persona: 'Qiyu', activity: 'creating with others…',      activeDots: ['other', 'create'], cell: 'BR', tint: 'var(--tint-br)' },
+  { id: 'reflect',     title: 'to reflect',     axisPair: ['Qiyu',   'Creating'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.reflect,     activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
+  { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.experiment,  activeDots: ['qiyu', 'create'], cell: 'TR', tint: 'var(--tint-tr)' },
+  { id: 'hear',        title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.hear,        activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
+  { id: 'collaborate', title: 'to collaborate', axisPair: ['Others', 'Creating'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.collaborate, activeDots: ['other', 'create'], cell: 'BR', tint: 'var(--tint-br)' },
 ];
 
 const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEntries(
@@ -86,10 +96,10 @@ const SPACE = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 } as con
 
 // Quadrant label text shown briefly in each quadrant after crosshair forms.
 const QUAD_LABELS: { cell: 'TL' | 'TR' | 'BL' | 'BR'; text: string; sub: string; tint: string }[] = [
-  { cell: 'TL', text: 'thinking who I am…',             sub: 'to reflect',     tint: 'var(--tint-tl)' },
-  { cell: 'TR', text: 'making things happen…',           sub: 'to experiment',  tint: 'var(--tint-tr)' },
-  { cell: 'BL', text: 'learning from what others say…', sub: 'to hear',        tint: 'var(--tint-bl)' },
-  { cell: 'BR', text: 'creating with others…',           sub: 'to collaborate', tint: 'var(--tint-br)' },
+  { cell: 'TL', text: SECTION_ACTIVITIES.reflect,     sub: 'to reflect',     tint: 'var(--tint-tl)' },
+  { cell: 'TR', text: SECTION_ACTIVITIES.experiment,  sub: 'to experiment',  tint: 'var(--tint-tr)' },
+  { cell: 'BL', text: SECTION_ACTIVITIES.hear,        sub: 'to hear',        tint: 'var(--tint-bl)' },
+  { cell: 'BR', text: SECTION_ACTIVITIES.collaborate, sub: 'to collaborate', tint: 'var(--tint-br)' },
 ];
 
 // Which dots connect to which when hovered (crosshair axis pairs).
@@ -112,12 +122,14 @@ const STATUS_PHRASES = [
   'Refactoring at lunch…',
 ];
 
-// Activities shown next to Qiyu label when each dot is hovered.
+// Activity shown inside the box when each dot is hovered (and next to Qiyu label).
+// Indexed by dot: 0=Qiyu, 1=Creating, 2=Others, 3=Thinking.
+// All reference SECTION_ACTIVITIES so one edit updates everywhere.
 const DOT_ACTIVITIES = [
-  'thinking who I am…',             // 0 Qiyu (default → reflect)
-  'creating with others…',          // 1 Creating hovered → Others+Creating = collaborate
-  'how might we connect the dots',  // 2 Others hovered → all connections
-  'learning from what others say…', // 3 Thinking hovered → Others+Thinking = hear
+  SECTION_ACTIVITIES.reflect,     // 0 Qiyu
+  SECTION_ACTIVITIES.experiment,  // 1 Creating
+  SECTION_ACTIVITIES.hear,        // 2 Others
+  SECTION_ACTIVITIES.reflect,     // 3 Thinking (reflective axis, same as reflect)
 ];
 
 // Extra line pairs to draw in addition to DOT_CONNECTIONS when a dot is hovered.
@@ -265,6 +277,7 @@ export function Home({ onNav }: Props) {
     const SETTLE_ANCHORS = [
       0,
       BOX_UNFILL_END,
+      MORPH_START,
       BOX_MORPH_END,
       OVERVIEW_END,
       CLUSTER_END,
@@ -313,8 +326,14 @@ export function Home({ onNav }: Props) {
       });
       floatTimeRef.current += 0.016;
       setFloatTime(floatTimeRef.current);
-      const convTarget = isBoxHoveredRef.current ? 1 : 0;
-      convergeRef.current += (convTarget - convergeRef.current) * 0.18;
+      const convTarget = (isBoxHoveredRef.current || rawScrollRef.current > 0) ? 1 : 0;
+      // Snap immediately to 1 on scroll so dots land on border before morph starts.
+      // Ease back to 0 (hover released, back at top) stays smooth.
+      if (convTarget === 1 && convergeRef.current < 1) {
+        convergeRef.current = 1;
+      } else {
+        convergeRef.current += (convTarget - convergeRef.current) * 0.18;
+      }
       setConvergeT(convergeRef.current);
       raf = requestAnimationFrame(tick);
     };
@@ -353,7 +372,7 @@ export function Home({ onNav }: Props) {
   // means no acceleration spikes when the user scrolls through a phase boundary).
   const boxFillT = smootherstep(clamp(progress / BOX_UNFILL_END, 0, 1));
   const morphT   = smootherstep(clamp(
-    (progress - BOX_UNFILL_END) / (BOX_MORPH_END - BOX_UNFILL_END), 0, 1,
+    (progress - MORPH_START) / (BOX_MORPH_END - MORPH_START), 0, 1,
   ));
   // Cluster: dots fly from crosshair endpoints → 4-dot nav icon at center.
   const clusterT = smootherstep(clamp(
@@ -367,11 +386,8 @@ export function Home({ onNav }: Props) {
   const crosshairLineVis = 1 - clusterT;
 
   // ── Border-collapse geometry ───────────────────────────────────────────────
-  // Each of the 4 box sides is a separate line that slides toward center.
-  // Top + bottom: horizontal lines moving vertically to y=cy → merge into
-  //   the horizontal axis, which connects Noticing ↔ Making.
-  // Left + right: vertical lines moving horizontally to x=cx → merge into
-  //   the vertical axis, which connects Qiyu ↔ Others.
+  // Box borders collapse to crosshair driven by scroll only (morphT).
+  // Hover keeps the box as a square outline; scroll morphs it into a crosshair.
   const topY    = lerp(cy - half, cy, morphT);
   const bottomY = lerp(cy + half, cy, morphT);
   const leftX   = lerp(cx - half, cx, morphT);
@@ -381,7 +397,7 @@ export function Home({ onNav }: Props) {
   const armHalfV = lerp(half, crosshairHalfV, morphT);
 
   // ── Dot positions ─────────────────────────────────────────────────────────
-  // Phase 1 (morph): outside box → crosshair endpoints (crosshairHalf).
+  // Phase 1 (morph): outside box → crosshair endpoints.
   const morphDots = [
     { x: cx,              y: lerp(cy - half - DOT_GAP, cy - crosshairHalfV, morphT) }, // top  (Qiyu)
     { x: lerp(cx + half + DOT_GAP, cx + crosshairHalfH, morphT), y: cy              }, // right (Making)
@@ -414,16 +430,10 @@ export function Home({ onNav }: Props) {
     { ampX: 40, ampY: 50, freqX: 0.46, freqY: 0.55, phaseX: 3.4, phaseY: 1.9 },
   ] as const;
   const floatBases = [
-    { x: cx - half * 0.3,  y: cy - half * 1.9  }, // Qiyu — well above box
+    { x: cx,               y: cy - half * 1.9  }, // Qiyu — centered, well above box
     { x: cx + half * 1.9,  y: cy - half * 0.4  }, // Making — far right
     { x: cx + half * 0.4,  y: cy + half * 1.9  }, // Others — well below box
     { x: cx - half * 2.0,  y: cy + half * 0.25 }, // Noticing — far left
-  ];
-  const boxMidpoints = [
-    { x: cx,        y: cy - half }, // top
-    { x: cx + half, y: cy        }, // right
-    { x: cx,        y: cy + half }, // bottom
-    { x: cx - half, y: cy        }, // left
   ];
   const floatingDots = floatBases.map((base, i) => {
     if (i === 0) return { x: base.x, y: base.y };
@@ -434,22 +444,36 @@ export function Home({ onNav }: Props) {
       y: base.y + Math.sin(t * p.freqY + p.phaseY) * p.ampY,
     };
   });
-  // Lerp floating → box midpoints on hover
+
+  // Hover target: box border midpoints. Dots converge here on hover,
+  // revealing the outlined box + "through connecting the dots" text.
+  const boxMidpoints = [
+    { x: cx,        y: cy - half }, // top
+    { x: cx + half, y: cy        }, // right
+    { x: cx,        y: cy + half }, // bottom
+    { x: cx - half, y: cy        }, // left
+  ];
+
+  // morphBlendT: scroll-driven, starts at MORPH_START so dots dwell at box
+  // border during the unfill beat before the collapse animation begins.
+  const morphBlendT = smootherstep(clamp(
+    (progress - MORPH_START) / (BOX_MORPH_END - MORPH_START), 0, 1,
+  ));
+
+  // preMorphDots: float freely, spring to box border on hover (convergeT).
   const preMorphDots = floatingDots.map((fp, i) => ({
     x: lerp(fp.x, boxMidpoints[i].x, convergeT),
     y: lerp(fp.y, boxMidpoints[i].y, convergeT),
   }));
 
-  // Composite: pre-morph → morph phase → cluster/header phases.
-  const scrollBlendT = smootherstep(clamp(progress / BOX_UNFILL_END, 0, 1));
   const dotPositions = preMorphDots.map((pre, i) => {
     const scrollDriven = {
       x: lerp(morphDots[i].x, navDots[i].x, clusterT),
       y: lerp(morphDots[i].y, navDots[i].y, clusterT),
     };
     return {
-      x: lerp(pre.x, scrollDriven.x, scrollBlendT),
-      y: lerp(pre.y, scrollDriven.y, scrollBlendT),
+      x: lerp(pre.x, scrollDriven.x, morphBlendT),
+      y: lerp(pre.y, scrollDriven.y, morphBlendT),
     };
   });
 
@@ -477,7 +501,8 @@ export function Home({ onNav }: Props) {
 
   // Quadrant labels + connecting text: appear when crosshair fully forms,
   // fade out as the cluster phase begins (crosshairLineVis = 1 - clusterT).
-  const quadLabelVis      = smootherstep(clamp((morphT - 0.7) / 0.3, 0, 1)) * crosshairLineVis;
+  // Quad labels appear when crosshair fully forms via scroll; fade on cluster.
+  const quadLabelVis = smootherstep(clamp((morphT - 0.7) / 0.3, 0, 1)) * crosshairLineVis;
 
 
   // Scroll hint — visible only at the very start.
@@ -506,15 +531,17 @@ export function Home({ onNav }: Props) {
         }}>
           <p style={{
             color: 'var(--bg)',
-            fontFamily: 'var(--serif)', fontWeight: 600,
+            fontFamily: 'var(--serif)', fontWeight: hoveredDot !== null && morphT < 0.01 ? 400 : 600,
             fontSize: 'clamp(18px, 2.2vw, 32px)',
             letterSpacing: '-0.02em', lineHeight: 1.2,
             textAlign: 'center', margin: 0,
             padding: `0 ${SPACE.xl}px`,
-            opacity: isBoxHovered ? 0 : Math.max(0, 1 - boxFillT * 2.5),
+            opacity: (isBoxHovered || convergeT > 0.5) ? 0 : Math.max(0, 1 - boxFillT * 2.5),
             transition: 'opacity 0.3s ease',
           }}>
-            Think outside the box
+            {hoveredDot !== null && morphT < 0.01
+              ? DOT_ACTIVITIES[hoveredDot]
+              : 'Think outside the box'}
           </p>
         </div>
 
@@ -529,7 +556,7 @@ export function Home({ onNav }: Props) {
           {/* Box fill — fades as boxFillT → 1, or immediately on hover */}
           <rect x={boxX} y={boxY} width={boxSize} height={boxSize}
             fill="var(--ink)"
-            style={{ opacity: isBoxHovered ? 0 : 1 - boxFillT, transition: 'opacity 0.35s ease' }} />
+            style={{ opacity: (isBoxHovered || convergeT > 0.5) ? 0 : 1 - boxFillT, transition: 'opacity 0.35s ease' }} />
           {/* Border lines — simple box border, no extension on hover */}
           <>
             <line x1={cx - armHalfH} y1={topY} x2={cx + armHalfH} y2={topY}
@@ -590,7 +617,7 @@ export function Home({ onNav }: Props) {
           <AxisDot key={cfg.label}
             x={dotPositions[i].x} y={dotPositions[i].y}
             label={cfg.label} dir={cfg.dir} tint={cfg.tint}
-            dotVis={1 - sectionBodyT} labelVis={Math.max(crosshairLineVis, convergeT) * (1 - sectionBodyT)}
+            dotVis={1 - sectionBodyT} labelVis={crosshairLineVis * (1 - sectionBodyT)}
             dotSize={dotSize} dotColor={dotColor}
             hovered={hoveredDot === i}
             suffix={i === 0 && morphT < 0.01 && convergeT < 0.1 ? (hoveredDot !== null && hoveredDot !== 0 ? DOT_ACTIVITIES[hoveredDot] : STATUS_PHRASES[statusIdx]) : undefined}
@@ -600,13 +627,13 @@ export function Home({ onNav }: Props) {
         ))}
 
         {/* "through connecting the dots" — centered in the box on hover */}
-        {convergeT > 0.05 && scrollBlendT < 0.5 && (
+        {convergeT > 0.05 && morphT < 0.4 && (
           <div
             style={{
               position: 'absolute',
               left: cx, top: cy,
               transform: 'translate(-50%, -50%)',
-              opacity: convergeT * (1 - scrollBlendT * 2),
+              opacity: convergeT * (1 - morphT * 2.5),
               fontFamily: 'var(--serif)', fontWeight: 600,
               fontSize: 'clamp(18px, 2.2vw, 32px)',
               letterSpacing: '-0.02em', lineHeight: 1.2,
@@ -983,14 +1010,6 @@ function CreateScatter({
   onNav: NavFn;
   onSectionJump: (id: SectionId) => void;
 }) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const plotItems = q.items.filter(
-    (it) => typeof it.x === 'number' && typeof it.y === 'number',
-  );
-
-  // CTA items use href "#section:<id>" to scroll-jump to another section
-  // (e.g. the stranger-challenge item belongs to Listening, so it jumps to
-  // the Learn page instead of opening an article).
   const handleClick = (href: string) => (e: React.MouseEvent) => {
     if (href.startsWith('#section:')) {
       e.preventDefault();
@@ -999,141 +1018,85 @@ function CreateScatter({
     }
     clickHandler(href, onNav)(e);
   };
-  // Plot interior insets — far enough from the axis lines that the circles
-  // breathe without overlapping the axis dots themselves.
+
   const inset = { top: 0, right: 80, bottom: 80, left: 80 };
 
-
-  // Container size — needed to convert dot fractional positions (0..1) into
-  // pixel coords for the SVG, so we can lerp endpoints toward off-container
-  // axis positions cleanly. ResizeObserver keeps it in sync on viewport changes.
-  const containerRef = useRef<HTMLDivElement>(null);
-
   return (
-    <div ref={containerRef} style={{
+    <div style={{
       position: 'absolute',
       top: inset.top, right: inset.right, bottom: inset.bottom, left: inset.left,
     }}>
 
-      {/* Comfort Zone background circle — fixed to viewport so section
-          padding/margins don't shrink or shift it */}
+      {/* How might I × Experiments table */}
       <div style={{
-        position: 'fixed',
-        width: 'min(110vw, 110vh)',
-        height: 'min(110vw, 110vh)',
-        borderRadius: '50%',
-        background: 'rgba(0,0,0,0.055)',
-        left: '-15vw',
-        top: '60%',
-        transform: 'translateY(-45%)',
-        zIndex: 0,
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'fixed',
-        bottom: '10%',
-        left: '5%',
-        fontFamily: 'var(--sans)',
-        fontSize: 'clamp(22px, 2.4vw, 40px)',
-        fontWeight: 400,
-        letterSpacing: '-0.02em',
-        color: 'rgba(0,0,0,0.22)',
-        pointerEvents: 'none',
-        zIndex: 0,
-        userSelect: 'none',
+        position: 'absolute',
+        top: '50%', left: 0, right: 0,
+        transform: 'translateY(-50%)',
+        zIndex: 1,
       }}>
-        The Comfort Zone
-      </div>
-
-      {plotItems.map((it, i) => {
-        const hovered = hoverIdx === i;
-        // Circle size scales gently with viewport — fixed 150px crowds tight
-        // layouts. clamp keeps it between 110 and 170.
-        const baseSize = 'clamp(110px, 13vw, 170px)';
-        // CTA items jump to another section instead of opening an article.
-        // They render in the destination quadrant's tint (indigo for the
-        // Listening / Learn page) and carry a routing arrow + a small label
-        // naming the destination, so the click intent reads at a glance.
-        const isJump = typeof it.href === 'string' && it.href.startsWith('#section:');
-        const jumpId = isJump ? (it.href!.slice(9) as SectionId) : null;
-        const jumpSection = jumpId ? SECTION_BY_ID[jumpId] : null;
-        // Map the BL section to its tint var; fall back to ink for normal items.
-        const jumpTint = jumpSection?.cell === 'TL' ? 'var(--tint-tl)'
-          : jumpSection?.cell === 'TR' ? 'var(--tint-tr)'
-          : jumpSection?.cell === 'BL' ? 'var(--tint-bl)'
-          : jumpSection?.cell === 'BR' ? 'var(--tint-br)'
-          : null;
-        const bg = jumpTint ?? 'var(--ink)';
-        // CTA items render as an open ring in the destination tint (cream
-        // interior, colored border, colored text). On hover the ring fills
-        // with its tint and the text inverts — a clean "doorway" affordance
-        // that's distinct from the filled ink article dots and quieter than
-        // the previous solid-indigo treatment.
-        const ctaRest = {
-          background: 'var(--bg)',
-          color: bg,
-          border: `2px solid ${bg}`,
-        };
-        const ctaHover = {
-          background: bg,
-          color: 'var(--bg)',
-          border: `2px solid ${bg}`,
-        };
-        const articleStyle = {
-          background: bg,
-          color: 'var(--bg)',
-          border: 'none' as const,
-        };
-        const tone = isJump ? (hovered ? ctaHover : ctaRest) : articleStyle;
-        return (
-          <a
-            key={i}
-            href={it.href}
-            onClick={handleClick(it.href ?? '#')}
-            onMouseEnter={() => setHoverIdx(i)}
-            onMouseLeave={() => setHoverIdx(null)}
-            style={{
-              position: 'absolute',
-              left: `${it.x! * 100}%`, top: `${it.y! * 100}%`,
-              // translate(-50%) centers regardless of the responsive size,
-              // and the inner transform handles the hover scale, so we don't
-              // have to recompute negative margins on every resize.
-              width: baseSize, height: baseSize,
-              transform: `translate(-50%, -50%) scale(${hovered ? 1.08 : 1})`,
-              borderRadius: '50%',
-              ...tone,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              textAlign: 'center',
-              padding: `0 ${SPACE.lg}px`, boxSizing: 'border-box',
+        {/* Header row */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          columnGap: SPACE.xxxl,
+          paddingBottom: SPACE.md,
+          borderBottom: '1px solid var(--line)',
+          marginBottom: 0,
+        }}>
+          {(['How might I', 'Experiments'] as const).map((h) => (
+            <div key={h} style={{
               fontFamily: 'var(--sans)',
-              fontSize: TYPE.body.size, fontWeight: 500, lineHeight: 1.3,
-              textDecoration: 'none',
-              cursor: 'pointer',
-              opacity: 1,
-              boxShadow: hovered
-                ? `0 0 0 8px color-mix(in srgb, ${bg} 14%, transparent)`
-                : 'none',
-              transition: 'opacity .2s, transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .2s, background .25s ease, color .25s ease',
-              zIndex: hovered ? 2 : 1,
-            }}
-          >
-            <span style={{ pointerEvents: 'none' }}>{it.title}</span>
-            {isJump && jumpSection && (
-              <span style={{
-                pointerEvents: 'none',
-                marginTop: SPACE.sm,
-                fontFamily: 'var(--mono)',
-                fontSize: TYPE.kicker.size, letterSpacing: TYPE.kicker.tracking,
-                textTransform: 'uppercase',
-                opacity: 0.7,
-              }}>
-                → {jumpSection.title}
-              </span>
-            )}
-          </a>
-        );
-      })}
+              fontSize: TYPE.kicker.size,
+              fontWeight: TYPE.kicker.weight,
+              letterSpacing: TYPE.kicker.tracking,
+              textTransform: 'uppercase',
+              color: 'var(--ink-3)',
+            }}>{h}</div>
+          ))}
+        </div>
+
+        {/* Rows */}
+        {q.items.filter(it => it.dek && it.title).map((it, i) => (
+          <div key={i} style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            columnGap: SPACE.xxxl,
+            padding: `${SPACE.lg}px 0`,
+            borderBottom: '1px solid var(--line)',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              fontFamily: 'var(--serif)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(15px, 1.3vw, 19px)',
+              lineHeight: 1.4,
+              color: 'var(--ink-2)',
+            }}>
+              {it.dek}
+            </div>
+            <a
+              href={it.href ?? '#'}
+              onClick={handleClick(it.href ?? '#')}
+              style={{
+                fontFamily: 'var(--sans)',
+                fontSize: 'clamp(14px, 1.1vw, 16px)',
+                fontWeight: 500,
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: SPACE.sm,
+                transition: 'color .15s ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--tint-tr)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink)')}
+            >
+              {it.title}
+              <span style={{ opacity: 0.45, fontSize: '0.85em' }}>↗</span>
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1164,34 +1127,28 @@ type LearnQuote = {
   sectionId?: string;
 };
 const LEARN_VALUES: LearnValue[] = [
-  { id: 'listen',     label: 'Listening',  pos: { x: 0.42, y: 0.50 } },
-  { id: 'underneath', label: 'Underneath', pos: { x: 0.58, y: 0.50 } },
+  { id: 'passion', label: 'Passion',  pos: { x: 0.28, y: 0.48 } },
+  { id: 'mindset', label: 'Mindset',  pos: { x: 0.68, y: 0.48 } },
 ];
-// Value ↔ value links — each tuple draws a line between the two value
-// hubs. Without this the values feel like isolated planets; with it the
-// whole graph reads as one knowledge web.
 const LEARN_VALUE_LINKS: [string, string][] = [
-  ['listen', 'underneath'],
+  ['passion', 'mindset'],
 ];
 const LEARN_QUOTES: LearnQuote[] = [
-  { quote: 'Most of what I learn comes from watching how people describe the work in their own voice.',
-    who: 'a designer at IDEO',          value: 'listen',     pos: { x: 0.30, y: 0.20 },
+  { quote: "This is a job I would do even if I weren't getting paid.",
+    who: 'Samar K.',   value: 'passion', pos: { x: 0.10, y: 0.20 },
     articleSlug: 'making-ai-feel-human', sectionId: 'relationship' },
-  { quote: `When a teammate gets quiet, that's usually the most important thing said all meeting.`,
-    who: 'a research lead',             value: 'listen',     pos: { x: 0.27, y: 0.50 },
+  { quote: 'Make work fun.',
+    who: 'Mia H.',     value: 'passion', pos: { x: 0.08, y: 0.55 },
     articleSlug: 'design-the-collaboration', sectionId: 'cross' },
-  { quote: 'Research is just listening with slightly better manners.',
-    who: 'a UX lead, Jan 2024',         value: 'listen',     pos: { x: 0.30, y: 0.80 },
+  { quote: 'It feels good to be inspired and to inspire others.',
+    who: 'Sharif S.',  value: 'passion', pos: { x: 0.14, y: 0.82 },
+    articleSlug: 'thinking-outside-the-box', sectionId: 'see' },
+  { quote: 'Research is a mindset. Everything can be research.',
+    who: 'Yiwen L.',   value: 'mindset', pos: { x: 0.80, y: 0.22 },
     articleSlug: 'making-ai-feel-human', sectionId: 'cant' },
-  { quote: 'The questions someone asks reveal more than the answers they give.',
-    who: 'a senior PM, on hiring',      value: 'underneath', pos: { x: 0.70, y: 0.20 },
-    articleSlug: 'thinking-outside-the-box', sectionId: 'see' },
-  { quote: "Sometimes we keep using a solution not because it is the best one, but because we've used it for a long time.",
-    who: 'a draft from March',          value: 'underneath', pos: { x: 0.73, y: 0.50 },
+  { quote: "Don't try too hard to find the rules too soon. Be comfortable keeping things messy.",
+    who: 'Jessica H.', value: 'mindset', pos: { x: 0.82, y: 0.72 },
     articleSlug: 'how-i-use-ai-to-create', sectionId: 'pitfalls' },
-  { quote: "Flexibility is what you leave room for on purpose, not what you failed to decide.",
-    who: 'a draft from March',          value: 'underneath', pos: { x: 0.70, y: 0.80 },
-    articleSlug: 'thinking-outside-the-box', sectionId: 'see' },
 ];
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // Mutable position state — keyed by node id (`q:${i}` or `v:${id}`).
