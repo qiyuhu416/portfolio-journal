@@ -37,7 +37,7 @@ export function ExperienceChip({ exp, tint }: Props) {
         width: 18, height: 18, borderRadius: 9,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         background: tint, color: '#fff',
-        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
+        fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.4,
         fontWeight: 600,
       }}>
         {initial}
@@ -104,8 +104,8 @@ export function ExperienceChip({ exp, tint }: Props) {
           )}
           {exp.period && (
             <div style={{
-              fontFamily: 'var(--mono)',
-              fontSize: 10,
+              fontFamily: 'var(--sans)',
+              fontSize: 12,
               letterSpacing: 0.6,
               opacity: 0.7,
             }}>

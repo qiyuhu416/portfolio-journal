@@ -93,6 +93,15 @@
         ]
       },
       {
+        "tag": "POC",
+        "title": "Crazy things I build",
+        "dek": "The wild stuff I make just to see if it works.",
+        "meta": "ongoing",
+        "href": "#",
+        "x": 0.45,
+        "y": 0.25
+      },
+      {
         "tag": "Listening",
         "title": "Meet the stranger challenge",
         "dek": "How might I see my unknown-unknowns?",

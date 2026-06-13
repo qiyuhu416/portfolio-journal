@@ -82,7 +82,7 @@ export function ArticleDrawer() {
           </button>
           <div
             style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
               textTransform: 'uppercase', color: 'var(--ink-3)',
             }}
           >
@@ -94,7 +94,7 @@ export function ArticleDrawer() {
           <article style={{ padding: '36px 28px 96px', maxWidth: 720, margin: '0 auto' }}>
             <div
               style={{
-                fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4,
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                 textTransform: 'uppercase', color: meta.tint, marginBottom: 14,
               }}
             >
@@ -123,7 +123,7 @@ export function ArticleDrawer() {
                 display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
                 marginTop: 20, paddingBottom: 18,
                 borderBottom: '1px solid var(--line)',
-                fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)',
+                fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)',
               }}>
                 <span style={{ marginRight: 4 }}>Reflected from</span>
                 {meta.experiences.map((exp, i) => (

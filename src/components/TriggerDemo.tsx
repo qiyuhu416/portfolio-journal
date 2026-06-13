@@ -304,7 +304,7 @@ export function TriggerDemo({ mode, kicker, title, description, dialogue, mechan
       {/* Kicker — section identifier, stays at top so the tab and the cell
           agree on which trigger you're looking at. */}
       <div style={{
-        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
+        fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: 1.6,
         textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
         marginBottom: 14,
       }}>
@@ -398,7 +398,7 @@ function MechanismDrawer({
           gap: 12,
         }}>
           <span style={{
-            letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 10,
+            letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 12,
             color: 'var(--article-tint, var(--ink-3))',
             fontWeight: 600,
             fontFamily: 'var(--mono)',
@@ -428,7 +428,7 @@ function MechanismDrawer({
         <div style={{
           marginTop: 6,
           fontFamily: 'var(--mono)',
-          fontSize: 11,
+          fontSize: 12,
           letterSpacing: 0.6,
           color: 'var(--ink-3)',
         }}>
@@ -475,10 +475,10 @@ function EconomicsTable({ economics }: { economics: Economics }) {
   ];
   return (
     <div style={{
-      fontFamily: 'var(--mono)', fontSize: 11, lineHeight: 1.6,
+      fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.6,
       color: 'var(--ink-3)',
     }}>
-      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 10, marginBottom: 8 }}>
+      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 12, marginBottom: 8 }}>
         economics
       </div>
       <div style={{ borderTop: '1px solid var(--line)', paddingTop: 6 }}>
@@ -494,7 +494,7 @@ function EconomicsTable({ economics }: { economics: Economics }) {
             <div>
               <div>{label}</div>
               {note && (
-                <div style={{ fontSize: 10, color: 'var(--ink-4)', marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: 'var(--ink-4)', marginTop: 2 }}>
                   {note}
                 </div>
               )}
@@ -695,7 +695,7 @@ function FieldA({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: R
               >
                 <span style={{
                   fontFamily: 'var(--mono)',
-                  fontSize: 9,
+                  fontSize: 12,
                   letterSpacing: 1.4,
                   textTransform: 'uppercase',
                   color: 'var(--article-tint, var(--ink-3))',
@@ -751,7 +751,7 @@ function FieldB({ snap, cursorRef, hideCursor }: { snap: Snapshot; cursorRef?: R
       color: 'var(--ink-3)',
     }}>
       <span style={{
-        fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+        fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: 1.4,
         textTransform: 'uppercase', color: 'var(--ink-4)',
         marginRight: 10,
       }}>
@@ -809,11 +809,11 @@ function TickPanel({ intervalMs, elapsed, snap }: { intervalMs: number; elapsed:
   };
   return (
     <div style={{
-      fontFamily: 'var(--mono)', fontSize: 11, lineHeight: 1.6,
+      fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.6,
       color: 'var(--ink-3)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <span style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 10 }}>tick</span>
+        <span style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 12 }}>tick</span>
         <span
           aria-hidden
           style={{
@@ -855,10 +855,10 @@ function CountdownPanel({ thresholdMs, silenceMs }: { thresholdMs: number; silen
   const seconds = (silenceMs / 1000).toFixed(1);
   return (
     <div style={{
-      fontFamily: 'var(--mono)', fontSize: 11, lineHeight: 1.6,
+      fontFamily: 'var(--mono)', fontSize: 12, lineHeight: 1.6,
       color: 'var(--ink-3)',
     }}>
-      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 10, marginBottom: 8 }}>
+      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 12, marginBottom: 8 }}>
         countdown
       </div>
       <div style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
@@ -889,9 +889,9 @@ function CountdownPanel({ thresholdMs, silenceMs }: { thresholdMs: number; silen
 function FocusPanelPlaceholder() {
   return (
     <div style={{
-      fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-4)',
+      fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-4)',
     }}>
-      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 10, marginBottom: 8 }}>
+      <div style={{ letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 12, marginBottom: 8 }}>
         focus
       </div>
       <div style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>

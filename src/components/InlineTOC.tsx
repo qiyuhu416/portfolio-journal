@@ -177,7 +177,7 @@ export function InlineTOC({ intro }: Props) {
           }}
         >
           <div style={{
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
             textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 18,
           }}>
             In this piece

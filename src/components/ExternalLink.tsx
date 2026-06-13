@@ -81,7 +81,7 @@ export function ExternalLink({ href, kind = 'External', title, dek, children }: 
           <span
             style={{
               display: 'block',
-              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
               textTransform: 'uppercase', color: tint,
             }}
           >

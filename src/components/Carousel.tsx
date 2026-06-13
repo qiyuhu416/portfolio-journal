@@ -71,7 +71,7 @@ export function Carousel({ items, perView = 2, span = 'full' }: Props) {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: 'var(--mono)',
+    fontFamily: 'var(--sans)',
     fontSize: 14,
     color: 'var(--ink-2)',
     zIndex: 2,
@@ -134,8 +134,8 @@ export function Carousel({ items, perView = 2, span = 'full' }: Props) {
                 <div
                   style={{
                     marginTop: 10,
-                    fontFamily: 'var(--mono)',
-                    fontSize: 10,
+                    fontFamily: 'var(--sans)',
+                    fontSize: 12,
                     letterSpacing: 0.6,
                     color: 'var(--ink-3)',
                     textAlign: 'center',

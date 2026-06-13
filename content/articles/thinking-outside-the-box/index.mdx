@@ -29,6 +29,7 @@ import { ExternalLink } from '@/components/ExternalLink'
 import { TabbedFigure } from '@/components/TabbedFigure'
 import { Carousel } from '@/components/Carousel'
 import { InlineTOC } from '@/components/InlineTOC'
+import { WhatIfTable } from './diagrams/WhatIfTable'
 import { BridgeAbstract } from './diagrams/BridgeAbstract'
 import { ServiceBlueprintAbstract } from './diagrams/ServiceBlueprintAbstract'
 import bridgeStartup from './images/bridge-startup.png'
@@ -75,9 +76,39 @@ Everyone’s crazy 8’s ideas are super crazy...!!
 I am still practicing this mindset, but it tends to come back to three 👌 steps.
 </p>
 
+<p>Here are some of the wilder questions I've been testing in human–AI interaction — click any card to see the prototype:</p>
+
+<WhatIfTable rows={[
+  {
+    whatIf: 'We could be super lazy',
+    poc: 'Just watch agents talk with each other',
+    images: [],
+  },
+  {
+    whatIf: 'You never had to type a prompt',
+    poc: 'Voice, gesture, or form — anything but text',
+    images: [],
+  },
+  {
+    whatIf: 'AI knew your future self better than today-you',
+    poc: 'Leave a message to your future self — AI delivers it',
+    images: [],
+  },
+  {
+    whatIf: 'All your apps shared the same understanding of you',
+    poc: 'One personalization hub — zero re-explaining yourself',
+    images: [],
+  },
+  {
+    whatIf: 'Thinking out loud had a shape',
+    poc: 'Render your chain of thought as a knowledge graph',
+    images: [],
+  },
+]} />
+
 <InlineTOC />
 
-<h2 id="see">☝️· See the box</h2>
+<h2 id="see">☝️ · See the box</h2>
 
 <p>
 You can’t question the box if you can’t see it.

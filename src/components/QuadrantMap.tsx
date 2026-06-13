@@ -29,10 +29,10 @@ export function QuadrantTeaser({ q, viewportW, viewportH, mapOpacity, onClick }:
   return (
     <button onClick={onClick}
       style={{ ...style, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', color: 'inherit' }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: q.tint, marginBottom: 10, visibility: 'hidden' }}>{q.axis}</div>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', color: q.tint, marginBottom: 10, visibility: 'hidden' }}>{q.axis}</div>
       <div style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 28, letterSpacing: -0.8, color: 'var(--ink)', lineHeight: 1.1 }}>{q.label}</div>
       <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-3)', marginTop: 4 }}>{q.sub}</div>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.6, color: 'var(--ink-4)', marginTop: 14, textTransform: 'uppercase' }}>{q.items.length} items</div>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.6, color: 'var(--ink-4)', marginTop: 14, textTransform: 'uppercase' }}>{q.items.length} items</div>
     </button>
   );
 }
@@ -42,6 +42,7 @@ type PanelProps = {
   opacity: number;
   fade: number;
   onNav: NavFn;
+  onHoverSlug?: (slug: string | null, tint: string | null) => void;
 };
 
 function dispatchItemClick(
@@ -54,7 +55,7 @@ function dispatchItemClick(
   else if (href === '#') { e.preventDefault(); }
 }
 
-export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
+export function QuadrantPanel({ q, opacity, fade, onNav, onHoverSlug }: PanelProps) {
   const itemsOpacity = clamp((fade - 0.05) * 2, 0, 1);
   const layout = q.layout ?? 'gallery';
 
@@ -83,7 +84,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '40px 0',
       }}>
-        <StatementLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
+        <StatementLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} onHoverSlug={onHoverSlug} />
       </div>
     );
   }
@@ -138,7 +139,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav }: PanelProps) {
   );
 }
 
-type LayoutProps = { q: Quadrant; onNav: NavFn; itemsOpacity: number };
+type LayoutProps = { q: Quadrant; onNav: NavFn; itemsOpacity: number; onHoverSlug?: (slug: string | null, tint: string | null) => void };
 
 /**
  * Statement — a single hero sentence where article titles appear as colored,
@@ -148,7 +149,7 @@ type LayoutProps = { q: Quadrant; onNav: NavFn; itemsOpacity: number };
  * Use when the quadrant's pieces share a tight thematic spine that reads better
  * as one breath than as a list — a manifesto rather than a TOC.
  */
-function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
+function StatementLayout({ q, onNav, itemsOpacity, onHoverSlug }: LayoutProps) {
   if (!q.statement) return null;
   return (
     <div style={{
@@ -158,7 +159,7 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
       // remains on each side and the block reads as *centered* rather than
       // flush-against-the-edge. clamp's 75vw track keeps the column 75% of
       // the viewport (~12.5% gutter on each side) until 1100px takes over.
-      maxWidth: 'min(780px, 58vw)',
+      maxWidth: 'min(1200px, 84vw)',
       // margin: 0 auto is redundant under flex-center but harmless; explicit
       // here so the block also self-centers if rendered outside a flex parent.
       margin: '0 auto',
@@ -174,7 +175,7 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
         {q.statement.map((seg, i) =>
           seg.type === 'text'
             ? <span key={i}>{seg.text}</span>
-            : <PhraseButton key={i} seg={seg} onNav={onNav} />,
+            : <PhraseButton key={i} seg={seg} onNav={onNav} onHoverSlug={onHoverSlug} />,
         )}
       </p>
     </div>
@@ -187,7 +188,7 @@ function StatementLayout({ q, onNav, itemsOpacity }: LayoutProps) {
  * with reversed-out text, signalling "this is a doorway." `box-decoration-break:
  * clone` keeps the highlight rectangle clean when the phrase wraps a line.
  */
-function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: 'phrase' }>; onNav: NavFn }) {
+function PhraseButton({ seg, onNav, onHoverSlug }: { seg: Extract<StatementSegment, { type: 'phrase' }>; onNav: NavFn; onHoverSlug?: (slug: string | null, tint: string | null) => void }) {
   const [hover, setHover] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const anchorRef = useRef<HTMLAnchorElement>(null);
@@ -215,8 +216,8 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
         ref={anchorRef}
         href={seg.href}
         onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={() => { setHover(true); onHoverSlug?.(slug, seg.tint); }}
+        onMouseLeave={() => { setHover(false); onHoverSlug?.(null, null); }}
         style={{
           background: hover ? seg.tint : restingBg,
           color: hover ? 'var(--bg)' : 'var(--ink)',
@@ -232,8 +233,8 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
         {seg.text}
         <span aria-hidden="true" style={{ display: 'inline-block', marginLeft: '0.2em', fontSize: '0.8em', verticalAlign: 'super' }}>↗</span>
       </a>
-      {/* TOC popover — fixed so it escapes any overflow:hidden ancestor */}
-      {sections.length > 0 && hover && rect && (
+      {/* Note popover — hidden at rest, reveals work title + TOC on hover */}
+      {hover && rect && article && (
         <span
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
@@ -251,6 +252,27 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
             textAlign: 'left',
           }}
         >
+          {/* Work title — hidden at rest, only visible when note is activated */}
+          <a
+            href={seg.href}
+            onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
+            style={{
+              display: 'flex', alignItems: 'baseline', gap: 6,
+              textDecoration: 'none', cursor: 'pointer',
+              paddingBottom: sections.length > 0 ? 10 : 0,
+              marginBottom: sections.length > 0 ? 8 : 0,
+              borderBottom: sections.length > 0 ? '1px solid var(--line)' : 'none',
+            }}
+          >
+            <span style={{
+              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontSize: 16, lineHeight: 1.15, letterSpacing: -0.3,
+              color: 'var(--ink)',
+            }}>
+              {article.meta.title}
+            </span>
+            <span style={{ color: seg.tint, fontSize: 14 }}>→</span>
+          </a>
           {sections.map((s, i) => (
             <a
               key={s.id}
@@ -279,7 +301,7 @@ function PhraseButton({ seg, onNav }: { seg: Extract<StatementSegment, { type: '
                 </span>
                 {s.sub && (
                   <span style={{
-                    fontFamily: 'var(--sans)', fontSize: 11,
+                    fontFamily: 'var(--sans)', fontSize: 12,
                     color: 'var(--ink-4)', lineHeight: 1.3,
                     letterSpacing: '0.01em',
                   }}>
@@ -338,7 +360,7 @@ function ListLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           </div>
           <div>
             <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
               textTransform: 'uppercase', color: q.tint, marginBottom: 6,
             }}>
               {it.tag}
@@ -389,7 +411,7 @@ function ListLayout({ q, onNav, itemsOpacity }: LayoutProps) {
           </div>
           <div style={{
             display: 'flex', alignItems: 'baseline', gap: 12,
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.6,
+            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.6,
             color: 'var(--ink-4)', textTransform: 'uppercase',
             whiteSpace: 'nowrap',
           }}>
@@ -506,8 +528,8 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
             <div style={{ textAlign: 'center', maxWidth: 220 }}>
               <div
                 style={{
-                  fontFamily: 'var(--mono)',
-                  fontSize: 9,
+                  fontFamily: 'var(--sans)',
+                  fontSize: 12,
                   letterSpacing: 1.4,
                   textTransform: 'uppercase',
                   color: q.tint,
@@ -530,8 +552,8 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
               </div>
               <div
                 style={{
-                  fontFamily: 'var(--mono)',
-                  fontSize: 9,
+                  fontFamily: 'var(--sans)',
+                  fontSize: 12,
                   letterSpacing: 0.4,
                   color: 'var(--ink-4)',
                   marginTop: 6,
@@ -644,7 +666,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                 <div style={{ padding: '14px 16px' }}>
                   {it.cardPreview.platform && (
                     <div style={{
-                      fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                      fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                       textTransform: 'uppercase', color: '#0077B5', marginBottom: 8,
                     }}>
                       {it.cardPreview.platform}
@@ -664,7 +686,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                     {it.cardPreview.body}
                   </div>
                   <div style={{
-                    fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.6,
+                    fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.6,
                     color: 'var(--ink-4)', marginTop: 12, textTransform: 'uppercase',
                   }}>
                     View post ↗
@@ -712,7 +734,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   <div style={{
                     position: 'absolute', inset: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 1,
+                    fontFamily: 'var(--sans)', fontSize: 8, letterSpacing: 1,
                     textTransform: 'uppercase', color: 'var(--ink-4)',
                   }}>
                     {p.label}
@@ -773,7 +795,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                     <text key={d}
                       x={`${xPct * 100}%`} y={`${(axisY + 0.055) * 100}%`}
                       textAnchor="middle"
-                      style={{ fontFamily: 'var(--sans)', fontSize: 11, fill: 'var(--ink-3)' }}
+                      style={{ fontFamily: 'var(--sans)', fontSize: 12, fill: 'var(--ink-3)' }}
                     >
                       {fmtDate(d)}
                     </text>
@@ -812,7 +834,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                     }}>
                       {ev.name && (
                         <span style={{
-                          fontFamily: 'var(--sans)', fontSize: 11, lineHeight: 1.25,
+                          fontFamily: 'var(--sans)', fontSize: 12, lineHeight: 1.25,
                           color: 'var(--ink-2)', textAlign: 'center',
                           textWrap: 'balance',
                         }}>
@@ -904,7 +926,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
               }}>
                 {it.title}
                 {isCta && external && (
-                  <span style={{ marginLeft: 4, fontFamily: 'var(--mono)' }}>↗</span>
+                  <span style={{ marginLeft: 4, fontFamily: 'var(--sans)' }}>↗</span>
                 )}
               </span>
               {/* Dek (the question) — swipes UP into view on hover. Italic
@@ -962,7 +984,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                             <div style={{
                               position: 'absolute', left: 0, right: 0, bottom: 8,
                               textAlign: 'center',
-                              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1,
+                              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1,
                               color: '#fff', textTransform: 'uppercase',
                             }}>
                               {p.label}
@@ -978,7 +1000,7 @@ function ScatterLayout({ q, onNav, itemsOpacity }: LayoutProps) {
               {expandsInline && expanded && (
                 <span style={{
                   position: 'absolute', top: 8, right: 12,
-                  fontFamily: 'var(--mono)', fontSize: 14,
+                  fontFamily: 'var(--sans)', fontSize: 14,
                   color: 'rgba(255,255,255,0.7)',
                   pointerEvents: 'none',
                 }}>×</span>
@@ -1041,7 +1063,7 @@ function QuotesLayout({ onNav, itemsOpacity }: LayoutProps) {
                 &ldquo;{s.text}&rdquo;
               </blockquote>
               <div style={{
-                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                 textTransform: 'uppercase', color: 'var(--ink-4)', marginTop: 8,
               }}>
                 {s.who} · {s.when}
@@ -1063,7 +1085,7 @@ function QuotesLayout({ onNav, itemsOpacity }: LayoutProps) {
                     padding: '10px 14px 12px',
                     background: linkedArticle.meta.surface,
                     borderRadius: 6,
-                    borderLeft: `3px solid ${linkedArticle.meta.tint}`,
+                    border: '1px solid var(--line)',
                     textDecoration: 'none',
                     cursor: 'pointer',
                     opacity: hovered ? 1 : 0,
@@ -1073,7 +1095,7 @@ function QuotesLayout({ onNav, itemsOpacity }: LayoutProps) {
                   }}
                 >
                   <div style={{
-                    fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.4,
+                    fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                     textTransform: 'uppercase', color: linkedArticle.meta.tint,
                     marginBottom: 5,
                   }}>

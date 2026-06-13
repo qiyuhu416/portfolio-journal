@@ -35,7 +35,7 @@ export function Sidebar({ label, children }: Props) {
       }}
     >
       <div style={{
-        fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4,
+        fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
         textTransform: 'uppercase', color: tint,
         marginBottom: 14,
       }}>

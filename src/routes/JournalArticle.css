@@ -67,12 +67,9 @@
   font-size: clamp(28px, 3vw, 36px);
   line-height: 1.1;
   letter-spacing: -0.6px;
-  /* Heading color is --ink (structural). Tint is reserved for accents
-     (links, drop-cap, §-numerals) so the page reads as ink-with-accent
-     rather than tinted-throughout. */
   color: var(--ink);
   font-weight: 400;
-  margin: 72px 0 22px;
+  margin: 64px 0 24px;
   text-wrap: balance;
   scroll-margin-top: 90px;
 }
@@ -81,7 +78,7 @@
   font-family: var(--serif);
   font-size: 21px;
   line-height: 1.25;
-  margin: 36px 0 10px;
+  margin: 32px 0 8px;
   font-weight: 600;
 }
 

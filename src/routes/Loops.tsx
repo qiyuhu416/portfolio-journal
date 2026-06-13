@@ -11,7 +11,7 @@ export function Loops({ onNav }: Props) {
 
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '140px 32px 60px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 40 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--cool)' }}>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--cool)' }}>
             § · Loops · Process
           </div>
           <div style={{ height: 1, background: 'var(--line)', flex: 1 }} />
@@ -35,16 +35,16 @@ export function Loops({ onNav }: Props) {
       </section>
 
       <section style={{ maxWidth: 1040, margin: '0 auto', padding: '40px 32px 80px' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
           Fig. 01 · Where things sit, on a spectrum
         </div>
 
         <div style={{ position: 'relative', height: 280, border: '1px solid var(--line)', borderRadius: 8, background: 'var(--surface)', padding: '40px 60px' }}>
           <div style={{ position: 'absolute', left: 60, right: 60, top: '50%', height: 1, background: 'var(--ink-3)' }} />
-          <div style={{ position: 'absolute', left: 60, top: '50%', marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
+          <div style={{ position: 'absolute', left: 60, top: '50%', marginTop: 14, fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
             ← makes me uncomfortable
           </div>
-          <div style={{ position: 'absolute', right: 60, top: '50%', marginTop: 14, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
+          <div style={{ position: 'absolute', right: 60, top: '50%', marginTop: 14, fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: 'var(--ink-3)', textTransform: 'uppercase' }}>
             comes naturally →
           </div>
 
@@ -57,7 +57,7 @@ export function Loops({ onNav }: Props) {
                 <div style={{
                   position: 'absolute', left: 0, top: offsetY,
                   transform: 'translateX(-50%)',
-                  fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.4,
+                  fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.4,
                   color: 'var(--ink-2)', whiteSpace: 'nowrap',
                 }}>
                   {d.label}
@@ -71,7 +71,7 @@ export function Loops({ onNav }: Props) {
           })}
         </div>
 
-        <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3, marginTop: 14, maxWidth: 680 }}>
+        <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: 0.3, marginTop: 14, maxWidth: 680 }}>
           Placeholder · The real version will be annotated, interactive, and probably revised
           every few months as I learn new things about myself.
         </p>

@@ -342,8 +342,8 @@ function FloatingControls({
         <span
           style={{
             pointerEvents: 'auto',
-            fontFamily: 'var(--mono)',
-            fontSize: 11,
+            fontFamily: 'var(--sans)',
+            fontSize: 12,
             letterSpacing: 0.6,
             padding: '8px 12px',
             background:
@@ -380,8 +380,8 @@ function FloatingControls({
               border: '1px solid var(--line)',
               borderRadius: 6,
               cursor: saving ? 'wait' : 'pointer',
-              fontFamily: 'var(--mono)',
-              fontSize: 11,
+              fontFamily: 'var(--sans)',
+              fontSize: 12,
               letterSpacing: 1.2,
               textTransform: 'uppercase',
             }}
@@ -399,8 +399,8 @@ function FloatingControls({
               border: 'none',
               borderRadius: 6,
               cursor: saving ? 'wait' : 'pointer',
-              fontFamily: 'var(--mono)',
-              fontSize: 11,
+              fontFamily: 'var(--sans)',
+              fontSize: 12,
               letterSpacing: 1.2,
               textTransform: 'uppercase',
             }}
@@ -420,8 +420,8 @@ function FloatingControls({
           border: '1px solid var(--line)',
           borderRadius: 6,
           cursor: 'pointer',
-          fontFamily: 'var(--mono)',
-          fontSize: 11,
+          fontFamily: 'var(--sans)',
+          fontSize: 12,
           letterSpacing: 1.2,
           textTransform: 'uppercase',
           boxShadow: on ? '0 4px 14px rgba(0,0,0,.18)' : '0 2px 8px rgba(0,0,0,.08)',

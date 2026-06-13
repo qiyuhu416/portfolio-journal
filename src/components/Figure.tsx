@@ -37,11 +37,11 @@ export function Figure({
           position: 'relative', overflow: 'hidden', borderRadius: 8,
         }}>
           <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px)' }} />
-          <div style={{ position: 'absolute', top: 18, left: 22, fontFamily: 'var(--mono)', fontSize: 10, color: tint, letterSpacing: 0.5, opacity: 0.8 }}>
+          <div style={{ position: 'absolute', top: 18, left: 22, fontFamily: 'var(--sans)', fontSize: 12, color: tint, letterSpacing: 0.5, opacity: 0.8 }}>
             {alt ? `PLACEHOLDER · ${alt.toUpperCase()}` : 'PLACEHOLDER · IMAGE'}
           </div>
           {fig && (
-            <div style={{ position: 'absolute', bottom: 20, right: 22, fontFamily: 'var(--mono)', fontSize: 10, color: tint, letterSpacing: 0.6, opacity: 0.7 }}>
+            <div style={{ position: 'absolute', bottom: 20, right: 22, fontFamily: 'var(--sans)', fontSize: 12, color: tint, letterSpacing: 0.6, opacity: 0.7 }}>
               FIG. {fig}
             </div>
           )}
@@ -56,7 +56,7 @@ export function Figure({
       {(caption || fig) && (
         <figcaption style={{
           maxWidth: PARATEXT_MAX, margin: '14px auto 0',
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3,
+          fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: 0.3,
         }}>
           {fig && <>Fig. {fig} · </>}{caption}
         </figcaption>

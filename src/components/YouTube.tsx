@@ -68,7 +68,7 @@ export function YouTube({
       {(caption || fig) && (
         <figcaption style={{
           maxWidth: 680, margin: '14px auto 0',
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3,
+          fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: 0.3,
         }}>
           {fig && <>Fig. {fig} · </>}{caption}
         </figcaption>

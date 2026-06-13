@@ -12,7 +12,7 @@ export function BackHome({ onNav, label = 'Back to map' }: Props) {
         padding: '8px 14px', borderRadius: 999,
         background: 'rgba(250,248,243,0.85)', backdropFilter: 'blur(10px)',
         border: '1px solid var(--line)',
-        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase',
+        fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase',
         color: 'var(--ink-2)', cursor: 'pointer',
       }}>
       <span style={{ fontSize: 14, lineHeight: 1 }}>←</span>

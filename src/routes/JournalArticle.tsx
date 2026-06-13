@@ -417,7 +417,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
           <div style={{
             position: 'absolute', top: 24, left: '50%',
             transform: `translateX(-50%) translateY(${pull * 0.25}px)`,
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
             textTransform: 'uppercase',
             color: pullNorm >= 1 ? meta.tint : 'var(--ink-3)',
             opacity: clamp((pull - 30) / 40, 0, 1),
@@ -445,7 +445,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
           <div style={{
             position: 'absolute', bottom: 24, left: '50%',
             transform: `translateX(-50%) translateY(${exitCloseAmt * -0.25}px)`,
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
             textTransform: 'uppercase',
             color: exitPullNorm >= 1 ? meta.tint : 'var(--ink-3)',
             opacity: clamp((exitCloseAmt - 30) / 40, 0, 1),
@@ -576,7 +576,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 ×
               </button>
               {quadrant && (
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 0.8, color: 'var(--ink-3)' }}>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: 'var(--ink-3)' }}>
                   From{' '}
                   <span style={{ color: 'var(--ink)', fontWeight: 500, textTransform: 'none' }}>
                     {quadrant.label}
@@ -590,7 +590,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 10px', borderRadius: 6,
                 border: 'none', background: 'transparent', cursor: 'pointer',
-                fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 0.8, color: 'var(--ink-2)',
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: 'var(--ink-2)',
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(31,30,27,0.06)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -608,7 +608,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
             const titleBlock = (
               <>
                 <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 1.4,
+                  fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                   textTransform: 'uppercase', color: meta.tint, marginBottom: 16,
                 }}>
                   {meta.quality}
@@ -628,8 +628,8 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                     : { children: meta.title })}
                 />
                 <div style={{
-                  display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px 14px',
-                  marginTop: 28, paddingBottom: 18,
+                  display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px 16px',
+                  marginTop: 32, paddingBottom: 16,
                   borderBottom: '1px solid var(--line)',
                   fontSize: 13, color: 'var(--ink-3)',
                 }}>
@@ -659,8 +659,8 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
             const sectionRail = meta.sections && meta.sections.length > 0 && (
               <nav style={{ marginTop: 32 }}>
                 <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-                  textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 14,
+                  fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
+                  textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 16,
                 }}>
                   In this piece
                 </div>
@@ -691,7 +691,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                           color: isActive ? 'var(--ink)' : 'var(--ink-3)',
                           fontWeight: isActive ? 500 : 400,
                           textDecoration: 'none',
-                          paddingLeft: 14,
+                          paddingLeft: 16,
                           paddingTop: 4, paddingBottom: 4,
                           transition: 'color .25s, font-weight .25s',
                         }}>
@@ -751,7 +751,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
               borderTop: '1px solid var(--line)',
             }}>
               <div style={{
-                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.6,
                 textTransform: 'uppercase', color: 'var(--ink-3)',
                 marginBottom: 20,
               }}>
@@ -775,7 +775,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
               >
                 {next.tag && (
                   <div style={{
-                    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
+                    fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
                     textTransform: 'uppercase',
                     color: next.quadrantTint ?? meta.tint,
                     marginBottom: 12,
@@ -791,7 +791,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 }}>
                   {next.title}
                   <span data-next-arrow style={{
-                    fontFamily: 'var(--mono)', fontSize: 16, lineHeight: 1,
+                    fontFamily: 'var(--sans)', fontSize: 16, lineHeight: 1,
                     color: 'var(--ink-3)',
                     transition: 'transform .2s cubic-bezier(.2,.7,.2,1)',
                   }}>→</span>

@@ -123,8 +123,8 @@ export function Collage({
                       justifyContent: 'center',
                       padding: 8,
                       textAlign: 'center',
-                      fontFamily: 'var(--mono)',
-                      fontSize: 9,
+                      fontFamily: 'var(--sans)',
+                      fontSize: 12,
                       letterSpacing: 0.4,
                       color: tint,
                       opacity: 0.8,
@@ -162,8 +162,8 @@ export function Collage({
               style={{
                 marginTop: 32,
                 textAlign: 'center',
-                fontFamily: 'var(--mono)',
-                fontSize: 11,
+                fontFamily: 'var(--sans)',
+                fontSize: 12,
                 letterSpacing: 0.3,
                 color: 'var(--ink-3)',
               }}
@@ -222,7 +222,7 @@ export function Collage({
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 8, textAlign: 'center',
-          fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
+          fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.4,
           color: tint, opacity: 0.8, textTransform: 'uppercase',
         }}>
           {it.alt}
@@ -284,7 +284,7 @@ export function Collage({
             )}
             <div style={{
               marginTop: caption ? 6 : 0,
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1,
+              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1,
               textTransform: 'uppercase', color: tint,
             }}>
               {fig && <>Fig. {fig} · </>}{items.length} photos · see all →
@@ -304,7 +304,7 @@ export function Collage({
         padding: '0 32px', marginBottom: 14,
       }}>
         <figcaption style={{
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.3,
+          fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: 0.3,
           margin: 0,
         }}>
           {fig && <>Fig. {fig} · </>}{caption}
@@ -316,7 +316,7 @@ export function Collage({
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '5px 11px', borderRadius: 999,
             background: 'transparent', border: '1px solid var(--line)',
-            fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-2)',
+            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-2)',
             letterSpacing: 0.8, textTransform: 'uppercase',
             cursor: 'pointer',
           }}
@@ -351,7 +351,7 @@ export function Collage({
               {it.caption && (
                 <div style={{
                   marginTop: 12,
-                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4,
+                  fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.4,
                   color: 'var(--ink-4)', textAlign: 'center',
                   textTransform: 'uppercase',
                 }}>

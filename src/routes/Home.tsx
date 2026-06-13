@@ -20,11 +20,11 @@ function smootherstep(t: number) { return t * t * t * (t * (t * 6 - 15) + 10); }
 //   Header   (CLUSTER_END → HEADER_END):        nav icon travels to header strip
 //   Sections (HEADER_END → SECTIONS_END):       four section pages
 const BOX_UNFILL_END = 0.10;
-const MORPH_START    = 0.20;  // dwell in converged state: BOX_UNFILL_END → MORPH_START
-const BOX_MORPH_END  = 0.32;
-const OVERVIEW_END   = 0.32;  // crosshair overview beat ends
-const CLUSTER_END    = 0.38;  // 4-dot nav icon formed at viewport center
-const HEADER_END     = 0.43;  // nav icon arrived at header
+const MORPH_START    = 0.10;  // morph starts immediately after unfill (no dwell)
+const BOX_MORPH_END  = 0.24;
+const OVERVIEW_END   = 0.24;  // crosshair overview beat ends
+const CLUSTER_END    = 0.26;  // dots cluster — compressed, barely a beat
+const HEADER_END     = 0.30;  // nav icon arrived at header
 const SECTIONS_END   = 0.83;
 
 // How far each dot sits outside its border midpoint before the morph begins.
@@ -54,8 +54,8 @@ const SECTIONS: {
   cell: 'TL' | 'TR' | 'BL' | 'BR';
   tint: string;
 }[] = [
-  { id: 'reflect',     title: 'to reflect',     axisPair: ['Qiyu',   'Creating'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.reflect,     activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
-  { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.experiment,  activeDots: ['qiyu', 'create'], cell: 'TR', tint: 'var(--tint-tr)' },
+  { id: 'reflect',     title: 'to reflect',     axisPair: ['Qiyu',   'Creating'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.experiment,  activeDots: ['qiyu', 'think'],  cell: 'TL', tint: 'var(--tint-tl)' },
+  { id: 'experiment',  title: 'to experiment',  axisPair: ['Qiyu',   'Thinking'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.reflect,     activeDots: ['qiyu', 'create'], cell: 'TR', tint: 'var(--tint-tr)' },
   { id: 'hear',        title: 'to hear',        axisPair: ['Others', 'Thinking'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.hear,        activeDots: ['other', 'think'], cell: 'BL', tint: 'var(--tint-bl)' },
   { id: 'collaborate', title: 'to collaborate', axisPair: ['Others', 'Creating'], persona: 'Qiyu', activity: SECTION_ACTIVITIES.collaborate, activeDots: ['other', 'create'], cell: 'BR', tint: 'var(--tint-br)' },
 ];
@@ -66,15 +66,15 @@ const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEnt
 
 // Section ranges within the 0–1 scroll progress space.
 const SECTION_RANGES: Record<SectionId, [number, number]> = {
-  reflect:     [HEADER_END, 0.55],
-  experiment:  [0.55, 0.65],
-  hear:        [0.65, 0.74],
-  collaborate: [0.74, SECTIONS_END],
+  reflect:     [HEADER_END, 0.50],
+  experiment:  [0.50, 0.62],
+  collaborate: [0.62, 0.73],
+  hear:        [0.73, SECTIONS_END],
 };
 
 function activeSectionFromProgress(p: number): SectionId {
-  if (p >= SECTION_RANGES.collaborate[0]) return 'collaborate';
   if (p >= SECTION_RANGES.hear[0])        return 'hear';
+  if (p >= SECTION_RANGES.collaborate[0]) return 'collaborate';
   if (p >= SECTION_RANGES.experiment[0])  return 'experiment';
   return 'reflect';
 }
@@ -88,18 +88,18 @@ const TYPE = {
   sectionH1: { size: 'clamp(22px, 1.9vw, 30px)', weight: 400, tracking: '-0.01em',  lineHeight: 1.2 },
   bodyLg:    { size: '18px', weight: 400, tracking: '0',         lineHeight: 1.55 },
   body:      { size: '14px', weight: 400, tracking: '0',         lineHeight: 1.55 },
-  kicker:    { size: '11px', weight: 500, tracking: '0.14em',    lineHeight: 1.2 },
-  meta:      { size: '11px', weight: 500, tracking: '0.14em',    lineHeight: 1.2 },
+  kicker:    { size: '12px', weight: 500, tracking: '0.10em',    lineHeight: 1.2 },
+  meta:      { size: '12px', weight: 500, tracking: '0.10em',    lineHeight: 1.2 },
 } as const;
 const SPACE = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 } as const;
 
 
 // Quadrant label text shown briefly in each quadrant after crosshair forms.
 const QUAD_LABELS: { cell: 'TL' | 'TR' | 'BL' | 'BR'; text: string; sub: string; tint: string }[] = [
-  { cell: 'TL', text: SECTION_ACTIVITIES.reflect,     sub: 'to reflect',     tint: 'var(--tint-tl)' },
-  { cell: 'TR', text: SECTION_ACTIVITIES.experiment,  sub: 'to experiment',  tint: 'var(--tint-tr)' },
-  { cell: 'BL', text: SECTION_ACTIVITIES.hear,        sub: 'to hear',        tint: 'var(--tint-bl)' },
-  { cell: 'BR', text: SECTION_ACTIVITIES.collaborate, sub: 'to collaborate', tint: 'var(--tint-br)' },
+  { cell: 'TL', text: SECTION_ACTIVITIES.experiment,  sub: 'Qiyu × Thinking',  tint: 'var(--tint-tl)' },
+  { cell: 'TR', text: SECTION_ACTIVITIES.reflect,     sub: 'Qiyu × Creating',  tint: 'var(--tint-tr)' },
+  { cell: 'BL', text: SECTION_ACTIVITIES.hear,        sub: 'Others × Thinking', tint: 'var(--tint-bl)' },
+  { cell: 'BR', text: SECTION_ACTIVITIES.collaborate, sub: 'Others × Creating', tint: 'var(--tint-br)' },
 ];
 
 // Which dots connect to which when hovered (crosshair axis pairs).
@@ -165,7 +165,7 @@ function AxisDot({
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
     fontFamily: 'var(--sans)',
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: '0.02em',
     color: tint,
     whiteSpace: 'nowrap',
@@ -226,7 +226,7 @@ function AxisDot({
           top: '50%',
           transform: 'translateY(-50%)',
           fontFamily: 'var(--sans)',
-          fontSize: 11,
+          fontSize: 12,
           letterSpacing: '0.02em',
           color: tint,
           whiteSpace: 'nowrap',
@@ -250,6 +250,7 @@ export function Home({ onNav }: Props) {
   );
   const [smoothScrollY, setSmoothScrollY] = useState(0);
   const [hoveredDot, setHoveredDot] = useState<number | null>(null);
+  const [reflectHover, setReflectHover] = useState<{ slug: string | null; tint: string | null }>({ slug: null, tint: null });
   const [statusIdx, setStatusIdx] = useState(0);
   const [isBoxHovered, setIsBoxHovered] = useState(false);
   const isBoxHoveredRef = useRef(false);
@@ -276,11 +277,7 @@ export function Home({ onNav }: Props) {
     const EASE_RANGE = 0.018;
     const SETTLE_ANCHORS = [
       0,
-      BOX_UNFILL_END,
-      MORPH_START,
       BOX_MORPH_END,
-      OVERVIEW_END,
-      CLUSTER_END,
       HEADER_END,
       ...Object.values(SECTION_RANGES).flatMap(([lo, hi]) => [
         (lo + hi) / 2,
@@ -327,13 +324,12 @@ export function Home({ onNav }: Props) {
       floatTimeRef.current += 0.016;
       setFloatTime(floatTimeRef.current);
       const convTarget = (isBoxHoveredRef.current || rawScrollRef.current > 0) ? 1 : 0;
-      // Snap immediately to 1 on scroll so dots land on border before morph starts.
-      // Ease back to 0 (hover released, back at top) stays smooth.
-      if (convTarget === 1 && convergeRef.current < 1) {
-        convergeRef.current = 1;
-      } else {
-        convergeRef.current += (convTarget - convergeRef.current) * 0.18;
-      }
+      // Hover: slow spring so dots visibly travel to the box border (~1s journey).
+      // Scroll: fast spring so dots arrive quickly as the morph takes over.
+      // Release: smooth ease back.
+      const isScrolling = rawScrollRef.current > 0;
+      const springK = convTarget === 0 ? 0.08 : isScrolling ? 0.35 : 0.14;
+      convergeRef.current += (convTarget - convergeRef.current) * springK;
       setConvergeT(convergeRef.current);
       raf = requestAnimationFrame(tick);
     };
@@ -424,7 +420,7 @@ export function Home({ onNav }: Props) {
   // the box midpoints (matching the image reference). As scroll begins, the
   // pre-morph positions blend into the scroll-driven morph animation.
   const FLOAT_PARAMS = [
-    { ampX: 55, ampY: 45, freqX: 0.52, freqY: 0.41, phaseX: 0.0, phaseY: 1.3 },
+    { ampX: 18, ampY: 22, freqX: 0.35, freqY: 0.42, phaseX: 0.0, phaseY: 1.3 }, // Qiyu — subtle drift
     { ampX: 45, ampY: 55, freqX: 0.40, freqY: 0.65, phaseX: 2.2, phaseY: 0.5 },
     { ampX: 50, ampY: 40, freqX: 0.58, freqY: 0.50, phaseX: 1.1, phaseY: 2.7 },
     { ampX: 40, ampY: 50, freqX: 0.46, freqY: 0.55, phaseX: 3.4, phaseY: 1.9 },
@@ -436,7 +432,6 @@ export function Home({ onNav }: Props) {
     { x: cx - half * 2.0,  y: cy + half * 0.25 }, // Noticing — far left
   ];
   const floatingDots = floatBases.map((base, i) => {
-    if (i === 0) return { x: base.x, y: base.y };
     const p = FLOAT_PARAMS[i];
     const t = hoveredDot === i ? hoveredFloatTimeRef.current : floatTime;
     return {
@@ -479,7 +474,9 @@ export function Home({ onNav }: Props) {
 
   // Dot size: 7px at crosshair → 10px when cluster forms. Holds at 10px
   // through the header slide (rigid translation, no size change).
-  const dotSize  = lerp(10, 10, clusterT);
+  // Pulse size during convergence: dots swell as they travel, settle on arrival.
+  const convergePulse = Math.sin(convergeT * Math.PI); // 0→peaks→0 as convergeT 0→1
+  const dotSize = lerp(10 + convergePulse * 4, 10, clusterT);
   // Dot color: Anthropic-red terracotta at pre-scroll → warm grey at cluster.
   const dotColor = `rgb(${Math.round(lerp(204, 128, clusterT))},${
     Math.round(lerp(110, 122, clusterT))},${
@@ -608,23 +605,36 @@ export function Home({ onNav }: Props) {
           );
         })()}
 
-        {([
-          { label: 'Qiyu',     dir: (convergeT > 0.05 || morphT > 0 ? 'up' : 'left') as LabelDir, tint: 'var(--ink-3)' },
-          { label: 'Creating', dir: 'right' as LabelDir, tint: 'var(--ink-3)' },
-          { label: 'Others',   dir: 'down'  as LabelDir, tint: 'var(--ink-3)' },
-          { label: 'Thinking', dir: 'left'  as LabelDir, tint: 'var(--ink-3)' },
-        ] as const).map((cfg, i) => (
-          <AxisDot key={cfg.label}
-            x={dotPositions[i].x} y={dotPositions[i].y}
-            label={cfg.label} dir={cfg.dir} tint={cfg.tint}
-            dotVis={1 - sectionBodyT} labelVis={crosshairLineVis * (1 - sectionBodyT)}
+        {(() => {
+          // Labels for Thinking/Creating/Others are hidden by default.
+          // They appear when: hovering that specific dot, hovering the box, or scrolling.
+          // Qiyu is always visible (it's the site identity).
+          const sharedLabelVis = (convergeT > 0 || progress > 0)
+            ? Math.max(convergeT, boxFillT) * crosshairLineVis * (1 - sectionBodyT)
+            : 0;
+          return ([
+            { label: 'Qiyu',     dir: 'left'  as LabelDir, tint: 'var(--ink-3)' },
+            { label: 'Creating', dir: 'right' as LabelDir, tint: 'var(--ink-3)' },
+            { label: 'Others',   dir: 'down'  as LabelDir, tint: 'var(--ink-3)' },
+            { label: 'Thinking', dir: 'left'  as LabelDir, tint: 'var(--ink-3)' },
+          ] as const).map((cfg, i) => (
+            <AxisDot key={cfg.label}
+              x={dotPositions[i].x} y={dotPositions[i].y}
+              label={cfg.label} dir={cfg.dir} tint={cfg.tint}
+              dotVis={1 - sectionBodyT}
+              labelVis={
+                i === 0 ? crosshairLineVis * (1 - sectionBodyT) :  // Qiyu: fades out during cluster→header
+                hoveredDot === i ? 1 - sectionBodyT :  // hovered dot: always visible
+                sharedLabelVis                          // others: hidden until interaction
+              }
             dotSize={dotSize} dotColor={dotColor}
             hovered={hoveredDot === i}
             suffix={i === 0 && morphT < 0.01 && convergeT < 0.1 ? (hoveredDot !== null && hoveredDot !== 0 ? DOT_ACTIVITIES[hoveredDot] : STATUS_PHRASES[statusIdx]) : undefined}
             onMouseEnter={morphT < 0.01 ? () => { hoveredFloatTimeRef.current = floatTimeRef.current; setHoveredDot(i); } : undefined}
             onMouseLeave={morphT < 0.01 ? () => setHoveredDot(null) : undefined}
-          />
-        ))}
+            />
+          ));
+        })()}
 
         {/* "through connecting the dots" — centered in the box on hover */}
         {convergeT > 0.05 && morphT < 0.4 && (
@@ -676,7 +686,7 @@ export function Home({ onNav }: Props) {
                 {ql.text}
               </div>
               <div style={{
-                fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6,
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.6,
                 textTransform: 'uppercase', color: ql.tint,
                 marginTop: 10,
               }}>
@@ -739,7 +749,7 @@ export function Home({ onNav }: Props) {
                 <div style={{
                   opacity: navOpacity,
                   fontFamily: 'var(--sans)', fontWeight: 500,
-                  fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+                  fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase',
                   color: sec.tint,
                   textAlign: 'right', paddingRight: 20,
                 }}>
@@ -798,13 +808,24 @@ export function Home({ onNav }: Props) {
                   q={activeQ}
                   onNav={onNav}
                   onSectionJump={jumpToSection}
+                  onReflectHover={(slug, tint) => setReflectHover({ slug, tint })}
                 />
               </div>
             </div>
           );
         })()}
 
-        {/* Scroll hint — visible only at the very start */}
+        {/* Experience timeline — pinned to viewport bottom, visible during reflect section */}
+        {inSections && activeSection === 'reflect' && (
+          <div style={{
+            position: 'absolute', bottom: 40, left: headerTop, right: headerTop,
+            opacity: sectionVis,
+            transition: 'opacity .3s ease',
+            zIndex: 10,
+          }}>
+            <ExperienceTimeline hoveredSlug={reflectHover.slug} tint={reflectHover.tint} />
+          </div>
+        )}
 
       </div>
 
@@ -885,7 +906,7 @@ export function Home({ onNav }: Props) {
             }}>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: SPACE.sm,
-                fontFamily: 'var(--mono)',
+                fontFamily: 'var(--sans)',
                 fontSize: TYPE.meta.size, fontWeight: TYPE.meta.weight,
                 letterSpacing: TYPE.meta.tracking,
                 textTransform: 'uppercase', color: 'var(--ink-2)',
@@ -960,15 +981,16 @@ function FooterList({ kicker, items }: { kicker: string; items: string[] }) {
 // ——— Section views ———
 
 function SectionView({
-  section, q, onNav, onSectionJump,
+  section, q, onNav, onSectionJump, onReflectHover,
 }: {
   section: typeof SECTIONS[number];
   q: Quadrant;
   onNav: NavFn;
   onSectionJump: (id: SectionId) => void;
+  onReflectHover: (slug: string | null, tint: string | null) => void;
 }) {
   switch (section.id) {
-    case 'reflect':     return <ReflectionView q={q} onNav={onNav} />;
+    case 'reflect':     return <ReflectionView q={q} onNav={onNav} onHoverSlug={onReflectHover} />;
     case 'experiment':  return <CreateScatter q={q} onNav={onNav} onSectionJump={onSectionJump} />;
     case 'hear':        return <LearnQuotes onNav={onNav} />;
     case 'collaborate': return <WorkGrid q={q} onNav={onNav} />;
@@ -989,10 +1011,84 @@ function clickHandler(href: string, onNav: NavFn) {
   };
 }
 
-// Reflection — reuses QuadrantPanel's statement layout (the centered-manifesto
-// treatment with hoverable colored phrases that open article modals).
-function ReflectionView({ q, onNav }: { q: Quadrant; onNav: NavFn }) {
-  return <QuadrantPanel q={q} opacity={1} fade={1} onNav={onNav} />;
+// ——— Experience timeline ———
+const EXPERIENCES = [
+  { id: 'cornell',  name: 'Cornell',           role: 'B.S. Info Sci',         period: '17–21', slugs: [] as string[] },
+  { id: 'cmu',      name: 'CMU',               role: 'M.HCI',                 period: '21–23', slugs: ['thinking-outside-the-box', 'designing-ai-products', 'how-i-use-ai-to-create'] },
+  { id: 'ai-caring',name: 'AI Caring',         role: 'Research Asst.',        period: '22–23', slugs: ['designing-ai-products', 'how-i-use-ai-to-create'] },
+  { id: 'meetfood', name: 'Meetfood',          role: 'Founding UX',           period: '22–24', slugs: ['designing-ai-products'] },
+  { id: 'google',   name: 'Google Cloud',      role: 'UX Intern',             period: '23',    slugs: ['designing-ai-products'] },
+  { id: 'archetype',name: 'Archetype × Roche', role: 'Design Fellow',         period: '24',    slugs: [] as string[] },
+  { id: 'apple',    name: 'Apple',             role: 'UX Designer',           period: '24–now',slugs: ['thinking-outside-the-box', 'designing-ai-products', 'how-i-use-ai-to-create'] },
+];
+
+function ExperienceTimeline({ hoveredSlug, tint }: { hoveredSlug: string | null; tint: string | null }) {
+  return (
+    <div style={{ paddingBottom: 28, paddingLeft: 8, paddingRight: 8, pointerEvents: 'none' }}>
+      {/* Names + role rows */}
+      <div style={{ display: 'flex', marginBottom: 8 }}>
+        {EXPERIENCES.map((exp) => {
+          const lit = hoveredSlug ? exp.slugs.includes(hoveredSlug) : null;
+          return (
+            <div key={exp.id} style={{
+              flex: 1, textAlign: 'center',
+              opacity: lit === false ? 0.3 : 1,
+              transition: 'opacity .2s',
+            }}>
+              <div style={{
+                fontFamily: 'var(--sans)', fontSize: 12, fontWeight: lit ? 500 : 400,
+                letterSpacing: '0.01em',
+                color: lit === true ? (tint ?? 'var(--ink)') : 'var(--ink-3)',
+                transition: 'color .2s, font-weight .2s',
+                whiteSpace: 'nowrap',
+              }}>
+                {exp.name}
+              </div>
+              <div style={{
+                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: '0.04em',
+                color: 'var(--ink-4)', marginTop: 2,
+                whiteSpace: 'nowrap',
+                opacity: lit === true ? 1 : 0,
+                transition: 'opacity .2s',
+              }}>
+                {exp.role}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Track + dots row */}
+      <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, height: 1, background: 'var(--line)' }} />
+        {EXPERIENCES.map((exp) => {
+          const lit = hoveredSlug ? exp.slugs.includes(hoveredSlug) : null;
+          return (
+            <div key={exp.id} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <div style={{
+                width: lit === true ? 10 : 6, height: lit === true ? 10 : 6,
+                borderRadius: '50%',
+                background: lit === true ? (tint ?? 'var(--ink)') : 'var(--bg)',
+                border: `1.5px solid ${lit === true ? (tint ?? 'var(--ink)') : lit === false ? 'var(--line)' : 'var(--ink-4)'}`,
+                opacity: lit === false ? 0.3 : 1,
+                transition: 'all .2s ease', zIndex: 1,
+              }} />
+            </div>
+          );
+        })}
+      </div>
+
+    </div>
+  );
+}
+
+// Reflection — centered statement; timeline rendered in Home's fixed canvas.
+function ReflectionView({ q, onNav, onHoverSlug }: { q: Quadrant; onNav: NavFn; onHoverSlug: (slug: string | null, tint: string | null) => void }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <QuadrantPanel q={q} opacity={1} fade={1} onNav={onNav} onHoverSlug={onHoverSlug} />
+    </div>
+  );
 }
 
 // Create — scatter plot framed by the global axis system. Qiyu/Creating
@@ -1591,6 +1687,8 @@ const GALLERY_ITEMS = [
 ];
 
 function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -1611,32 +1709,24 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
         alignItems: 'start',
       }}>
         {GALLERY_ITEMS.map((item, i) => {
+          const hovered = hoverIdx === i;
+          const dimmed = hoverIdx !== null && !hovered;
           return (
             <div
               key={i}
               onClick={() => item.href && window.open(item.href, '_blank', 'noopener,noreferrer')}
+              onMouseEnter={() => setHoverIdx(i)}
+              onMouseLeave={() => setHoverIdx(null)}
               style={{
                 cursor: item.href ? 'pointer' : 'default',
                 display: 'flex', flexDirection: 'column',
                 minHeight: 0,
-              }}
-              onMouseEnter={(e) => {
-                const imgs = e.currentTarget.querySelectorAll('img');
-                const product = imgs[0] as HTMLImageElement | undefined;
-                const logo = imgs[1] as HTMLImageElement | undefined;
-                if (product && item.href) product.style.transform = 'scale(1.04)';
-                if (logo) { logo.style.opacity = '1'; logo.style.width = '35%'; }
-              }}
-              onMouseLeave={(e) => {
-                const imgs = e.currentTarget.querySelectorAll('img');
-                const product = imgs[0] as HTMLImageElement | undefined;
-                const logo = imgs[1] as HTMLImageElement | undefined;
-                if (product) product.style.transform = 'scale(1)';
-                if (logo) { logo.style.opacity = '0'; logo.style.width = '30%'; }
+                opacity: dimmed ? 0.5 : 1,
+                transition: 'opacity .2s ease',
               }}
             >
-              {/* Image + logo overlay (logo hidden until hover) */}
-              <div style={{ aspectRatio: '4/3', overflow: 'hidden', borderRadius: 4, position: 'relative' }}>
+              {/* Image + logo overlay */}
+              <div style={{ aspectRatio: '4/3', overflow: 'hidden', borderRadius: 4, position: 'relative', background: 'var(--surface)' }}>
                 <img
                   src={item.image}
                   alt={item.meta}
@@ -1644,6 +1734,7 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                     display: 'block', width: '100%', height: '100%',
                     objectFit: 'contain',
                     objectPosition: 'center bottom',
+                    transform: hovered && item.href ? 'scale(1.04)' : 'scale(1)',
                     transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
                   }}
                 />
@@ -1652,21 +1743,33 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                   alt=""
                   style={{
                     position: 'absolute', bottom: 8, left: 8,
-                    width: '30%', height: 'auto',
+                    width: hovered ? '35%' : '30%', height: 'auto',
                     objectFit: 'contain',
-                    opacity: 0,
+                    opacity: hovered ? 1 : 0,
                     transition: 'opacity .25s ease, width .3s cubic-bezier(.2,.7,.2,1)',
                   }}
                 />
               </div>
-              {/* Tag only — no description */}
-              <div style={{ paddingTop: 8, flexShrink: 0 }}>
+              {/* Caption */}
+              <div style={{ paddingTop: 10, flexShrink: 0 }}>
                 <div style={{
-                  fontFamily: 'var(--mono)', fontSize: 9,
+                  fontFamily: 'var(--sans)', fontSize: 12,
                   letterSpacing: 1.1, textTransform: 'uppercase',
                   color: 'var(--ink-3)',
                 }}>
                   {item.tag}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--sans)', fontSize: 13, lineHeight: 1.4,
+                  color: 'var(--ink-2)', marginTop: 4,
+                }}>
+                  {item.impact}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--sans)', fontSize: 12,
+                  color: 'var(--ink-4)', marginTop: 3,
+                }}>
+                  {item.meta}
                 </div>
               </div>
             </div>

@@ -11,11 +11,11 @@ export function Signals({ onNav }: Props) {
 
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '140px 32px 80px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 40 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--warm)' }}>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--warm)' }}>
             § · Signals · Input
           </div>
           <div style={{ height: 1, background: 'var(--line)', flex: 1 }} />
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 0.8, color: 'var(--ink-3)' }}>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: 'var(--ink-3)' }}>
             N = 72 · as of Mar 2024
           </div>
         </div>
@@ -44,7 +44,7 @@ export function Signals({ onNav }: Props) {
             padding: '56px 0', borderTop: '1px solid var(--line)',
             display: 'grid', gridTemplateColumns: '80px 1fr', gap: 32,
           }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: 0.8, color: q.tint }}>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.8, color: q.tint }}>
               #{String(q.n).padStart(2, '0')}
             </div>
             <div>
@@ -55,7 +55,7 @@ export function Signals({ onNav }: Props) {
                 }}>
                   "{q.text}"
                 </div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.4, marginTop: 14 }}>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: 0.4, marginTop: 14 }}>
                   — {q.who.toUpperCase()} · {q.when.toUpperCase()}
                 </div>
               </blockquote>
@@ -63,7 +63,7 @@ export function Signals({ onNav }: Props) {
                 marginTop: 22, paddingTop: 18, borderTop: '1px dashed var(--line)',
                 display: 'flex', gap: 14, alignItems: 'baseline',
               }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: q.tint, flexShrink: 0, paddingTop: 4 }}>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', color: q.tint, flexShrink: 0, paddingTop: 4 }}>
                   What it changed
                 </div>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: 17, lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 620 }}>
@@ -78,7 +78,7 @@ export function Signals({ onNav }: Props) {
       <section style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 140px', borderTop: '1px solid var(--line)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
           <div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: 18 }}>
               Still counting
             </div>
             <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(32px, 4vw, 48px)', lineHeight: 1.1, letterSpacing: -1.2, margin: 0, textWrap: 'balance' }}>
@@ -91,7 +91,7 @@ export function Signals({ onNav }: Props) {
           </div>
           <div style={{ paddingLeft: 32, borderLeft: '1px solid var(--line)' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)' }}>N =</div>
+              <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)' }}>N =</div>
               <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 'clamp(72px, 9vw, 120px)', lineHeight: 0.9, letterSpacing: -3, color: 'var(--warm)' }}>72</div>
             </div>
             <a href="mailto:hello@qiyuhu.com?subject=Number%2073" style={{
@@ -100,7 +100,7 @@ export function Signals({ onNav }: Props) {
               borderBottom: '1px solid var(--ink)', paddingBottom: 2,
             }}>
               <span style={{ fontStyle: 'italic' }}>Book a chat.</span>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--warm)', letterSpacing: 0.4 }}>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--warm)', letterSpacing: 0.4 }}>
                 You'd be #73.
               </span>
             </a>

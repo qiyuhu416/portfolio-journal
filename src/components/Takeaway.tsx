@@ -31,8 +31,8 @@ export function Takeaway({ label, kicker = 'Takeaway', children }: Props) {
     <div style={{ margin: '48px 0 14px' }}>
       <div
         style={{
-          fontFamily: 'var(--mono)',
-          fontSize: 11,
+          fontFamily: 'var(--sans)',
+          fontSize: 12,
           letterSpacing: 1.4,
           textTransform: 'uppercase',
           color: 'var(--article-tint, var(--ink-3))',
