@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Design System — Qiyu Hu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.fontshare.net">
+  <link href="https://api.fontshare.net/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Tokens ──────────────────────────────────────────── */
+    :root {
+      --bg: #FFFFFF;
+      --ink: #1A1814;
+      --ink-2: #45403A;
+      --ink-3: #6B6560;
+      --ink-4: #726C64;
+      --line: #E5E5E2;
+      --surface: #F1F1F1;
+
+      --tint-tl: #C66243;
+      --tint-tr: #DB9230;
+      --tint-bl: #5A75A0;
+      --tint-br: #80A07E;
+      --tint-plum: #9C7AB5;
+      --signal: #C13D2F;
+
+      --serif:   'Switzer', 'Times New Roman', serif;
+      --sans:    'Inter', 'Helvetica', sans-serif;
+      --reading: 'Switzer', 'Times New Roman', serif;
+      --mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+
+    /* ── Reset ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    body {
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: #F5D982; color: var(--ink); }
+
+    /* ── Single grid — one rhythm for the whole page ─────── */
+    /* Every row: 200px label column / 1fr content column.
+       Applied consistently so the reader's eye never has to
+       re-learn the layout. */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 40px 160px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 40px;
+      align-items: start;
+      padding: 32px 0;
+      border-top: 1px solid var(--line);
+    }
+    .row:first-child { border-top: none; padding-top: 0; }
+
+    /* Two documentation text sizes only */
+    .label {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding-top: 4px;
+    }
+    .note {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--ink-4);
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    .header {
+      padding: 0 0 64px;
+    }
+    .header-title {
+      font-family: var(--serif);
+      font-size: clamp(52px, 8vw, 80px);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--ink);
+      margin: 0 0 16px;
+    }
+    .header-title em { font-style: italic; }
+    .header-sub {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+
+    /* ── Colour strip ────────────────────────────────────── */
+    /* One horizontal row per group — no grids */
+    .colour-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .colour-group {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+    .colour-chip {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .colour-block {
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .colour-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-4);
+      white-space: nowrap;
+    }
+
+    /* ── Type hierarchy — the heart of the system ────────── */
+    /* Every specimen uses the actual font/size/weight from the
+       live site. Labels describe the context. */
+    .specimen + .note { margin-top: 8px; }
+
+    /* Article type — mirrors JournalArticle.css exactly */
+    .s-title {
+      font-family: var(--serif);
+      font-size: clamp(44px, 6vw, 60px);
+      font-weight: 600;
+      letter-spacing: -0.8px;
+      line-height: 1.04;
+      color: var(--ink);
+    }
+    .s-lede {
+      font-family: var(--reading);
+      font-size: clamp(22px, 2vw, 26px);
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .s-h2 {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3vw, 36px);
+      font-weight: 400;
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+    .s-body {
+      font-family: var(--reading);
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .s-h3 {
+      font-family: var(--reading);
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .s-takeaway {
+      font-family: var(--reading);
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .s-takeaway::before {
+      content: 'FINDING · 01';
+      display: block;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: #C66243;
+      margin-bottom: 8px;
+    }
+    .s-pullquote {
+      font-family: var(--reading);
+      font-size: clamp(26px, 3vw, 34px);
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .s-aside {
+      font-family: var(--reading);
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink-3);
+      padding-left: 20px;
+      border-left: 2px solid var(--line);
+    }
+    .s-callout {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 20px;
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-2);
+    }
+    .s-callout-label {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--tint-bl);
+      margin-bottom: 10px;
+    }
+    .s-blockquote {
+      font-family: var(--reading);
+      font-size: 19px;
+      font-style: italic;
+      line-height: 1.6;
+      color: var(--ink-2);
+      padding-left: 20px;
+      border-left: 3px solid var(--tint-bl);
+    }
+    .s-kicker {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .s-ui {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    /* ── Spacing visual ──────────────────────────────────── */
+    .space-bar {
+      height: 4px;
+      background: var(--ink);
+      border-radius: 2px;
+      margin-bottom: 6px;
+    }
+    .space-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Constraints list ────────────────────────────────── */
+    .constraints {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .constraint {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.5;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: baseline;
+    }
+    .constraint:first-child { border-top: 1px solid var(--line); }
+    .constraint-tag {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <h1 class="header-title">Qiyu <em>Hu</em>.</h1>
+    <p class="header-sub">Design System</p>
+  </header>
+
+  <!-- ══ COLOUR ════════════════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Ink</div>
+    <div>
+      <div class="colour-group">
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#1A1814"></div>
+          <div class="colour-tag">--ink<br>#1A1814</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#45403A"></div>
+          <div class="colour-tag">--ink-2<br>#45403A</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#6B6560"></div>
+          <div class="colour-tag">--ink-3<br>#6B6560</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#726C64"></div>
+          <div class="colour-tag">--ink-4<br>#726C64</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#E5E5E2;border-color:#ddd"></div>
+          <div class="colour-tag">--line<br>#E5E5E2</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#F1F1F1;border-color:#ddd"></div>
+          <div class="colour-tag">--surface<br>#F1F1F1</div>
+        </div>
+      </div>
+      <p class="note">Warm walnut ink on pure white. All four text values pass WCAG AA (4.5:1). --line and --surface are decorative — never used as text colour.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Tints</div>
+    <div>
+      <div class="colour-group">
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#C66243"></div>
+          <div class="colour-tag">--tint-tl<br>Reflect</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#DB9230"></div>
+          <div class="colour-tag">--tint-tr<br>Create</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#5A75A0"></div>
+          <div class="colour-tag">--tint-bl<br>Hear</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#80A07E"></div>
+          <div class="colour-tag">--tint-br<br>Collaborate</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#9C7AB5"></div>
+          <div class="colour-tag">--tint-plum<br>Accent</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#C13D2F"></div>
+          <div class="colour-tag">--signal<br>Live only</div>
+        </div>
+      </div>
+      <p class="note">Appear only on interaction or in active states. The static page is monochrome — colour blooms on engagement. Never used for body text or backgrounds.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Article tints</div>
+    <div>
+      <div class="colour-group">
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#B05941"></div>
+          <div class="colour-tag">#B05941<br>Creativity</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#C18A3D"></div>
+          <div class="colour-tag">#C18A3D<br>Restraint</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#4A739C"></div>
+          <div class="colour-tag">#4A739C<br>Craft</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#7D5EA3"></div>
+          <div class="colour-tag">#7D5EA3<br>Mindset</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#3A8B70"></div>
+          <div class="colour-tag">#3A8B70<br>Play</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#8C6D3F"></div>
+          <div class="colour-tag">#8C6D3F<br>Community</div>
+        </div>
+        <div class="colour-chip">
+          <div class="colour-block" style="background:#3E6E45"></div>
+          <div class="colour-tag">#3E6E45<br>Collab</div>
+        </div>
+      </div>
+      <p class="note">One unique tint per article. Used for kicker labels and inline links inside that article only.</p>
+    </div>
+  </div>
+
+  <!-- ══ TYPE HIERARCHY — Apple Human Interface Guidelines ════════ -->
+
+  <div class="row">
+    <div class="label"><code>Large Title</code><br>SF Pro · 400<br>34px / 1.206</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:34px;font-weight:400;line-height:1.206;color:var(--ink);">Thinking outside the box</div>
+      <p class="note">Main screen headers. Largest type size. Used sparingly for maximum impact.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Title</code><br>SF Pro · 400<br>28px / 1.214</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:28px;font-weight:400;line-height:1.214;color:var(--ink);">See the box</div>
+      <p class="note">Primary section headers. Article titles, section openers.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Headline</code><br>SF Pro · 600<br>17px / 1.294</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:17px;font-weight:600;line-height:1.294;color:var(--ink);">Emphasized label or accent</div>
+      <p class="note">Section labels, emphasis. Semibold draws attention at body size.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Subheadline</code><br>SF Pro · 400<br>15px / 1.333</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:15px;font-weight:400;line-height:1.333;color:var(--ink);">Secondary label or reduced emphasis</div>
+      <p class="note">Secondary labels, reduced prominence. Regular weight for de-emphasis.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Body</code><br>SF Pro · 400<br>17px / 1.294</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:17px;font-weight:400;line-height:1.294;color:var(--ink);">You can't question the box if you can't see it. A "box" is usually just an assumption, the association we didn't notice we made.</div>
+      <p class="note">Main body text, prose. Default reading voice with Apple HIG line spacing.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Callout</code><br>SF Pro · 400<br>16px / 1.313</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:16px;font-weight:400;line-height:1.313;color:var(--ink);">Important note, sidebar, or emphasized callout content.</div>
+      <p class="note">Emphasized body text. Used for sidebars, important notes, set-apart content.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Caption 1</code><br>SF Pro · 400<br>13px / 1.385</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:13px;font-weight:400;line-height:1.385;color:var(--ink-3);">Secondary label, small caption, or supplementary text</div>
+      <p class="note">Secondary supporting text. Used for captions, secondary info, small text.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label"><code>Caption 2</code><br>SF Pro · 400<br>12px / 1.333</div>
+    <div>
+      <div style="font-family:var(--font-primary);font-size:12px;font-weight:400;line-height:1.333;color:var(--ink-3);">Kicker, meta label, UI chrome</div>
+      <p class="note">Tertiary text, labels, attribution. UI labels, nav items, kicker tags, figure captions.</p>
+    </div>
+  </div>
+
+  <!-- ══ TYPE FAMILIES ══════════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Font Families</div>
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div>
+        <div style="font-family:var(--font-primary);font-size:28px;font-weight:400;color:var(--ink);margin-bottom:6px;">Primary — SF Pro</div>
+        <div class="note" style="margin-top:0;">Apple's native typeface. Used across iOS, macOS, watchOS, and tvOS. System font stack uses -apple-system to load SF Pro on Apple devices, with Inter as a fallback. 8 official Apple HIG semantic type styles: Large Title, Title, Headline, Subheadline, Body, Callout, Caption 1, Caption 2.</div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:18px;color:var(--ink);margin-bottom:6px;">Mono — JetBrains Mono</div>
+        <div class="note" style="margin-top:0;">Code only. Terminal, inline code, code blocks.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TYPE SYSTEM MAPPING ════════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Usage</div>
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;">
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Large Title</div>
+        <div style="color:var(--ink-3);">Hero title, app name, primary display</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Title</div>
+        <div style="color:var(--ink-3);">Article title, section opener, primary heading</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Headline</div>
+        <div style="color:var(--ink-3);">Subsection heading, emphasis, bold labels</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Subheadline</div>
+        <div style="color:var(--ink-3);">Secondary label, reduced prominence</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Body</div>
+        <div style="color:var(--ink-3);">Main reading text, article prose, default voice</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Callout</div>
+        <div style="color:var(--ink-3);">Important sidebar content, pull quote, set-apart note</div>
+      </div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Caption 1</div>
+        <div style="color:var(--ink-3);">Secondary caption, small supporting text</div>
+      </div>
+      <div style="padding:8px 0;">
+        <div style="font-weight:600;margin-bottom:4px;color:var(--ink);">Caption 2</div>
+        <div style="color:var(--ink-3);">Kicker, meta label, UI chrome, figure attribution</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SPACING ════════════════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Spacing<br>8pt grid</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="space-item"><div class="space-bar" style="width:4px;"></div><div class="colour-tag">4px<br>xs</div></div>
+      <div class="space-item"><div class="space-bar" style="width:8px;"></div><div class="colour-tag">8px<br>sm</div></div>
+      <div class="space-item"><div class="space-bar" style="width:16px;"></div><div class="colour-tag">16px<br>md</div></div>
+      <div class="space-item"><div class="space-bar" style="width:24px;"></div><div class="colour-tag">24px<br>lg</div></div>
+      <div class="space-item"><div class="space-bar" style="width:32px;"></div><div class="colour-tag">32px<br>xl</div></div>
+      <div class="space-item"><div class="space-bar" style="width:48px;"></div><div class="colour-tag">48px<br>xxl</div></div>
+      <div class="space-item"><div class="space-bar" style="width:64px;"></div><div class="colour-tag">64px<br>xxxl</div></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Text column</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:14px;color:var(--ink-2);line-height:1.6;">
+        <span style="color:var(--ink);font-weight:500;">680px</span> max-width · <span style="color:var(--ink);font-weight:500;">616px</span> effective text (680 − 32px padding × 2) · <span style="color:var(--ink);font-weight:500;">~58 chars</span> per line at 19px
+      </div>
+      <p class="note" style="margin-top:0;">Within WCAG optimal range (45–75 chars). Images flush to the same 616px — no extra padding on figures.</p>
+    </div>
+  </div>
+
+  <!-- ══ IMAGE COMPONENTS ═════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Figure</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:14px;color:var(--ink);line-height:1.6;">Single image, video, or placeholder. Supports multiple widths via <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">span</code> prop.</div>
+        <div class="note">Props: <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">src</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">alt</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">fig</code> (label), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">caption</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">span</code> ('text'|'full'|'bleed'), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">height</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">placeholder</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Gallery</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:14px;color:var(--ink);line-height:1.6;">Grid container for multiple Figures. Simple wrapper, 2–3 columns.</div>
+        <div class="note">Props: <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">children</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">columns</code> (2|3, default 2)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Carousel</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:14px;color:var(--ink);line-height:1.6;">Horizontal scrolling carousel with prev/next controls and page dots. Syncs with manual scroll/swipe.</div>
+        <div class="note">Props: <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">items</code> (array of {src, alt, caption}), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">perView</code> (default 2), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">span</code> ('text'|'full'|'bleed', default 'full')</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Collage</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:14px;color:var(--ink);line-height:1.6;">Expandable moodboard. Two layouts: compact card-stack preview (default, click to expand), or full-width tilted strip.</div>
+        <div class="note">Props: <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">items</code> (array with src, alt, caption, aspectRatio), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">caption</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">layout</code> ('preview'|'strip', default 'preview'), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">span</code>, <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">defaultExpanded</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">TabbedFigure</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:14px;color:var(--ink);line-height:1.6;">Tab interface that switches between labeled figures. Each tab can have an abstract SVG preview (click to reveal full image), custom figure, or image URL.</div>
+        <div class="note">Props: <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">items</code> (array with label, src/figure/abstract, alt, caption, when, where), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">fig</code> (caption), <code style="background:var(--surface);padding:2px 6px;border-radius:3px;">span</code> ('text'|'full'|'bleed', default 'text')</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONSTRAINTS ════════════════════════════════════════ -->
+
+  <div class="row">
+    <div class="label">Constraints</div>
+    <div class="constraints">
+      <div class="constraint">
+        No coloured card borders — colour goes in the label only
+        <span class="constraint-tag">Cards</span>
+      </div>
+      <div class="constraint">
+        At most one label inside any non-content component
+        <span class="constraint-tag">Components</span>
+      </div>
+      <div class="constraint">
+        No inline font-size or margin overrides inside Sidebar — CSS normalises list spacing
+        <span class="constraint-tag">Sidebar</span>
+      </div>
+      <div class="constraint">
+        Serif (Switzer) for all editorial text. Sans (Inter) for labels, nav, meta only.
+        <span class="constraint-tag">Type</span>
+      </div>
+      <div class="constraint">
+        Uppercase labels always fontWeight 500 — 400 is too thin at 12px all-caps
+        <span class="constraint-tag">Type</span>
+      </div>
+      <div class="constraint">
+        Tints only on interaction — never body text or decorative backgrounds
+        <span class="constraint-tag">Colour</span>
+      </div>
+      <div class="constraint">
+        All font sizes minimum 12px (WCAG AA) — no sub-12px anywhere in the site
+        <span class="constraint-tag">Accessibility</span>
+      </div>
+      <div class="constraint">
+        All text colours pass 4.5:1 on --bg — --ink-3 (#6B6560) is the lightest text value
+        <span class="constraint-tag">Accessibility</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="row" style="padding-bottom:0;">
+    <div class="label"></div>
+    <div style="font-size:12px;color:var(--ink-4);">Qiyu Hu · Portfolio Design System</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -82,8 +82,10 @@ export function ArticleDrawer() {
           </button>
           <div
             style={{
-              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: 'var(--ink-3)',
+              font: 'var(--text-caption-2)',
+              letterSpacing: 1.4,
+              textTransform: 'uppercase',
+              color: 'var(--ink-3)',
             }}
           >
             Peeking · {meta.num}
@@ -94,25 +96,34 @@ export function ArticleDrawer() {
           <article style={{ padding: '36px 28px 96px', maxWidth: 720, margin: '0 auto' }}>
             <div
               style={{
-                fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-                textTransform: 'uppercase', color: meta.tint, marginBottom: 14,
+                font: 'var(--text-caption-2)',
+                letterSpacing: 1.4,
+                textTransform: 'uppercase',
+                color: meta.tint,
+                marginBottom: 14,
               }}
             >
               {meta.quality}
             </div>
             <h1
               style={{
-                fontFamily: 'var(--serif)', fontWeight: 400,
-                fontSize: 'clamp(28px, 3.2vw, 42px)', lineHeight: 1.04, letterSpacing: -1,
-                margin: 0, textWrap: 'balance',
+                fontFamily: 'var(--font-primary)',
+                fontWeight: 400,
+                fontSize: 'clamp(28px, 3.2vw, 42px)',
+                lineHeight: 1.04,
+                margin: 0,
+                textWrap: 'balance',
               }}
             >
               {meta.title}
             </h1>
             <p
               style={{
-                fontFamily: 'var(--serif)', fontStyle: 'italic',
-                fontSize: 17, lineHeight: 1.4, color: 'var(--ink-2)',
+                fontFamily: 'var(--font-primary)',
+                fontSize: '17px',
+                fontWeight: 400,
+                lineHeight: 1.4,
+                color: 'var(--ink-2)',
                 margin: '14px 0 0',
               }}
             >
@@ -120,10 +131,15 @@ export function ArticleDrawer() {
             </p>
             {meta.experiences && meta.experiences.length > 0 && (
               <div style={{
-                display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
-                marginTop: 20, paddingBottom: 18,
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 6,
+                marginTop: 20,
+                paddingBottom: 18,
                 borderBottom: '1px solid var(--line)',
-                fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)',
+                font: 'var(--text-caption-1)',
+                color: 'var(--ink-3)',
               }}>
                 <span style={{ marginRight: 4 }}>Reflected from</span>
                 {meta.experiences.map((exp, i) => (
@@ -150,9 +166,9 @@ export function ArticleDrawer() {
                   border: `1px solid ${meta.tint}`,
                   borderRadius: 8,
                   cursor: 'pointer',
-                  fontFamily: 'var(--reading)',
-                  fontStyle: 'italic',
-                  fontSize: 17,
+                  fontFamily: 'var(--font-primary)',
+                  fontSize: '17px',
+                  fontWeight: 400,
                   lineHeight: 1.4,
                   color: meta.tint,
                   textAlign: 'left',

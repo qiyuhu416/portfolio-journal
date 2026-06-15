@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Image Components in Context — Qiyu Hu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #1A1814;
+      --ink-2: #45403A;
+      --ink-3: #6B6560;
+      --ink-4: #726C64;
+      --line: #E5E5E2;
+      --surface: #F1F1F1;
+      --tint: #C66243;
+      --serif: 'Source Serif 4', 'Times New Roman', serif;
+      --sans: 'Inter', 'Helvetica', sans-serif;
+      --reading: 'Source Serif 4', 'Times New Roman', serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    body {
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 40px 160px;
+    }
+
+    /* ARTICLE HEADER */
+    .article-header {
+      margin-bottom: 64px;
+    }
+
+    .quality-label {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--tint);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(44px, 6vw, 68px);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -0.8px;
+      margin: 0 0 32px;
+      color: var(--ink);
+    }
+
+    .dek {
+      font-family: var(--serif);
+      font-size: clamp(22px, 2vw, 26px);
+      font-style: italic;
+      line-height: 1.5;
+      letter-spacing: -0.1px;
+      color: var(--ink);
+      margin: 0 0 36px;
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--ink-3);
+      margin-bottom: 48px;
+    }
+
+    /* ARTICLE BODY */
+    .article-body {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .article-body > p {
+      font-family: var(--reading);
+      font-size: 19px;
+      line-height: 1.6;
+      color: var(--ink);
+      margin: 0 0 1.4em;
+      text-wrap: pretty;
+    }
+
+    .article-body h2 {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3vw, 36px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.3px;
+      color: var(--ink);
+      margin: 72px 0 22px;
+      text-wrap: balance;
+    }
+
+    .article-body h3 {
+      font-family: var(--serif);
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--ink);
+      margin: 32px 0 10px;
+    }
+
+    /* COMPONENTS */
+    .placeholder {
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-3);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+      margin: 40px 0;
+    }
+
+    .placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px);
+    }
+
+    .placeholder > div {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .figure-placeholder { height: 380px; }
+    .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 40px 0; }
+    .gallery-item { height: 280px; }
+    .carousel-placeholder { height: 320px; margin: 40px 0; }
+    .collage-placeholder { height: 340px; margin: 40px 0; }
+
+    .figcaption {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--ink-3);
+      letter-spacing: 0.3px;
+      margin: 14px auto 0;
+      max-width: 616px;
+      text-align: center;
+    }
+
+    .fig-label {
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      margin: 28px auto;
+      padding: 20px 24px;
+      border-left: 3px solid var(--tint);
+      border-radius: 8px;
+      background: var(--surface);
+      font-family: var(--reading);
+      font-style: italic;
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--ink-3);
+    }
+
+    .sidebar-kicker {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--tint);
+      margin-bottom: 14px;
+    }
+
+    /* TAKEAWAY */
+    .takeaway {
+      margin: 48px 0 14px;
+    }
+
+    .takeaway-kicker {
+      font-family: var(--sans);
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--tint);
+      margin-bottom: 8px;
+    }
+
+    .takeaway-text {
+      font-family: var(--reading);
+      font-size: 19px;
+      line-height: 1.6;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    /* PULL QUOTE */
+    .pullquote {
+      margin: 72px auto;
+      padding: 0;
+      border: none;
+      max-width: 680px;
+      font-family: var(--reading);
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(28px, 3.2vw, 38px);
+      line-height: 1.3;
+      letter-spacing: -0.2px;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+
+    .section-heading {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin: 64px 0 24px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-heading:first-of-type {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .carousel-controls {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--line);
+    }
+
+    .dot.active {
+      background: var(--ink-3);
+    }
+
+    .note {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 48px auto;
+      max-width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- ARTICLE HEADER -->
+    <div class="article-header">
+      <div class="quality-label">Design · 8 min read</div>
+      <h1>Working with images in articles</h1>
+      <div class="dek">Five components, one design language. How to place images, galleries, and interactive media without breaking the reading flow.</div>
+      <div class="article-meta">
+        <span><strong>Qiyu Hu</strong> · Jun 2026</span>
+      </div>
+    </div>
+
+    <!-- ARTICLE BODY -->
+    <div class="article-body">
+      <p>Images aren't decorative in editorial design. They're arguments. A well-placed figure doesn't interrupt the reader—it anchors the thought they're following and then releases them back to prose.</p>
+
+      <p>This design system has five components for placing images. Each serves a different narrative need.</p>
+
+      <!-- SECTION 1: FIGURE -->
+      <h2>§1 · The single figure</h2>
+      <p>A <strong>Figure</strong> is the atomic unit. One image, one idea. It can be a photograph, a diagram, a chart, or a video. The component handles all of them.</p>
+
+      <div class="placeholder figure-placeholder">
+        <div>IMAGE PLACEHOLDER · PHOTOGRAPH</div>
+      </div>
+      <div class="figcaption"><span class="fig-label">Fig. 01</span> · A single image with optional caption and figure label. Click to open full size.</div>
+
+      <p>Every figure respects three width options: <strong>text</strong> (680px, article column), <strong>full</strong> (1040px, room for embedded labels), or <strong>bleed</strong> (100%, full viewport). The choice depends on whether the image needs breathing room or integration with surrounding text.</p>
+
+      <h3>When to use figure</h3>
+      <p>One image that stands alone. A landmark photograph, a key diagram, a revealing chart. Figures break the prose rhythm intentionally—they're meant to pause the reader and make a point.</p>
+
+      <!-- SECTION 2: GALLERY -->
+      <h2>§2 · Grouping images: the gallery</h2>
+      <p>When you have multiple related images that deserve equal weight, wrap them in a <strong>Gallery</strong>. It's a simple grid—2 or 3 columns—that lets several figures breathe together.</p>
+
+      <div class="gallery-grid">
+        <div class="placeholder gallery-item"><div>PROCESS · STEP 1</div></div>
+        <div class="placeholder gallery-item"><div>PROCESS · STEP 2</div></div>
+      </div>
+      <div class="figcaption">A two-column gallery. Each cell is a Figure component. Galleries can be 2 or 3 columns.</div>
+
+      <p>The gallery doesn't add interaction—it's pure layout. Every cell follows the same styling rules as a standalone Figure. Captions, labels, and aspect ratios stay consistent.</p>
+
+      <!-- SECTION 3: CAROUSEL -->
+      <h2>§3 · Many images, one moment: the carousel</h2>
+      <p>A carousel is for showing multiple images one at a time, with the reader controlling the flow. Unlike a gallery (all visible at once), a carousel hides images until the reader asks to see them.</p>
+
+      <div class="placeholder carousel-placeholder">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; padding: 0 56px;">
+          <div style="position: absolute; left: 16px; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 18px; display: flex; align-items: center; justify-content: center;">←</div>
+          <div style="text-align: center;">CAROUSEL (Page 1 of 4)</div>
+          <div style="position: absolute; right: 16px; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 18px; display: flex; align-items: center; justify-content: center;">→</div>
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="figcaption">Horizontal scroll carousel with prev/next buttons and page dots. Reader can click buttons or swipe.</div>
+
+      <p>Use a carousel when you have 3+ images of the same scene or concept, and the reader benefits from stepping through them in sequence. Process shots, before/after comparisons, environment studies.</p>
+
+      <h3>Carousel controls</h3>
+      <p>Left and right arrows sit outside the image bounds. Page dots appear centered below. Both are keyboard-accessible and synced with swipe/manual scroll.</p>
+
+      <!-- SIDEBAR EXAMPLE -->
+      <div class="sidebar">
+        <div class="sidebar-kicker">→ Pro tip</div>
+        Carousels work best with 2–8 images. Beyond that, consider a gallery or collage instead. The reader's thumb gets tired.
+      </div>
+
+      <!-- SECTION 4: COLLAGE -->
+      <h2>§4 · The expandable collection: collage</h2>
+      <p>A <strong>Collage</strong> starts compact—three cards fanned like a deck on a desk. Click to expand into a horizontal scrolling row.</p>
+
+      <div class="placeholder collage-placeholder">
+        <div style="position: relative; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; transform: rotate(-8deg); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 3;"></div>
+          <div style="position: absolute; transform: rotate(3deg) translateX(50px) translateY(10px); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 2;"></div>
+          <div style="position: absolute; transform: rotate(6deg) translateX(100px) translateY(20px); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 1;"></div>
+          <div style="position: relative; z-index: 10; text-align: center; color: var(--ink-3); font-size: 12px;">Click to expand</div>
+        </div>
+      </div>
+      <div class="figcaption">Collapsed preview (3 items fanned). Click anywhere to expand to full scrolling row.</div>
+
+      <p>This saves vertical space. The reader gets a hint (the fanned preview) of what's coming, then expands if curious. Perfect for mood boards, lookbooks, or process galleries where you want to show many images without dominating the page.</p>
+
+      <!-- TAKEAWAY -->
+      <div class="takeaway">
+        <div class="takeaway-kicker">Finding · 01</div>
+        <div class="takeaway-text">Collages work best when each item is visually distinct—different colors, different aspect ratios, different moods.</div>
+      </div>
+
+      <!-- SECTION 5: TABBED FIGURE -->
+      <h2>§5 · Comparing variants: the tabbed figure</h2>
+      <p>A <strong>TabbedFigure</strong> is for showing 2–5 related versions of the same thing side by side. Models, iterations, before/after comparisons.</p>
+
+      <div style="margin: 40px 0;">
+        <div style="display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 14px;">
+          <button style="background: transparent; border: none; padding: 8px 14px; font-family: var(--sans); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink); border-bottom: 2px solid var(--ink); cursor: pointer; margin-bottom: -1px;">Model A</button>
+          <button style="background: transparent; border: none; padding: 8px 14px; font-family: var(--sans); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-4); border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px;">Model B</button>
+          <button style="background: transparent; border: none; padding: 8px 14px; font-family: var(--sans); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-4); border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px;">Model C</button>
+        </div>
+        <div class="placeholder" style="height: 400px; margin: 0;">
+          <div>FIGURE (Model A, 2.2:1 aspect ratio)</div>
+        </div>
+      </div>
+      <div class="figcaption">Three tabs, one figure. Click a tab to swap the image. Aspect ratio stays constant to prevent layout shift.</div>
+
+      <p>Each tab can display an image, a custom SVG, or an optional abstract preview (collapsed initially, expands on click to show the full figure). The aspect ratio is locked—switching tabs never causes reflow.</p>
+
+      <!-- PULL QUOTE -->
+      <div class="pullquote">
+        "The right image at the right moment is an argument made visible, not an illustration of an argument already made."
+      </div>
+
+      <!-- FINAL SECTION -->
+      <h2>§6 · Choosing the right component</h2>
+
+      <p><strong>Use Figure</strong> for a single image that stands alone and deserves its own moment.</p>
+      <p><strong>Use Gallery</strong> when you have 2–4 related images that deserve equal, simultaneous visibility.</p>
+      <p><strong>Use Carousel</strong> when you have 3+ images of the same scene and want the reader to step through them.</p>
+      <p><strong>Use Collage</strong> when you have 5+ related images but want to save vertical space with a preview.</p>
+      <p><strong>Use TabbedFigure</strong> when you're comparing 2–5 variants side by side (models, iterations, before/after).</p>
+
+      <hr />
+
+      <p>Each component respects the same design language: rounded corners, consistent caption styling, tinted labels, and intelligent spacing. Mix them freely. A single article might use a Figure in §1, a Gallery in §2, a Carousel in §3, a Collage in §4, and a TabbedFigure in §5. The system holds.</p>
+
+    </div>
+  </div>
+</body>
+</html>

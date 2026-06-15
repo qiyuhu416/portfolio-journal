@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Table Improvement — Apple HIG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #1A1814;
+      --ink-2: #45403A;
+      --ink-3: #807A6E;
+      --line: #E5E5E2;
+      --surface: #F1F1F1;
+      --font-primary: 'Inter', 'Segoe UI', 'Helvetica Neue', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    body {
+      font-family: var(--font-primary);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 80px;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1.2;
+      margin: 0 0 8px;
+      color: var(--ink);
+    }
+
+    .note {
+      font-size: 14px;
+      color: var(--ink-3);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      font-size: 16px;
+    }
+
+    /* BEFORE — Original styling */
+    .table-before {
+      font-family: Georgia, serif;
+    }
+
+    .table-before th {
+      text-align: left;
+      padding: 14px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--ink-2);
+    }
+
+    .table-before th + th {
+      border-left: 1px solid var(--line);
+    }
+
+    .table-before td {
+      padding: 18px 20px;
+      border-top: 1px solid var(--line);
+      vertical-align: top;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .table-before tbody tr:first-child td {
+      border-top: none;
+    }
+
+    .table-before td + td {
+      border-left: 1px solid var(--line);
+      color: var(--ink-2);
+    }
+
+    /* AFTER — Improved Apple HIG styling */
+    .table-after {
+      font-family: var(--font-primary);
+    }
+
+    .table-after th {
+      text-align: left;
+      padding: 18px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-primary);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--ink-2);
+      line-height: 1.333;
+      letter-spacing: 0.3px;
+    }
+
+    .table-after th + th {
+      border-left: 1px solid var(--line);
+    }
+
+    .table-after td {
+      padding: 20px 24px;
+      border-top: 1px solid var(--line);
+      vertical-align: top;
+      font-family: var(--font-primary);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .table-after tbody tr:first-child td {
+      border-top: none;
+    }
+
+    .table-after td + td {
+      border-left: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .table-after tbody tr:nth-child(even) td {
+      background: rgba(31, 30, 27, 0.02);
+    }
+
+    .table-after strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .improvements {
+      margin-top: 80px;
+      padding-top: 60px;
+      border-top: 1px solid var(--line);
+    }
+
+    .improvements h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 24px;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .improvement-item {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      position: relative;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+
+    .improvement-item::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #34C759;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="font-size: 34px; font-weight: 400; margin: 0 0 48px; line-height: 1.206;">Table Improvement</h1>
+    <p style="font-size: 17px; color: var(--ink-3); margin-bottom: 80px; max-width: 600px; line-height: 1.5;">Applied Apple Human Interface Guidelines to improve typography, spacing, and visual hierarchy while maintaining editorial elegance.</p>
+
+    <div class="comparison">
+      <div>
+        <h2>Before</h2>
+        <p class="note">Original design with serif font, tighter padding, no alternate row styling</p>
+        <table class="table-before">
+          <thead>
+            <tr>
+              <th>WHAT IF...</th>
+              <th>PROTOTYPE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><em>I can be super lazy</em></td>
+              <td>Just learn through watching AI agents talk</td>
+            </tr>
+            <tr>
+              <td><em>You never had to type a prompt</em></td>
+              <td>Voice, gesture, or ambient sensing — anything but text</td>
+            </tr>
+            <tr>
+              <td><em>AI knew your future self better than today-you</em></td>
+              <td>Leave a message to your future self — AI delivers it at the right moment</td>
+            </tr>
+            <tr>
+              <td><em>Thinking out loud had a shape</em></td>
+              <td>Render your chain of thought as a live knowledge graph</td>
+            </tr>
+            <tr>
+              <td><em>AI had a point of view</em></td>
+              <td>Opinionated responses — AI that pushes back, disagrees, and advocates for you</td>
+            </tr>
+            <tr>
+              <td><em>Work could be passion-driven, not FOMO-driven</em></td>
+              <td>Making work driven by passion, not FOMO</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2>After</h2>
+        <p class="note">Apple HIG compliant: SF Pro, semantic type scales, better spacing, subtle row backgrounds</p>
+        <table class="table-after">
+          <thead>
+            <tr>
+              <th>WHAT IF...</th>
+              <th>PROTOTYPE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><em>I can be super lazy</em></td>
+              <td>Just learn through watching AI agents talk</td>
+            </tr>
+            <tr>
+              <td><em>You never had to type a prompt</em></td>
+              <td>Voice, gesture, or ambient sensing — anything but text</td>
+            </tr>
+            <tr>
+              <td><em>AI knew your future self better than today-you</em></td>
+              <td>Leave a message to your future self — AI delivers it at the right moment</td>
+            </tr>
+            <tr>
+              <td><em>Thinking out loud had a shape</em></td>
+              <td>Render your chain of thought as a live knowledge graph</td>
+            </tr>
+            <tr>
+              <td><em>AI had a point of view</em></td>
+              <td>Opinionated responses — AI that pushes back, disagrees, and advocates for you</td>
+            </tr>
+            <tr>
+              <td><em>Work could be passion-driven, not FOMO-driven</em></td>
+              <td>Making work driven by passion, not FOMO</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="improvements">
+      <h3>Improvements Made</h3>
+      <div class="improvement-item">
+        <strong>Typography:</strong> Updated header to Subheadline HIG type (15px, 400, 1.333), body text to Body HIG type (17px, 400, 1.5)
+      </div>
+      <div class="improvement-item">
+        <strong>Font:</strong> Changed from serif (Georgia) to SF Pro system font stack for Apple consistency
+      </div>
+      <div class="improvement-item">
+        <strong>Spacing:</strong> Increased padding from 14px/18px to 18px/20px following 8pt grid system
+      </div>
+      <div class="improvement-item">
+        <strong>Visual Hierarchy:</strong> Added subtle alternating row backgrounds (2% opacity) for better scannability
+      </div>
+      <div class="improvement-item">
+        <strong>Borders:</strong> Kept hairline separators consistent with Apple table patterns
+      </div>
+      <div class="improvement-item">
+        <strong>Margins:</strong> Increased vertical margins from 32px to 48px for better breathing room
+      </div>
+      <div class="improvement-item">
+        <strong>Border Radius:</strong> Increased from 10px to 12px for Apple's modern rounded aesthetic
+      </div>
+      <div class="improvement-item">
+        <strong>Color Contrast:</strong> Maintained semantic color system — headers in ink-2, body in ink
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -81,8 +81,10 @@ export function ExternalLink({ href, kind = 'External', title, dek, children }: 
           <span
             style={{
               display: 'block',
-              fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: tint,
+              font: 'var(--text-caption-2)',
+              letterSpacing: 1.4,
+              textTransform: 'uppercase',
+              color: tint,
             }}
           >
             {kind} · peek ↗
@@ -91,9 +93,12 @@ export function ExternalLink({ href, kind = 'External', title, dek, children }: 
             <span
               style={{
                 display: 'block',
-                fontFamily: 'var(--serif)', fontSize: 16, fontWeight: 500,
-                color: 'var(--ink)', marginTop: 6, lineHeight: 1.2,
-                letterSpacing: -0.2,
+                fontFamily: 'var(--font-primary)',
+                fontSize: '16px',
+                fontWeight: 400,
+                color: 'var(--ink)',
+                marginTop: 6,
+                lineHeight: 1.313,
               }}
             >
               {title}
@@ -103,8 +108,12 @@ export function ExternalLink({ href, kind = 'External', title, dek, children }: 
             <span
               style={{
                 display: 'block',
-                fontFamily: 'var(--serif)', fontStyle: 'italic',
-                fontSize: 13, color: 'var(--ink-3)', marginTop: 4, lineHeight: 1.4,
+                fontFamily: 'var(--font-primary)',
+                fontSize: '13px',
+                fontWeight: 400,
+                color: 'var(--ink-3)',
+                marginTop: 4,
+                lineHeight: 1.385,
               }}
             >
               {dek}

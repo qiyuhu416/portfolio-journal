@@ -1,42 +1,35 @@
 import type { ReactNode } from 'react';
-import { useArticle } from '@/routes/ArticleContext';
 
 type Props = {
   /** Small uppercase kicker label that names the block ("Method", "Example",
-   *  "Field notes"). Renders in tinted mono, top of the card. */
+   *  "Field notes"). Renders in Caption 2 (tinted), top of the card. */
   label: string;
   children: ReactNode;
 };
 
 /**
- * Sidebar — a soft tinted card for set-apart article content (worked
- * examples, methods, field notes). Replaces the inline `border-left: 3px
- * solid tint` pattern, which collided with the visual vocabulary of
- * blockquotes. Surface fills do the containment work; the kicker names
- * what the block is.
+ * Sidebar — a set-apart article content (worked examples, methods, field notes).
+ * Styled like Sidenote (italic 17px serif) but with tinted border instead of
+ * neutral. The kicker labels what the block is.
  */
 export function Sidebar({ label, children }: Props) {
-  const article = useArticle();
-  const tint = article?.tint ?? 'var(--ink-3)';
-
   return (
     <div
       data-sidebar
       style={{
-        // Neutral warm-grey surface (not the article's tinted surface) —
-        // the article's blush/butter surfaces, when filling a panel,
-        // read as alert/warning UI instead of "set-apart sidebar". The
-        // article's identity comes through via the kicker tint, not the
-        // background.
+        margin: '28px auto',
+        padding: '20px 24px 20px 28px',
+        borderLeft: '3px solid #C13D2F',
+        borderRadius: 8,
         background: 'var(--surface)',
-        borderRadius: 10,
-        padding: '32px 36px',
-        margin: '40px 0',
+        font: 'var(--text-callout)',
+        color: 'var(--ink)',
       }}
     >
       <div style={{
-        fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-        textTransform: 'uppercase', color: tint,
+        font: 'var(--text-caption-2)',
+        letterSpacing: 1.4,
+        textTransform: 'uppercase', color: '#C13D2F',
         marginBottom: 14,
       }}>
         {label}

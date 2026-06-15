@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Improved Table — Live Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #1A1814;
+      --ink-2: #45403A;
+      --ink-3: #807A6E;
+      --line: #E5E5E2;
+      --surface: #F1F1F1;
+      --font-primary: 'Inter', 'Segoe UI', 'Helvetica Neue', sans-serif;
+      --text-subheadline: 400 15px / 1.333;
+      --text-body: 400 17px / 1.294;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    body {
+      font-family: var(--font-primary);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 400;
+      line-height: 1.206;
+      margin: 0 0 16px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--ink-3);
+      margin-bottom: 60px;
+      line-height: 1.5;
+    }
+
+    .article-body {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0;
+      font-family: var(--font-primary);
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .article-body h2 {
+      font: 400 28px / 1.214;
+      color: var(--ink);
+      margin: 64px 0 24px;
+      text-wrap: balance;
+    }
+
+    .article-body p {
+      margin: 0 0 1.4em;
+      text-wrap: pretty;
+    }
+
+    /* Table — Apple HIG style */
+    .article-body table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 48px 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: var(--font-primary);
+      background: var(--bg);
+    }
+
+    .article-body table th {
+      text-align: left;
+      padding: 18px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-primary);
+      font: var(--text-subheadline);
+      color: var(--ink-2);
+      font-weight: 400;
+      letter-spacing: 0.3px;
+    }
+
+    .article-body table th + th {
+      border-left: 1px solid var(--line);
+    }
+
+    .article-body table td {
+      padding: 20px 24px;
+      border-top: 1px solid var(--line);
+      vertical-align: top;
+      font-family: var(--font-primary);
+      font: var(--text-body);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .article-body table tbody tr:first-child td {
+      border-top: none;
+    }
+
+    .article-body table td + td {
+      border-left: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .article-body table tbody tr:nth-child(even) td {
+      background: rgba(31, 30, 27, 0.02);
+    }
+
+    .article-body table em {
+      font-style: italic;
+    }
+
+    .specs {
+      margin-top: 80px;
+      padding-top: 60px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+
+    .spec-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 20px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .spec-row:last-child {
+      border-bottom: none;
+    }
+
+    .spec-label {
+      font-weight: 600;
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Table Design — Apple HIG Compliant</h1>
+    <p class="subtitle">Live demo showing the improved table styling applied to your site. Header using Subheadline (15px), body text using Body (17px), with subtle alternate row backgrounds for better scannability.</p>
+
+    <div class="article-body">
+      <h2>What if scenarios</h2>
+      <p>Exploring different possibilities and their potential implementations.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>What If…</th>
+            <th>Prototype</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>I can be super lazy</em></td>
+            <td>Just learn through watching AI agents talk</td>
+          </tr>
+          <tr>
+            <td><em>You never had to type a prompt</em></td>
+            <td>Voice, gesture, or ambient sensing — anything but text</td>
+          </tr>
+          <tr>
+            <td><em>AI knew your future self better than today-you</em></td>
+            <td>Leave a message to your future self — AI delivers it at the right moment</td>
+          </tr>
+          <tr>
+            <td><em>Thinking out loud had a shape</em></td>
+            <td>Render your chain of thought as a live knowledge graph</td>
+          </tr>
+          <tr>
+            <td><em>AI had a point of view</em></td>
+            <td>Opinionated responses — AI that pushes back, disagrees, and advocates for you</td>
+          </tr>
+          <tr>
+            <td><em>Work could be passion-driven, not FOMO-driven</em></td>
+            <td>Making work driven by passion, not FOMO</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="specs">
+      <h3 style="margin: 0 0 24px; font-size: 17px; color: var(--ink);">Apple HIG Specifications</h3>
+
+      <div class="spec-row">
+        <div class="spec-label">Header Font</div>
+        <div>SF Pro (system font stack) — Subheadline: 15px, 400 weight, 1.333 line-height</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Body Font</div>
+        <div>SF Pro (system font stack) — Body: 17px, 400 weight, 1.294 line-height</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Padding</div>
+        <div>Headers: 18px 24px | Cells: 20px 24px (following 8pt grid)</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Borders</div>
+        <div>1px hairline separators (var(--line)) + 12px border radius</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Visual Enhancement</div>
+        <div>Subtle alternate row backgrounds (2% opacity) for improved readability</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Spacing</div>
+        <div>48px top/bottom margins for proper breathing room in articles</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Header Background</div>
+        <div>Subtle surface color (var(--surface)) for visual separation</div>
+      </div>
+
+      <div class="spec-row">
+        <div class="spec-label">Contrast</div>
+        <div>Headers: ink-2 (secondary) | Body: ink (primary) — WCAG AA compliant</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -51,23 +51,36 @@
   --warm-ink: var(--signal);
   --cool:     var(--signal);
 
-  /* ——— Type system ———
-     mouthwash.studio's font stack — Suisse BP Intl (sans) + Suisse Works
-     (serif). NOTE: both Suisse families are commercial fonts from Swiss
-     Typefaces and are not bundled here. Until they're licensed and the
-     .woff2 files are added under /public/webfonts/, the browser will skip
-     past Suisse and render with the next available family in the chain
-     (Inter for sans, Source Serif 4 for serif). The chain is in
-     mouthwash's order so that the moment Suisse files appear, the site
-     swaps to them with no other code changes.
-     - --serif:   editorial / display serif. Suisse Works → Source Serif → Times
-     - --sans:    UI + body sans. Suisse BP Intl → Inter → Helvetica
-     - --reading: long-form article body. Suisse Works → Source Serif → Times
-     - --mono:    live state / system info only. */
-  --serif:   'Suisse Works', 'Source Serif 4', 'Times', 'Times New Roman', serif;
-  --sans:    'Suisse BP Intl', 'Inter', 'Helvetica', 'Arial', sans-serif;
-  --reading: 'Suisse Works', 'Source Serif 4', 'Times', 'Times New Roman', serif;
-  --mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* ——— Type system: Apple HIG with Switzer ———
+     Single typeface: Switzer (geometric sans-serif from Fontshare)
+     Semantic hierarchy inspired by Apple Human Interface Guidelines.
+     Each style defines: font-family, font-size, font-weight, line-height */
+
+  /* Font families — Apple HIG standard */
+  --font-primary: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  /* Backwards-compatible aliases for components still using old names */
+  --serif:   var(--font-primary);
+  --sans:    var(--font-primary);
+  --reading: var(--font-primary);
+  --mono:    var(--font-mono);
+
+  /* Apple Human Interface Guidelines — 8 official types */
+  --text-large-title:  400 34px / 1.206;  /* Main screen headers */
+  --text-title:        400 28px / 1.214;  /* Primary section headers */
+  --text-headline:     600 17px / 1.294;  /* Section labels, emphasized text */
+  --text-subheadline:  400 15px / 1.333;  /* Secondary labels */
+  --text-body:         400 17px / 1.294;  /* Main body text, prose */
+  --text-callout:      400 16px / 1.313;  /* Emphasized body text, sidebars */
+  --text-caption-1:    400 13px / 1.385;  /* Secondary supporting text */
+  --text-caption-2:    400 12px / 1.333;  /* Tertiary text, labels */
+
+  /* Extended display sizes — HIG-aligned for landing pages & marketing */
+  --text-display:      400 clamp(40px, 7vw, 96px) / 1.0;   /* Hero display titles */
+  --text-large-heading: 400 clamp(32px, 4vw, 56px) / 1.05;  /* Section headers (Home) */
+  --text-medium-heading: 400 clamp(24px, 2.6vw, 40px) / 1.1; /* Subsection headers */
+  --text-section-title: 400 clamp(22px, 1.9vw, 30px) / 1.2; /* Section sub-titles */
 }
 
 html, body { margin: 0; padding: 0; background: var(--bg); }

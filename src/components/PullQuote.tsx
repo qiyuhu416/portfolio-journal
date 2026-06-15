@@ -25,9 +25,10 @@ export function PullQuote({ attribution, children }: Props) {
     >
       <div
         style={{
-          fontFamily: 'var(--reading)', fontStyle: 'italic', fontWeight: 400,
+          fontFamily: 'var(--font-primary)',
+          fontWeight: 400,
           fontSize: 'clamp(28px, 3.2vw, 38px)',
-          lineHeight: 1.3, letterSpacing: -0.2,
+          lineHeight: 1.3,
           color: 'var(--ink)',
           textWrap: 'balance',
         }}
@@ -38,10 +39,12 @@ export function PullQuote({ attribution, children }: Props) {
       {attribution && (
         <div
           style={{
-            fontFamily: 'var(--reading)', fontStyle: 'italic',
-            fontSize: 15, color: 'var(--ink-3)',
+            fontFamily: 'var(--font-primary)',
+            fontSize: '15px',
+            color: 'var(--ink-3)',
             marginTop: 22,
-            letterSpacing: 0.1,
+            fontWeight: 400,
+            lineHeight: 1.333,
           }}
         >
           — <span style={{ color: tint }}>{attribution}</span>

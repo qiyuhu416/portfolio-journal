@@ -11,16 +11,12 @@ type Props = {
 };
 
 /**
- * Takeaway — a typographic step between H3 and body for marking a section's
- * structural conclusion or punchline.
+ * Takeaway — marked structural conclusion with a kicker label.
  *
- * Mono kicker (tinted) + serif at body-bold weight. NO card chrome —
+ * Caption 2 kicker (tinted mono) + Callout body. NO card chrome —
  * takeaways are the argument's spine, not tangential set-apart content.
  * Reserve cards for *worked examples / methods / field notes* (Sidebar);
  * use Takeaway for *the punchline the rest of the section earned*.
- *
- * Visual hierarchy: sits below H3, above body. Pairs naturally with a
- * following <p> for the lead-in / explanation, then optional <ul> bullets.
  *
  * Usage:
  *   <Takeaway label="01">Trust can be designed.</Takeaway>
@@ -31,8 +27,7 @@ export function Takeaway({ label, kicker = 'Takeaway', children }: Props) {
     <div style={{ margin: '48px 0 14px' }}>
       <div
         style={{
-          fontFamily: 'var(--sans)',
-          fontSize: 12,
+          font: 'var(--text-caption-2)',
           letterSpacing: 1.4,
           textTransform: 'uppercase',
           color: 'var(--article-tint, var(--ink-3))',
@@ -41,15 +36,7 @@ export function Takeaway({ label, kicker = 'Takeaway', children }: Props) {
       >
         {kicker} {label}
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--serif)',
-          fontSize: 21,
-          lineHeight: 1.35,
-          fontWeight: 500,
-          color: 'var(--ink)',
-        }}
-      >
+      <div style={{ font: 'var(--text-callout)', color: 'var(--ink)' }}>
         {children}
       </div>
     </div>

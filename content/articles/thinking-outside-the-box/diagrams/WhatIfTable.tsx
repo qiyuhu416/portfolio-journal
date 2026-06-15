@@ -26,17 +26,10 @@ export function WhatIfTable({ sections }: { sections: WhatIfSection[] }) {
           {sections.map((section, si) => (
             <>
               <tr key={`s-${si}`}>
-                <td colSpan={2} style={{
-                  padding: si === 0 ? '16px 0 6px' : '28px 0 6px',
-                  fontFamily: 'var(--sans)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: 'var(--ink-4)',
-                }}>
+                <td style={{...tdLeft, padding: si === 0 ? '16px 24px 8px 0' : '24px 24px 8px 0'}}>
                   {section.heading}
                 </td>
+                <td style={{...tdRight, display: 'none'}}></td>
               </tr>
               {section.rows.map((row, ri) => (
                 <tr key={`r-${si}-${ri}`}>
@@ -53,7 +46,7 @@ export function WhatIfTable({ sections }: { sections: WhatIfSection[] }) {
 }
 
 const th: CSSProperties = {
-  padding: '8px 24px 8px 0',
+  padding: '12px 24px 12px 0',
   textAlign: 'left',
   fontFamily: 'var(--sans)',
   fontSize: 11,
@@ -61,7 +54,7 @@ const th: CSSProperties = {
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   color: 'var(--ink-4)',
-  borderBottom: '2px solid var(--line)',
+  borderBottom: '1px solid var(--line)',
   whiteSpace: 'nowrap',
 };
 

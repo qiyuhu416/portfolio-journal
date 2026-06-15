@@ -21,8 +21,8 @@ function smootherstep(t: number) { return t * t * t * (t * (t * 6 - 15) + 10); }
 const CONVERGE_END = 0.08;  // floating → cluster (first half of scroll intro)
 const EXPAND_END   = 0.20;  // cluster → crosshair
 const OVERVIEW_END = 0.22;  // crosshair overview beat ends
-const CLUSTER_END  = 0.26;  // dots re-cluster — compressed beat
-const HEADER_END   = 0.30;  // nav icon arrived at header
+const CLUSTER_END  = 0.32;  // dots re-cluster → directly to Reflect
+const HEADER_END   = 0.32;  // nav icon in header (same as CLUSTER_END, no separate phase)
 const SECTIONS_END = 0.83;
 
 // Header strip height — the nav icon lives here during sections.
@@ -75,17 +75,20 @@ function activeSectionFromProgress(p: number): SectionId {
   return 'reflect';
 }
 
-// ——— Design tokens ———
+// ——— Design tokens — mapped to Apple HIG ———
+/* Using CSS custom properties from tokens.css:
+   --text-display, --text-large-heading, --text-medium-heading,
+   --text-section-title, --text-body, --text-callout, --text-caption-2 */
 
 const TYPE = {
   display:   { size: 'clamp(40px, 7vw, 96px)',   weight: 400, tracking: '-0.025em', lineHeight: 1.0 },
   hubTitle:  { size: 'clamp(32px, 4vw, 56px)',   weight: 400, tracking: '-0.02em',  lineHeight: 1.05 },
   cellLabel: { size: 'clamp(24px, 2.6vw, 40px)', weight: 400, tracking: '-0.01em',  lineHeight: 1.1 },
   sectionH1: { size: 'clamp(22px, 1.9vw, 30px)', weight: 400, tracking: '-0.01em',  lineHeight: 1.2 },
-  bodyLg:    { size: '18px', weight: 400, tracking: '0',         lineHeight: 1.55 },
-  body:      { size: '14px', weight: 400, tracking: '0',         lineHeight: 1.55 },
-  kicker:    { size: '12px', weight: 500, tracking: '0.10em',    lineHeight: 1.2 },
-  meta:      { size: '12px', weight: 500, tracking: '0.10em',    lineHeight: 1.2 },
+  bodyLg:    { size: '17px', weight: 400, tracking: '0',         lineHeight: 1.294 }, /* Body HIG */
+  body:      { size: '15px', weight: 400, tracking: '0',         lineHeight: 1.333 }, /* Subheadline HIG */
+  kicker:    { size: '12px', weight: 400, tracking: '0.10em',    lineHeight: 1.333 }, /* Caption 2 HIG */
+  meta:      { size: '12px', weight: 400, tracking: '0.10em',    lineHeight: 1.333 }, /* Caption 2 HIG */
 } as const;
 const SPACE = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48, xxxl: 64 } as const;
 
@@ -149,14 +152,16 @@ function AxisDot({
   const interactive = !!onEnter;
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
-    fontFamily: 'var(--sans)',
-    fontSize: 12,
+    fontFamily: 'var(--font-primary)',
+    fontSize: 13,
+    fontWeight: 400,
     letterSpacing: '0.02em',
     color: tint,
     whiteSpace: 'nowrap',
     opacity: labelVis,
     pointerEvents: interactive ? 'auto' : 'none',
     cursor: interactive ? 'default' : undefined,
+    lineHeight: 1.385,
     ...labelOverride,
   };
   let offset: React.CSSProperties = {};
@@ -294,9 +299,7 @@ export function Home({ onNav }: Props) {
     const EASE_RANGE = 0.018;
     const SETTLE_ANCHORS = [
       0,
-      CONVERGE_END,
-      CLUSTER_END,
-      HEADER_END,
+      OVERVIEW_END,
       ...Object.values(SECTION_RANGES).flatMap(([lo, hi]) => [
         (lo + hi) / 2,
         hi - EASE_RANGE,
@@ -377,9 +380,6 @@ export function Home({ onNav }: Props) {
   const clusterT = smootherstep(clamp(
     (progress - OVERVIEW_END) / (CLUSTER_END - OVERVIEW_END), 0, 1,
   ));
-  const headerT  = smootherstep(clamp(
-    (progress - CLUSTER_END) / (HEADER_END - CLUSTER_END), 0, 1,
-  ));
   const crosshairLineVis = expandProgress * (1 - clusterT);
 
   // NAV_SP matches InlineMapIcon C_ARM for the header nav icon handoff at HEADER_END.
@@ -401,8 +401,8 @@ export function Home({ onNav }: Props) {
     { x: cx,                 y: cy + crosshairHalfV }, // bottom (Others)
     { x: cx - crosshairHalfH, y: cy                 }, // left   (Thinking)
   ];
-  // Re-cluster → header travel (rigid translation, no shape change).
-  const navY   = lerp(cy, headerTop + HEADER_H / 2, headerT);
+  // Crosshair → header travel (rigid translation, no shape change).
+  const navY   = lerp(cy, headerTop + HEADER_H / 2, clusterT);
   const navDots = [
     { x: cx,          y: navY - NAV_SP },
     { x: cx + NAV_SP, y: navY          },
@@ -478,11 +478,10 @@ export function Home({ onNav }: Props) {
   const sectionVis   = inSections ? sectionBodyT * (1 - returnT) : 0;
 
   // Header bar visibility — fades in as nav icon arrives, fades at end.
-  const headerBarVis = headerT * (1 - returnT);
+  const headerBarVis = clusterT * (1 - returnT);
 
   // Quadrant labels + connecting text: appear when crosshair fully forms,
-  // fade out as the cluster phase begins (crosshairLineVis = 1 - clusterT).
-  // Quad labels appear when crosshair fully forms via scroll; fade on cluster.
+  // fade out as the header nav appears (crosshairLineVis = 1 - clusterT).
   const quadLabelVis = smootherstep(clamp((expandProgress - 0.7) / 0.3, 0, 1)) * (1 - clusterT);
   // Pre-scroll floating labels for the 3 non-Qiyu dots: visible while floating, fade on scroll.
   const floatLabelVis = (1 - convergeProgress) * (1 - sectionBodyT);
@@ -569,11 +568,18 @@ export function Home({ onNav }: Props) {
               Qiyu
             </div>
             <div style={{
-              position: 'absolute', left: 'calc(100% + 40px)', top: '50%',
+              position: 'absolute',
+              left: 'calc(100% + 40px)',
+              top: '50%',
               transform: 'translateY(-50%)',
-              fontFamily: 'var(--sans)', fontStyle: 'italic',
-              fontSize: 'clamp(14px, 1.4vw, 22px)', letterSpacing: '0', lineHeight: 1,
-              color: 'var(--ink-3)', whiteSpace: 'nowrap',
+              fontFamily: 'var(--font-primary)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(17px, 1.8vw, 26px)',
+              fontWeight: 400,
+              letterSpacing: '0',
+              lineHeight: 1.4,
+              color: 'var(--ink)',
+              whiteSpace: 'nowrap',
               transition: 'opacity .18s ease',
             }}>
               {hoveredDot === 0 ? 'how might I connect the dots'
@@ -586,8 +592,6 @@ export function Home({ onNav }: Props) {
         )}
 
         {(() => {
-          const qiyuHovered = hoveredDot === 0;
-          const RED = 'rgb(204,110,86)';
           return ([
             { label: 'Qiyu',     dir: 'up'    as LabelDir, tint: 'var(--ink-3)' },
             { label: 'Creating', dir: 'right' as LabelDir, tint: 'var(--ink-3)' },
@@ -602,8 +606,8 @@ export function Home({ onNav }: Props) {
                 ? labelVis * (1 - sectionBodyT)
                 : Math.max(floatLabelVis, labelVis * (1 - sectionBodyT))}
               labelOverride={i !== 0 ? { fontSize: 10, letterSpacing: '0.04em' } : undefined}
-              dotColor={i === 0 ? dotColor : (qiyuHovered ? RED : 'var(--ink-3)')}
-              hoverColor={i === 0 ? RED : RED}
+              dotColor={i === 0 ? dotColor : (hoveredDot === i ? dotColor : 'var(--ink-3)')}
+              hoverColor={dotColor}
               hovered={hoveredDot === i}
             dotSize={dotSize}
             onClick={i === 0 && convergeProgress < 0.05
@@ -954,7 +958,7 @@ function SectionView({
   switch (section.id) {
     case 'reflect':     return <ReflectionView q={q} onNav={onNav} onHoverSlug={onReflectHover} />;
     case 'experiment':  return <CreateScatter q={q} onNav={onNav} onSectionJump={onSectionJump} />;
-    case 'hear':        return <><LearnQuotes onNav={onNav} /><HearDots q={q} onNav={onNav} /></>;
+    case 'hear':        return <LearnQuotes onNav={onNav} />;
     case 'collaborate': return <WorkGrid q={q} onNav={onNav} />;
   }
 }
@@ -1094,23 +1098,7 @@ function CreateScatter({
         maxHeight: '80vh',
         overflowY: 'auto',
       }}>
-        {/* Column headers */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          columnGap: SPACE.xxxl,
-          paddingBottom: SPACE.md,
-          borderBottom: '2px solid var(--line)',
-        }}>
-          {(['What if…', 'Prototype / Approach'] as const).map(h => (
-            <div key={h} style={{
-              fontFamily: 'var(--sans)', fontSize: TYPE.kicker.size,
-              fontWeight: TYPE.kicker.weight, letterSpacing: TYPE.kicker.tracking,
-              textTransform: 'uppercase', color: 'var(--ink-3)',
-            }}>{h}</div>
-          ))}
-        </div>
-
-        {/* Group rows by section */}
+        {/* Group rows by section — section header doubles as 2-col label row */}
         {(() => {
           const rows = q.items.filter(it => it.dek && it.title);
           const sections: string[] = [];
@@ -1118,16 +1106,26 @@ function CreateScatter({
             const s = it.section ?? '';
             if (!sections.includes(s)) sections.push(s);
           });
-          return sections.map(sec => (
+          return sections.map((sec, si) => (
             <div key={sec}>
-              {sec && (
+              {/* Section header: col 1 = section name, col 2 = "Prototype" label */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr',
+                columnGap: SPACE.xxxl,
+                padding: `${si === 0 ? 0 : SPACE.xl}px 0 ${SPACE.sm}px`,
+                borderBottom: '2px solid var(--line)',
+              }}>
                 <div style={{
-                  padding: `${SPACE.lg}px 0 ${SPACE.sm}px`,
                   fontFamily: 'var(--sans)', fontSize: TYPE.kicker.size,
                   fontWeight: TYPE.kicker.weight, letterSpacing: TYPE.kicker.tracking,
                   textTransform: 'uppercase', color: 'var(--ink-4)',
-                }}>{sec}</div>
-              )}
+                }}>{sec || 'Question'}</div>
+                <div style={{
+                  fontFamily: 'var(--sans)', fontSize: TYPE.kicker.size,
+                  fontWeight: TYPE.kicker.weight, letterSpacing: TYPE.kicker.tracking,
+                  textTransform: 'uppercase', color: 'var(--ink-4)',
+                }}>Prototype</div>
+              </div>
               {rows.filter(it => (it.section ?? '') === sec).map((it, i) => (
                 <div key={i} style={{
                   display: 'grid', gridTemplateColumns: '1fr 1fr',
@@ -1149,14 +1147,17 @@ function CreateScatter({
                     style={{
                       fontFamily: 'var(--sans)',
                       fontSize: 'clamp(13px, 1vw, 15px)',
-                      fontWeight: 400, color: 'var(--ink-3)',
+                      fontWeight: 500, color: 'var(--ink)',
                       textDecoration: 'none', lineHeight: 1.45,
                       transition: 'color .15s ease',
+                      display: 'flex', alignItems: 'baseline',
+                      justifyContent: 'space-between', gap: SPACE.sm,
                     }}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--tint-tr)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-3)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink)')}
                   >
-                    {it.title}
+                    <span>{it.title}</span>
+                    <span style={{ opacity: 0.4, fontSize: '0.85em', flexShrink: 0 }}>↗</span>
                   </a>
                 </div>
               ))}
@@ -1183,6 +1184,7 @@ type LearnValue = {
   id: string;
   label: string;
   pos: { x: number; y: number };
+  href?: string;
 };
 type LearnQuote = {
   quote: string;
@@ -1194,11 +1196,16 @@ type LearnQuote = {
   sectionId?: string;
 };
 const LEARN_VALUES: LearnValue[] = [
-  { id: 'passion', label: 'Passion',  pos: { x: 0.28, y: 0.48 } },
-  { id: 'mindset', label: 'Mindset',  pos: { x: 0.68, y: 0.48 } },
+  { id: 'initiating', label: 'Initiating Events @Apple',       pos: { x: 0.38, y: 0.27 }, href: '#article:vibe-coding-meetup-at-apple-park' },
+  { id: 'strangers',  label: 'Meeting Strangers from Anywhere', pos: { x: 0.54, y: 0.52 }, href: 'https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv' },
+  { id: 'passion',    label: 'Passion',                         pos: { x: 0.22, y: 0.44 } },
+  { id: 'mindset',    label: 'Mindset',                         pos: { x: 0.82, y: 0.40 } },
 ];
 const LEARN_VALUE_LINKS: [string, string][] = [
-  ['passion', 'mindset'],
+  ['initiating', 'passion'],
+  ['initiating', 'mindset'],
+  ['strangers', 'passion'],
+  ['strangers', 'mindset'],
 ];
 const LEARN_QUOTES: LearnQuote[] = [
   { quote: "This is a job I would do even if I weren't getting paid.",
@@ -1217,47 +1224,10 @@ const LEARN_QUOTES: LearnQuote[] = [
     who: 'Jessica H.', value: 'mindset', pos: { x: 0.82, y: 0.72 },
     articleSlug: 'how-i-use-ai-to-create', sectionId: 'pitfalls' },
 ];
-function HearDots({ q, onNav }: { q: Quadrant; onNav: NavFn }) {
-  const [hovered, setHovered] = useState<number | null>(null);
-  return (
-    <div style={{
-      position: 'absolute', bottom: 0, left: 0, right: 0,
-      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-      gap: 'clamp(60px, 8vw, 120px)',
-      paddingBottom: 32,
-      pointerEvents: 'none',
-    }}>
-      {q.items.map((item, i) => (
-        <button
-          key={i}
-          onClick={(e) => clickHandler(item.href ?? '#', onNav)(e)}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(null)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20,
-            pointerEvents: 'auto',
-          }}
-        >
-          <div style={{
-            width: 20, height: 20, borderRadius: '50%',
-            background: hovered === i ? 'var(--tint-bl)' : 'var(--ink-3)',
-            transform: hovered === i ? 'scale(1.5)' : 'scale(1)',
-            transition: 'transform .25s cubic-bezier(.2,.7,.2,1), background .2s ease',
-          }} />
-          <div style={{
-            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color: hovered === i ? 'var(--tint-bl)' : 'var(--ink-3)',
-            transition: 'color .2s ease',
-            whiteSpace: 'nowrap',
-          }}>
-            {item.title}
-          </div>
-        </button>
-      ))}
-    </div>
-  );
+function HearDots({ onNav }: { q?: Quadrant; onNav: NavFn }) {
+  // Integrate the 2 attention items as clickable nodes in LearnQuotes
+  // by adding them to LEARN_VALUES and wiring click handlers via LearnQuotes rendering
+  return <LearnQuotes onNav={onNav} />;
 }
 
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
@@ -1511,6 +1481,7 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
               {/* Dot + hit target — anchored exactly at (p.x, p.y). */}
               <span
                 onPointerDown={startDrag(id)}
+                onClick={v.href ? (e) => clickHandler(v.href!, onNav)(e) : undefined}
                 onMouseEnter={() => setHoveredId(id)}
                 onMouseLeave={() => setHoveredId(null)}
                 style={{
@@ -1518,12 +1489,12 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
                   transform: 'translate(-50%, -50%)',
                   padding: HIT_PAD,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: draggedId === id ? 'grabbing' : 'grab',
+                  cursor: draggedId === id ? 'grabbing' : (v.href ? 'pointer' : 'grab'),
                 }}
               >
                 <span style={{
                   width: HUB_DOT, height: HUB_DOT, borderRadius: '50%',
-                  background: 'var(--ink)',
+                  background: ['initiating', 'strangers'].includes(v.id) ? 'var(--tint-bl)' : 'var(--ink)',
                   display: 'block',
                 }} />
               </span>
@@ -1532,9 +1503,13 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
                 position: 'absolute',
                 left: 0, top: HUB_DOT / 2 + 14,
                 transform: 'translateX(-50%)',
-                fontFamily: 'var(--serif)', fontWeight: 400,
-                fontSize: 'clamp(20px, 1.6vw, 26px)',
-                color: 'var(--ink)', whiteSpace: 'nowrap',
+                fontFamily: ['passion', 'mindset'].includes(v.id) ? 'var(--sans)' : 'var(--serif)',
+                fontWeight: 400,
+                fontSize: ['passion', 'mindset'].includes(v.id) ? 'clamp(11px, 1vw, 13px)' : 'clamp(16px, 1.4vw, 20px)',
+                letterSpacing: ['passion', 'mindset'].includes(v.id) ? '0.06em' : '0',
+                textTransform: ['passion', 'mindset'].includes(v.id) ? 'uppercase' : 'none',
+                color: ['passion', 'mindset'].includes(v.id) ? 'var(--ink-3)' : 'var(--ink)',
+                whiteSpace: 'nowrap',
                 pointerEvents: 'none',
               }}>
                 {v.label}
@@ -1577,10 +1552,12 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
               }}>
                 <span style={{
                   width: QUOTE_DOT, height: QUOTE_DOT, borderRadius: '50%',
-                  background: 'var(--ink)',
+                  background: 'transparent',
+                  border: `1.5px solid var(--ink)`,
                   opacity: dotOpacity,
                   transform: lit === true ? 'scale(1.4)' : 'scale(1)',
                   transition: 'opacity .25s ease, transform .25s cubic-bezier(.2,.7,.2,1)',
+                  boxSizing: 'border-box',
                 }} />
               </span>
               {(() => {

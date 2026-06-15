@@ -616,13 +616,14 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                 <h1
                   className="article-title"
                   style={{
-                    fontFamily: 'var(--serif)', fontWeight: 400,
+                    fontFamily: 'var(--font-primary)', fontWeight: 500,
                     fontSize: useSplit
                       ? 'clamp(36px, 3.6vw, 52px)'
                       : 'clamp(44px, 6vw, 68px)',
-                    lineHeight: 1.04, letterSpacing: -1.5,
+                    lineHeight: 1.04, letterSpacing: -0.8,
                     margin: 0,
                   }}
+                  aria-label={meta.title}
                   {...(meta.titleHtml
                     ? { dangerouslySetInnerHTML: { __html: meta.titleHtml } }
                     : { children: meta.title })}

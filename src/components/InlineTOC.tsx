@@ -97,8 +97,11 @@ export function InlineTOC({ intro }: Props) {
       >
         {introNode && (
           <p style={{
-            fontFamily: 'var(--reading)', fontSize: 18, lineHeight: 1.5,
-            color: 'var(--ink-2)', fontStyle: 'italic',
+            fontFamily: 'var(--font-primary)',
+            fontSize: '18px',
+            fontWeight: 400,
+            lineHeight: 1.4,
+            color: 'var(--ink-2)',
             margin: '0 0 18px',
             textWrap: 'pretty',
           }}>
@@ -112,9 +115,10 @@ export function InlineTOC({ intro }: Props) {
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
-          fontFamily: 'var(--reading)',
-          fontSize: 18,
-          lineHeight: 1.5,
+          fontFamily: 'var(--font-primary)',
+          fontSize: '18px',
+          fontWeight: 400,
+          lineHeight: 1.4,
           color: 'var(--ink)',
         }}>
           {meta.sections.map((s, i) => (
@@ -177,8 +181,11 @@ export function InlineTOC({ intro }: Props) {
           }}
         >
           <div style={{
-            fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-            textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 18,
+            font: 'var(--text-caption-2)',
+            letterSpacing: 1.4,
+            textTransform: 'uppercase',
+            color: 'var(--ink-4)',
+            marginBottom: 18,
           }}>
             In this piece
           </div>
@@ -205,9 +212,11 @@ export function InlineTOC({ intro }: Props) {
                     scroll.scrollToSection(s.id);
                   }}
                   style={{
-                    fontFamily: 'var(--reading)', fontSize: 13, lineHeight: 1.4,
+                    fontFamily: 'var(--font-primary)',
+                    fontSize: '13px',
+                    fontWeight: isActive ? 600 : 400,
+                    lineHeight: 1.385,
                     color: isActive ? 'var(--ink)' : 'var(--ink-3)',
-                    fontWeight: isActive ? 500 : 400,
                     textDecoration: 'none',
                     paddingLeft: 14,
                     transition: 'color .25s, font-weight .25s',

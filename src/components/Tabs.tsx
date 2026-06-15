@@ -56,13 +56,15 @@ export function Tabs({ items, defaultIndex = 0 }: Props) {
                 border: 'none',
                 borderBottom: `2px solid ${isActive ? 'var(--article-tint, var(--ink))' : 'transparent'}`,
                 color: isActive ? 'var(--ink)' : 'var(--ink-3)',
-                fontFamily: 'var(--sans)',
-                fontSize: 12,
+                fontFamily: 'var(--font-primary)',
+                fontSize: '12px',
+                fontWeight: 400,
                 letterSpacing: 1.2,
                 textTransform: 'uppercase',
                 cursor: 'pointer',
                 marginBottom: -1,
                 transition: 'color .15s, border-color .15s',
+                lineHeight: 1.333,
               }}
               onMouseEnter={(e) => {
                 if (!isActive) e.currentTarget.style.color = 'var(--ink-2)';

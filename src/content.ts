@@ -89,6 +89,8 @@ export type QuadrantItem = {
   meta: string;
   href: string;
   image?: string;
+  /** CSS background-size for the project image: 'cover' (default, crops) or 'contain' (fits whole image). */
+  imageFit?: 'cover' | 'contain';
   /** Where the thinking came from — the "reflection credit line" under the dek. */
   companies?: Company[];
   /** Normalized plot coords (0–1) — only used when the parent quadrant's layout is 'scatter'. */

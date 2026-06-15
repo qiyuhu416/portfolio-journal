@@ -117,23 +117,7 @@
     "tint": "var(--tint-bl)",
     "framing": "Watching, listening, not-yet-acting. Most of what I’ve learned about design I’ve learned by watching people describe their work out loud.",
     "layout": "quotes",
-    "items": [
-      {
-        "tag": "Community",
-        "title": "Initiating events @Apple",
-        "dek": "Build the community I wish existed?",
-        "meta": "04 · 3 min",
-        "href": "#article:vibe-coding-meetup-at-apple-park"
-      },
-      {
-        "tag": "Listening",
-        "title": "Meeting strangers from anywhere",
-        "dek": "See my unknown-unknowns?",
-        "meta": "ongoing",
-        "href": "https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC9VQmgBUJmcvY5M6qarqb6mnsmaGP4EJz8",
-        "external": true
-      }
-    ]
+    "items": []
   },
   {
     "id": "work",
@@ -150,7 +134,8 @@
         "dek": "Watch · create · purchase. Six business partners, one app.",
         "meta": "Meetfood · Founding Design",
         "href": "#",
-        "image": "/projects/meetfood.png"
+        "image": "/projects/meetfood.png",
+        "imageFit": "contain"
       },
       {
         "tag": "GenAI",
@@ -174,7 +159,8 @@
         "dek": "Hi-fi prototypes drove adoption. SUS 90.3.",
         "meta": "Pittsburgh Parking Authority · Service design",
         "href": "#",
-        "image": "/projects/research-tool.png"
+        "image": "/projects/research-tool.png",
+        "imageFit": "contain"
       },
       {
         "tag": "Physical AI",

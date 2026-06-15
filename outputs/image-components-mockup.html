@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Image Components Mockup — Qiyu Hu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --ink: #1A1814;
+      --ink-2: #45403A;
+      --ink-3: #6B6560;
+      --ink-4: #726C64;
+      --line: #E5E5E2;
+      --surface: #F1F1F1;
+      --serif: 'Source Serif 4', 'Times New Roman', serif;
+      --sans: 'Inter', 'Helvetica', sans-serif;
+      --reading: 'Source Serif 4', 'Times New Roman', serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); }
+    body {
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 40px 160px;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(44px, 6vw, 68px);
+      font-weight: 600;
+      line-height: 1.04;
+      letter-spacing: -0.8px;
+      margin: 0 0 16px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--ink-3);
+      margin: 0 0 64px;
+    }
+
+    section {
+      margin: 64px 0;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3vw, 36px);
+      font-weight: 400;
+      letter-spacing: -0.3px;
+      color: var(--ink);
+      margin: 0 0 32px;
+      border-top: 1px solid var(--line);
+      padding-top: 32px;
+    }
+
+    .section-title:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .component {
+      margin: 40px 0;
+    }
+
+    .component-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 16px;
+    }
+
+    .component-desc {
+      font-size: 14px;
+      color: var(--ink-2);
+      margin: 12px 0;
+      line-height: 1.6;
+    }
+
+    .placeholder {
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-3);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(45deg, transparent 0 18px, rgba(255,255,255,0.18) 18px 19px);
+    }
+
+    .placeholder > div {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    /* Component sizes */
+    .figure-placeholder { height: 380px; }
+    .gallery-placeholder { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .gallery-item { height: 280px; }
+    .carousel-placeholder { height: 320px; }
+    .collage-placeholder { height: 340px; }
+    .tabbed-placeholder { height: 400px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+    }
+
+    .controls {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 12px;
+      display: flex;
+      gap: 24px;
+    }
+
+    code {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      background: var(--surface);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .props {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      font-size: 13px;
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      display: inline-block;
+      margin-bottom: 32px;
+    }
+
+    .back-link:hover {
+      color: var(--ink-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a href="design-system.html" class="back-link">← Back to design system</a>
+
+    <h1>Image Components</h1>
+    <p class="subtitle">Five reusable components for displaying images, videos, and interactive media.</p>
+
+    <!-- FIGURE -->
+    <section>
+      <h2 class="section-title">Figure</h2>
+      <div class="component">
+        <div class="component-label">Single image, video, or placeholder</div>
+        <div class="component-desc">The foundational image component. Renders `&lt;img&gt;`, `&lt;video&gt;` (autoplay loop), or placeholder. Supports three width spans.</div>
+
+        <div class="placeholder figure-placeholder">
+          <div>
+            <div style="font-size: 11px; margin-bottom: 8px; text-transform: none; letter-spacing: 0;">Fig. 1</div>
+            <div>IMAGE PLACEHOLDER · FIGURE</div>
+            <div style="font-size: 11px; margin-top: 8px; color: var(--ink-4);">A single image with optional caption label</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span>span="text" (680px default)</span>
+          <span>height=380</span>
+        </div>
+
+        <div class="props">
+          <strong>Props:</strong> <code>src</code>, <code>alt</code>, <code>fig</code> (label), <code>caption</code>, <code>span</code> ('text'|'full'|'bleed'), <code>height</code>, <code>placeholder</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section>
+      <h2 class="section-title">Gallery</h2>
+      <div class="component">
+        <div class="component-label">Grid container for multiple figures</div>
+        <div class="component-desc">Simple grid wrapper. Wraps multiple `&lt;Figure&gt;` children in a 2–3 column layout. No interaction or state.</div>
+
+        <div class="gallery-placeholder">
+          <div class="placeholder gallery-item">
+            <div>
+              <div style="font-size: 11px; margin-bottom: 6px; text-transform: none;">Image 1</div>
+              <div>GALLERY ITEM</div>
+              <div style="font-size: 10px; margin-top: 6px; color: var(--ink-4);">With optional caption</div>
+            </div>
+          </div>
+          <div class="placeholder gallery-item">
+            <div>
+              <div style="font-size: 11px; margin-bottom: 6px; text-transform: none;">Image 2</div>
+              <div>GALLERY ITEM</div>
+              <div style="font-size: 10px; margin-top: 6px; color: var(--ink-4);">With optional caption</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span>columns=2 (default)</span>
+          <span>gap=24px</span>
+        </div>
+
+        <div class="props">
+          <strong>Props:</strong> <code>children</code> (Figure elements), <code>columns</code> (2|3, default 2)
+        </div>
+      </div>
+    </section>
+
+    <!-- CAROUSEL -->
+    <section>
+      <h2 class="section-title">Carousel</h2>
+      <div class="component">
+        <div class="component-label">Directional carousel with controls</div>
+        <div class="component-desc">Horizontal scrolling strip. Shows N items at once. Includes prev/next arrow buttons + page indicator dots. Syncs with manual scroll/swipe.</div>
+
+        <div class="placeholder carousel-placeholder">
+          <div style="position: relative; height: 100%; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 0 56px;">
+            <div style="position: absolute; left: 16px; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 18px; display: flex; align-items: center; justify-content: center; z-index: 1; cursor: pointer;">←</div>
+            <div style="flex: 1; text-align: center;">
+              <div style="font-size: 13px; margin-bottom: 8px; text-transform: none;">Carousel – 2 items visible</div>
+              <div>HORIZONTAL SCROLLING STRIP</div>
+              <div style="font-size: 11px; margin-top: 8px; color: var(--ink-4);">• 1 of 5  • Swipe or click arrows</div>
+            </div>
+            <div style="position: absolute; right: 16px; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 18px; display: flex; align-items: center; justify-content: center; z-index: 1; cursor: pointer;">→</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span>perView=2 (default)</span>
+          <span>prev/next buttons</span>
+          <span>page dots</span>
+        </div>
+
+        <div class="props">
+          <strong>Props:</strong> <code>items</code> (array of {src, alt, caption}), <code>perView</code> (default 2), <code>span</code> ('text'|'full'|'bleed', default 'full')
+        </div>
+      </div>
+    </section>
+
+    <!-- COLLAGE -->
+    <section>
+      <h2 class="section-title">Collage</h2>
+      <div class="component">
+        <div class="component-label">Expandable moodboard or tilted strip</div>
+        <div class="component-desc">Two layouts: (1) Compact preview — three cards fanned like a deck, expand on click to horizontal scrolling row. (2) Strip — full-width tilted row, always expanded, bleeds beyond the column.</div>
+
+        <div class="placeholder collage-placeholder">
+          <div style="position: relative; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+            <div style="position: relative; height: 200px; width: 100%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+              <div style="position: absolute; transform: rotate(-8deg); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 3; box-shadow: 0 8px 24px rgba(0,0,0,0.08);"></div>
+              <div style="position: absolute; transform: rotate(3deg) translateX(50px) translateY(10px); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 2; box-shadow: 0 8px 24px rgba(0,0,0,0.08);"></div>
+              <div style="position: absolute; transform: rotate(6deg) translateX(100px) translateY(20px); width: 100px; height: 140px; background: var(--line); border-radius: 8px; z-index: 1; box-shadow: 0 8px 24px rgba(0,0,0,0.08);"></div>
+            </div>
+            <div style="text-align: center; color: var(--ink); font-size: 12px; z-index: 10;">
+              <div style="font-size: 13px; margin-bottom: 6px;">Collage – 3 items</div>
+              <div style="color: var(--ink-3); font-size: 11px;">Click to expand or view strip mode</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span>layout="preview" (default)</span>
+          <span>layout="strip"</span>
+          <span>click to toggle</span>
+        </div>
+
+        <div class="props">
+          <strong>Props:</strong> <code>items</code> (array with src, alt, caption, aspectRatio), <code>caption</code>, <code>layout</code> ('preview'|'strip'), <code>span</code>, <code>defaultExpanded</code>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABBED FIGURE -->
+    <section>
+      <h2 class="section-title">TabbedFigure</h2>
+      <div class="component">
+        <div class="component-label">Tab switcher between labeled figures</div>
+        <div class="component-desc">Tab interface at top. Each tab can have: (1) Abstract SVG preview (collapsed, click to reveal full image), (2) Custom rendered SVG, or (3) Image URL. Constant aspect ratio prevents layout shift.</div>
+
+        <div class="placeholder tabbed-placeholder">
+          <div style="display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 14px; padding: 0 16px;">
+            <button style="background: transparent; border: none; padding: 8px 14px; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink); border-bottom: 2px solid var(--ink); cursor: pointer;">Model A</button>
+            <button style="background: transparent; border: none; padding: 8px 14px; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-4); border-bottom: 2px solid transparent; cursor: pointer;">Model B</button>
+            <button style="background: transparent; border: none; padding: 8px 14px; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-4); border-bottom: 2px solid transparent; cursor: pointer;">Model C</button>
+          </div>
+          <div style="height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink-3); gap: 12px;">
+            <div style="text-align: center;">
+              <div style="font-size: 13px; color: var(--ink);">TABBED FIGURE</div>
+              <div style="font-size: 11px; margin-top: 6px; color: var(--ink-4);">Model A – Active tab</div>
+            </div>
+            <div style="font-size: 12px; color: var(--ink-3);">2.2:1 aspect ratio · Constant height</div>
+            <div style="font-size: 10px; color: var(--ink-4);">3 tabs available · Click to switch</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span>3 tabs active</span>
+          <span>abstract preview (optional)</span>
+          <span>aspect 2.2:1</span>
+        </div>
+
+        <div class="props">
+          <strong>Props:</strong> <code>items</code> (array with label, src/figure/abstract, alt, caption, when, where), <code>fig</code> (caption), <code>span</code> ('text'|'full'|'bleed', default 'text')
+        </div>
+      </div>
+    </section>
+
+    <!-- USAGE NOTES -->
+    <section>
+      <h2 class="section-title">Usage notes</h2>
+      <div class="component">
+        <div class="component-desc">
+          <strong>Span prop (Figure, Carousel, TabbedFigure):</strong><br>
+          • <code>span="text"</code>: 680px max-width (fits article column, default)<br>
+          • <code>span="full"</code>: 1040px max-width (room for embedded text/labels)<br>
+          • <code>span="bleed"</code>: 100% width (full viewport, atmospheric)<br>
+          <br>
+          <strong>All images:</strong><br>
+          • Auto-rounded corners (8px border-radius)<br>
+          • Respect article tint + surface tokens for color consistency<br>
+          • Support placeholder rendering when src is omitted<br>
+          • Captions use --sans 12px (mono-style labels)<br>
+          <br>
+          <strong>Accessibility:</strong><br>
+          • All require <code>alt</code> text (screen readers, fallbacks)<br>
+          • Placeholders show <code>FIG. N</code> label for sighted users<br>
+          • Carousels + Collage + TabbedFigure are keyboard navigable<br>
+          • All pass WCAG AA for color contrast
+        </div>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>

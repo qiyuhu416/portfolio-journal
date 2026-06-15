@@ -505,7 +505,7 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
                   position: 'absolute',
                   inset: 0,
                   background: it.image
-                    ? `url(${it.image}) center/cover no-repeat`
+                    ? `url(${it.image}) center/${it.imageFit ?? 'cover'} no-repeat`
                     : `linear-gradient(135deg, color-mix(in srgb, ${q.tint} 26%, transparent), color-mix(in srgb, ${q.tint} 6%, transparent))`,
                   transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
                   transform: hovered ? 'scale(1.05)' : 'scale(1)',
