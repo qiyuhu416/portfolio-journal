@@ -101,6 +101,8 @@ export type QuadrantItem = {
   count?: string;
   /** Small preview chips revealed on scatter-dot hover, hinting at the content's shape. */
   previews?: PreviewChip[];
+  /** Groups items into named sections in multi-section table layouts (e.g. CreateScatter). */
+  section?: string;
   /** When true, render the link with target=_blank — for CTA items pointing off-site. */
   external?: boolean;
   /** When true, clicking the scatter dot expands the previews inline on the page

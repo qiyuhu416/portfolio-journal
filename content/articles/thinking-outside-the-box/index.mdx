@@ -29,7 +29,7 @@ import { ExternalLink } from '@/components/ExternalLink'
 import { TabbedFigure } from '@/components/TabbedFigure'
 import { Carousel } from '@/components/Carousel'
 import { InlineTOC } from '@/components/InlineTOC'
-import { WhatIfTable } from './diagrams/WhatIfTable'
+import { WhatIfCard } from './diagrams/WhatIfCard'
 import { BridgeAbstract } from './diagrams/BridgeAbstract'
 import { ServiceBlueprintAbstract } from './diagrams/ServiceBlueprintAbstract'
 import bridgeStartup from './images/bridge-startup.png'
@@ -76,35 +76,9 @@ Everyone’s crazy 8’s ideas are super crazy...!!
 I am still practicing this mindset, but it tends to come back to three 👌 steps.
 </p>
 
-<p>Here are some of the wilder questions I've been testing in human–AI interaction — click any card to see the prototype:</p>
+<p>Here are the questions I keep coming back to — bold bets on where human–AI interaction could go next:</p>
 
-<WhatIfTable rows={[
-  {
-    whatIf: 'We could be super lazy',
-    poc: 'Just watch agents talk with each other',
-    images: [],
-  },
-  {
-    whatIf: 'You never had to type a prompt',
-    poc: 'Voice, gesture, or form — anything but text',
-    images: [],
-  },
-  {
-    whatIf: 'AI knew your future self better than today-you',
-    poc: 'Leave a message to your future self — AI delivers it',
-    images: [],
-  },
-  {
-    whatIf: 'All your apps shared the same understanding of you',
-    poc: 'One personalization hub — zero re-explaining yourself',
-    images: [],
-  },
-  {
-    whatIf: 'Thinking out loud had a shape',
-    poc: 'Render your chain of thought as a knowledge graph',
-    images: [],
-  },
-]} />
+<WhatIfCard />
 
 <InlineTOC />
 
@@ -193,16 +167,10 @@ Sometimes you think you’ve seen the box, but you’ve only seen part of it.
 
 
 <Sidebar label="Same role, different system">
-  <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-    <li style={{ marginBottom: 16, lineHeight: 1.5 }}>
-      **At a startup**, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>. I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.
-    </li>
-    <li style={{ marginBottom: 16, lineHeight: 1.5 }}>
-      **At Apple**, I am a vibe coder too. However, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.
-    </li>
-    <li style={{ lineHeight: 1.5 }}>
-      Different goals, different workflows.
-    </li>
+  <ul>
+    <li>**At a startup**, <InlineLink to="how-i-use-ai-to-create">I worked as a vibe coder</InlineLink>. I pushed my design in code directly to staging, and staging got merged to main every week. Mistakes were reversible.</li>
+    <li>**At Apple**, I am a vibe coder too. However, the same kind of work sits inside a very different system: more teams, more dependencies, more risk, more coordination.</li>
+    <li>Different goals, different workflows.</li>
   </ul>
 </Sidebar>
   
@@ -244,17 +212,10 @@ In one project, we had a recruitment problem. So I asked: what if the survey was
 
   
 <Sidebar label="Small ways I've tried to make work fun">
-  <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
-    <li style={{ marginBottom: 0, lineHeight: 1.5 }}>
-      **Prototyping doesn't have to be technical**: 
-      try paper prototyping in meetings with your engineers roleplaying the LLM.
-    </li>
-    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
-      **Coding doesn't have to be eng's work**: share a repo with the PM and prototype together.
-    </li>
-    <li style={{ marginBottom: 10, lineHeight: 1.5 }}>
-      **Work doesn't have to be in the office**: invite your peers to go for a walk and brainstorm.
-    </li>
+  <ul>
+    <li>**Prototyping doesn't have to be technical**: try paper prototyping in meetings with your engineers roleplaying the LLM.</li>
+    <li>**Coding doesn't have to be eng's work**: share a repo with the PM and prototype together.</li>
+    <li>**Work doesn't have to be in the office**: invite your peers to go for a walk and brainstorm.</li>
   </ul>
 </Sidebar>
 

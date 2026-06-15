@@ -9,12 +9,13 @@
     "framing": "Where I argue with myself. The quadrant I write in when I don’t know what I believe yet, where first drafts go to be held up to the light.",
     "layout": "statement",
     "statement": [
-      { "type": "text",   "text": "I practice the mindset to " },
-      { "type": "phrase", "text": "think outside the box",          "href": "#article:thinking-outside-the-box", "tint": "var(--tint-tr)" },
-      { "type": "text",   "text": ", applying that to " },
-      { "type": "phrase", "text": "design human–AI interactions",   "href": "#article:designing-ai-products",    "tint": "var(--tint-plum)" },
-      { "type": "text",   "text": ", with " },
-      { "type": "phrase", "text": "AI as my prototyping tool",      "href": "#article:how-i-use-ai-to-create",   "tint": "var(--ink)" }
+      { "type": "text",   "text": "I practice " },
+      { "type": "phrase", "text": "challenging assumptions",                   "href": "#article:thinking-outside-the-box", "tint": "var(--tint-tr)" },
+      { "type": "text",   "text": ", applying it to " },
+      { "type": "phrase", "text": "design bold human–AI interactions", "href": "#article:designing-ai-products",    "tint": "var(--tint-plum)" },
+      { "type": "text",   "text": "and " },
+      { "type": "phrase", "text": "prototype rapidly with AI & sticky notes", "href": "#article:how-i-use-ai-to-create", "tint": "var(--ink)" },
+      { "type": "text",   "text": "." }
     ],
     "items": [
       {
@@ -35,7 +36,7 @@
       },
       {
         "tag": "AI collaboration",
-        "title": "How I use AI to create",
+        "title": "How I create rapid prototypes",
         "dek": "Not despite AI. Because of it.",
         "meta": "03 · 5 min",
         "href": "#article:how-i-use-ai-to-create",
@@ -58,66 +59,52 @@
     },
     "items": [
       {
+        "section": "What if…",
+        "tag": "Lazy AI",
+        "title": "Just learn through watching AI agents talk",
+        "dek": "I can be super lazy",
+        "meta": "",
+        "href": "#"
+      },
+      {
+        "section": "What if…",
+        "tag": "No prompt",
+        "title": "Voice, gesture, or ambient sensing — anything but text",
+        "dek": "You never had to type a prompt",
+        "meta": "",
+        "href": "#"
+      },
+      {
+        "section": "What if…",
+        "tag": "Future self",
+        "title": "Leave a message to your future self — AI delivers it at the right moment",
+        "dek": "AI knew your future self better than today-you",
+        "meta": "",
+        "href": "#"
+      },
+      {
+        "section": "What if…",
+        "tag": "Thought graph",
+        "title": "Render your chain of thought as a live knowledge graph",
+        "dek": "Thinking out loud had a shape",
+        "meta": "",
+        "href": "#"
+      },
+      {
+        "section": "What if…",
+        "tag": "Opinionated AI",
+        "title": "Opinionated responses — AI that pushes back, disagrees, and advocates for you",
+        "dek": "AI had a point of view",
+        "meta": "",
+        "href": "#"
+      },
+      {
+        "section": "What if…",
         "tag": "Play",
-        "title": "Making design fun",
-        "dek": "How might I find my passion?",
+        "title": "Making work driven by passion, not FOMO",
+        "dek": "Work could be passion-driven, not FOMO-driven",
         "meta": "06 · 5 min",
-        "href": "#article:making-design-fun",
-        "x": 0.28,
-        "y": 0.57,
-        "previews": [
-          { "label": "AE",      "src": "/previews/making-design-fun/ae.jpg" },
-          { "label": "Voice",   "src": "/previews/making-design-fun/voice.jpg" },
-          { "label": "Gesture", "src": "/previews/making-design-fun/gesture.jpg" },
-          { "label": "Camera",  "src": "/previews/making-design-fun/camera.jpg" }
-        ]
-      },
-      {
-        "tag": "Community",
-        "title": "Events I host at Apple",
-        "dek": "How might I build the community I wish existed?",
-        "meta": "04 · 3 min",
-        "href": "#article:vibe-coding-meetup-at-apple-park",
-        "x": 0.55,
-        "y": 0.57,
-        "expandsInline": true,
-        "previews": [
-          { "label": "Event" },
-          { "label": "Lunch" }
-        ],
-        "events": [
-          { "name": "vibe coding @Apple Park", "date": "2025-10", "r": 0.65, "y": 0.30 },
-          { "name": "When to NOT use AI",      "date": "2025-12", "r": 0.85, "y": 0.72 },
-          { "name": "",                         "date": "2026-01", "r": 1.10, "y": 0.52 },
-          { "name": "When to NOT use AI",      "date": "2026-01", "r": 0.75, "y": 0.78 }
-        ]
-      },
-      {
-        "tag": "POC",
-        "title": "Crazy things I build",
-        "dek": "The wild stuff I make just to see if it works.",
-        "meta": "ongoing",
-        "href": "#",
-        "x": 0.45,
-        "y": 0.25
-      },
-      {
-        "tag": "Listening",
-        "title": "Meet the stranger challenge",
-        "dek": "How might I see my unknown-unknowns?",
-        "meta": "ongoing",
-        "href": "https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC9VQmgBUJmcvY5M6qarqb6mnsmaGP4EJz8",
-        "kind": "cta",
-        "external": true,
-        "count": "72",
-        "x": 0.88,
-        "y": 0.57,
-        "cardPreview": {
-          "platform": "LinkedIn",
-          "title": "Title doesn’t matter",
-          "body": "Twenty minutes with someone I’ve never met. This is what made me start paying attention.",
-          "image": "/previews/linkedin-stranger-challenge.png"
-        }
+        "href": "#article:making-design-fun"
       }
     ]
   },
@@ -130,7 +117,23 @@
     "tint": "var(--tint-bl)",
     "framing": "Watching, listening, not-yet-acting. Most of what I’ve learned about design I’ve learned by watching people describe their work out loud.",
     "layout": "quotes",
-    "items": []
+    "items": [
+      {
+        "tag": "Community",
+        "title": "Initiating events @Apple",
+        "dek": "Build the community I wish existed?",
+        "meta": "04 · 3 min",
+        "href": "#article:vibe-coding-meetup-at-apple-park"
+      },
+      {
+        "tag": "Listening",
+        "title": "Meeting strangers from anywhere",
+        "dek": "See my unknown-unknowns?",
+        "meta": "ongoing",
+        "href": "https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv?utm_source=share&utm_medium=member_desktop&rcm=ACoAAC9VQmgBUJmcvY5M6qarqb6mnsmaGP4EJz8",
+        "external": true
+      }
+    ]
   },
   {
     "id": "work",
@@ -145,7 +148,7 @@
         "tag": "0 → 1",
         "title": "Shopping doesn’t have to start with a search",
         "dek": "Watch · create · purchase. Six business partners, one app.",
-        "meta": "Meetfood · Founding UX · 1.5y",
+        "meta": "Meetfood · Founding Design",
         "href": "#",
         "image": "/projects/meetfood.png"
       },
@@ -153,7 +156,7 @@
         "tag": "GenAI",
         "title": "AI doesn’t have to be complex",
         "dek": "Research-to-prototype. SUS 86.3.",
-        "meta": "Google Cloud · UX · 4mo",
+        "meta": "Google Cloud · UX Design",
         "href": "#",
         "image": "/projects/google-cloud.png"
       },
@@ -161,7 +164,7 @@
         "tag": "Conversational AI",
         "title": "AI can be a design tool",
         "dek": "A working call agent built in a week of prompt engineering.",
-        "meta": "The Mentoring Partnership · Solo AI · 1wk",
+        "meta": "The Mentoring Partnership · Rapid Prototype",
         "href": "#",
         "image": "/projects/call-agent.png"
       },
@@ -169,7 +172,7 @@
         "tag": "Service design",
         "title": "Design can be a research tool",
         "dek": "Hi-fi prototypes drove adoption. SUS 90.3.",
-        "meta": "Pittsburgh Parking Authority · Service design · 4mo",
+        "meta": "Pittsburgh Parking Authority · Service design",
         "href": "#",
         "image": "/projects/research-tool.png"
       },
@@ -177,7 +180,7 @@
         "tag": "Physical AI",
         "title": "AI doesn’t have to stay on a screen",
         "dek": "Embedding diagnostic AI into a clinical workflow.",
-        "meta": "Roche · Service design · 1mo",
+        "meta": "Roche · Physical AI",
         "href": "#",
         "image": "/projects/roche.png"
       },
@@ -185,7 +188,7 @@
         "tag": "Research",
         "title": "AI can earn human trust",
         "dek": "Two papers on language, affiliation, and care.",
-        "meta": "CMU / Cornell · Research Asst. · 1.5y",
+        "meta": "CMU / Cornell · Research Asst.",
         "href": "#",
         "image": "/projects/ai-trust.png"
       },
