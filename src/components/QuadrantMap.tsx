@@ -82,7 +82,7 @@ export function QuadrantPanel({ q, opacity, fade, onNav, onHoverSlug }: PanelPro
         opacity,
         pointerEvents: opacity > 0.5 ? 'auto' : 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '40px 0',
+        padding: '0 0 120px',
       }}>
         <StatementLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} onHoverSlug={onHoverSlug} />
       </div>
@@ -96,14 +96,25 @@ export function QuadrantPanel({ q, opacity, fade, onNav, onHoverSlug }: PanelPro
     <div style={{
       height: '100%',
       opacity,
-      overflowY: 'auto',
+      overflow: 'hidden',
       pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     }}>
       <div style={{
         maxWidth: maxW,
+        width: '100%',
         margin: '0 auto',
-        paddingTop: 40,
+        paddingTop: 0,
+        paddingLeft: 32,
+        paddingRight: 32,
         textAlign: 'center',
+        height: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
       }}>
         {/* The axis-pair tag (e.g. "OTHERS · NOTICING") used to render here as
             a small mono caps line above the title, but it now lives as the
@@ -111,21 +122,21 @@ export function QuadrantPanel({ q, opacity, fade, onNav, onHoverSlug }: PanelPro
             role for every quadrant, so duplicating it inside the panel just
             put a redundant label in the path of the dashed cross line. */}
         <h2 style={{
-          fontFamily: 'var(--serif)', fontWeight: 400,
-          fontSize: 'clamp(32px, 3.6vw, 44px)', lineHeight: 1.02, letterSpacing: -1.2,
-          margin: 0, color: 'var(--ink)', textWrap: 'balance',
+          fontFamily: 'var(--serif)', fontWeight: 600,
+          fontSize: 'clamp(24px, 2.8vw, 32px)', lineHeight: 1.1, letterSpacing: -0.8,
+          margin: '0 0 4px', color: 'var(--ink)', textWrap: 'balance',
         }}>
           {q.label}.
         </h2>
         <p style={{
-          fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, lineHeight: 1.4,
-          color: 'var(--ink-2)', margin: '8px auto 18px',
-          maxWidth: 520,
+          fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 13, lineHeight: 1.3,
+          color: 'var(--ink-2)', margin: '0 auto 12px',
+          maxWidth: '100%',
         }}>
           {q.sub}.
         </p>
 
-        <div style={{ textAlign: 'left' }}>
+        <div style={{ textAlign: 'left', width: '100%', overflow: 'hidden' }}>
           {layout === 'list' ? (
             <ListLayout q={q} onNav={onNav} itemsOpacity={itemsOpacity} />
           ) : layout === 'quotes' ? (
@@ -167,7 +178,7 @@ function StatementLayout({ q, onNav, itemsOpacity, onHoverSlug }: LayoutProps) {
       <p style={{
         fontFamily: 'var(--sans)', fontWeight: 500,
         fontSize: 'clamp(24px, 3.2vw, 56px)',
-        lineHeight: 1.25, letterSpacing: '-0.015em',
+        lineHeight: 1.5, letterSpacing: '-0.015em',
         margin: 0,
         color: 'var(--ink)', textAlign: 'center',
         textWrap: 'balance',
@@ -231,7 +242,12 @@ function PhraseButton({ seg, onNav, onHoverSlug }: { seg: Extract<StatementSegme
         }}
       >
         {seg.text}
-        <span aria-hidden="true" style={{ display: 'inline-block', marginLeft: '0.2em', fontSize: '0.8em', verticalAlign: 'super' }}>↗</span>
+        <svg aria-hidden="true" width="0.7em" height="0.7em" viewBox="0 0 16 16" fill="none"
+          stroke={hover ? 'var(--bg)' : `color-mix(in srgb, ${seg.tint} 70%, var(--ink))`}
+          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+          style={{ display: 'inline-block', marginLeft: '0.25em', verticalAlign: 'super', transition: 'stroke .18s', flexShrink: 0 }}>
+          <path d="M3 13L13 3M13 3H6M13 3V10" />
+        </svg>
       </a>
       {/* Note popover — hidden at rest, reveals work title + TOC on hover */}
       {hover && rect && article && (
@@ -252,27 +268,6 @@ function PhraseButton({ seg, onNav, onHoverSlug }: { seg: Extract<StatementSegme
             textAlign: 'left',
           }}
         >
-          {/* Work title — hidden at rest, only visible when note is activated */}
-          <a
-            href={seg.href}
-            onClick={(e) => dispatchItemClick(e, seg.href, onNav)}
-            style={{
-              display: 'flex', alignItems: 'baseline', gap: 6,
-              textDecoration: 'none', cursor: 'pointer',
-              paddingBottom: sections.length > 0 ? 10 : 0,
-              marginBottom: sections.length > 0 ? 8 : 0,
-              borderBottom: sections.length > 0 ? '1px solid var(--line)' : 'none',
-            }}
-          >
-            <span style={{
-              fontFamily: 'var(--serif)', fontWeight: 400,
-              fontSize: 16, lineHeight: 1.15, letterSpacing: -0.3,
-              color: 'var(--ink)',
-            }}>
-              {article.meta.title}
-            </span>
-            <span style={{ color: seg.tint, fontSize: 14 }}>→</span>
-          </a>
           {sections.map((s, i) => (
             <a
               key={s.id}
@@ -439,7 +434,7 @@ function ListLayout({ q, onNav, itemsOpacity }: LayoutProps) {
 function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const n = q.items.length;
-  const cols = Math.min(4, n);
+  const cols = Math.min(3, n);
   // Deterministic vertical jitter so the row doesn't read as a strict grid.
   const yOffsets = [0, 18, -8, 12, -4, 22, 6, -14];
 
@@ -448,12 +443,12 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
       style={{
         display: 'grid',
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        columnGap: 28,
-        rowGap: 56,
+        columnGap: 20,
+        rowGap: 32,
         opacity: itemsOpacity,
         transition: 'opacity .3s',
         position: 'relative',
-        paddingTop: 12,
+        paddingTop: 0,
       }}
     >
       {q.items.map((it, i) => {
@@ -487,7 +482,7 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
               style={{
                 position: 'relative',
                 width: '100%',
-                maxWidth: 180,
+                maxWidth: 140,
                 aspectRatio: '1 / 1',
                 borderRadius: '50%',
                 overflow: 'hidden',
@@ -525,7 +520,7 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
             </div>
 
             {/* Title block */}
-            <div style={{ textAlign: 'center', maxWidth: 220 }}>
+            <div style={{ textAlign: 'center', maxWidth: 180 }}>
               <div
                 style={{
                   fontFamily: 'var(--sans)',

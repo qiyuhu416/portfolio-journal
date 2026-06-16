@@ -19,6 +19,11 @@ type Props = { rows: HMWRow[] };
 export function HMWTable({ rows }: Props) {
   return (
     <table>
+      <colgroup>
+        <col style={{ width: '38%' }} />
+        <col style={{ width: '28%' }} />
+        <col style={{ width: '34%' }} />
+      </colgroup>
       <thead>
         <tr>
           <th>Error found</th>

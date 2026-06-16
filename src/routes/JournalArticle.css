@@ -53,7 +53,7 @@
 .article-body h2 {
   font: var(--text-title);
   color: var(--ink);
-  margin: 64px 0 24px;
+  margin: 96px 0 24px;
   text-wrap: balance;
   scroll-margin-top: 90px;
 }
@@ -61,7 +61,7 @@
 .article-body h3 {
   font: var(--text-headline);
   color: var(--ink);
-  margin: 32px 0 12px;
+  margin: 56px 0 12px;
 }
 
 .article-body strong { font-weight: 500; color: var(--ink); }
@@ -73,6 +73,7 @@
   margin: 0 0 1.4em;
 }
 .article-body li { margin: 0 0 .5em; }
+[data-sidebar] li { margin-bottom: 1.2em; }
 
 .article-body a {
   color: var(--article-tint, var(--ink));
@@ -81,13 +82,20 @@
 }
 
 .article-body blockquote {
-  margin: 72px 0;
+  margin: 40px 0;
   padding: 0;
   border: none;
   font-family: var(--font-primary);
   font-size: clamp(22px, 3.2vw, 28px);
   line-height: 1.3;
   color: var(--ink);
+}
+
+.article-body blockquote p::before {
+  content: '\201C';
+}
+.article-body blockquote p:last-of-type::after {
+  content: '\201D';
 }
 
 .article-body blockquote footer {
@@ -160,6 +168,12 @@
 .article-body table td + td {
   border-left: 1px solid var(--line);
   color: var(--ink);
+}
+
+/* First column tint — opt-in via data-tint-col on the table */
+.article-body table[data-tint-col] td:first-child {
+  color: var(--article-tint, var(--ink-2));
+  white-space: nowrap;
 }
 
 /* Alternate row backgrounds for readability (subtle) */

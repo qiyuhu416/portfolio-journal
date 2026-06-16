@@ -774,16 +774,6 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
                   if (arrow) arrow.style.transform = 'translateX(0)';
                 }}
               >
-                {next.tag && (
-                  <div style={{
-                    fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 1.4,
-                    textTransform: 'uppercase',
-                    color: next.quadrantTint ?? meta.tint,
-                    marginBottom: 12,
-                  }}>
-                    {next.tag}
-                  </div>
-                )}
                 <div style={{
                   display: 'flex', alignItems: 'baseline', gap: 14,
                   fontFamily: 'var(--serif)', fontWeight: 400,

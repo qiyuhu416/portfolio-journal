@@ -152,7 +152,7 @@ export function InlineTOC({ intro }: Props) {
                   borderBottom: 'none',
                   paddingBottom: 0,
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--article-tint)')}
+                onMouseEnter={(e) => (e.currentTarget.style.textDecorationColor = 'var(--nav-accent)')}
                 onMouseLeave={(e) => (e.currentTarget.style.textDecorationColor = 'var(--line)')}
               >
                 {s.label}
@@ -197,7 +197,7 @@ export function InlineTOC({ intro }: Props) {
             <div style={{
               position: 'absolute', left: 0, top: 4, width: 2,
               height: `calc((100% - 8px) * ${scroll?.progress ?? 0})`,
-              background: 'var(--article-tint)',
+              background: 'var(--nav-accent)',
               transition: 'height .15s linear',
             }} />
             {meta.sections.map((s) => {
@@ -216,7 +216,7 @@ export function InlineTOC({ intro }: Props) {
                     fontSize: '13px',
                     fontWeight: isActive ? 600 : 400,
                     lineHeight: 1.385,
-                    color: isActive ? 'var(--ink)' : 'var(--ink-3)',
+                    color: isActive ? 'var(--nav-accent)' : 'var(--ink-3)',
                     textDecoration: 'none',
                     paddingLeft: 14,
                     transition: 'color .25s, font-weight .25s',

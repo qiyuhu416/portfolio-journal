@@ -45,194 +45,6 @@ Designing AI is not always about making the AI smarter, it's always about mappin
 
 <InlineTOC />
 
-<h2 id="errors">§1 · Designing for errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has easy inferences)</span></h2>
-<h3 id="easy-inference">Case study: phone call agent prototype to elicit errors</h3>
-
-<p>AI is never perfect (yet). Please.</p>
-
-<p>Maybe part of the reason is that AI was trained on human data, and humans are not that perfect either.</p>
-
-
-<Sidebar label="Welcome to the adult world">
-  <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none', lineHeight: 1.7 }}>
-    <li style={{ marginBottom: 8 }}>
-      what one thinks <b>!=</b> what one says
-    </li>
-    <li style={{ marginBottom: 8 }}>
-      what one says <b>!=</b> what one does
-    </li>
-    <li style={{ marginBottom: 0 }}>
-      what one wants to express <b>!=</b> what others perceive
-    </li>
-  </ul>
-</Sidebar>
-
-<p>
-Therefore, the design focus should be:
-</p>
-
-<p>
-<strong>Where will it fail? Which failures are okay? How do we handle them?</strong>
-</p>
-
-<p>
-I was exploring this solution for a non-profit to address their "too many repetitive questions but not enough staff" pain point.
-It is an easy-inference case as there is already a pre-existing script to follow (even closer to a rule-based AI than actual AI), but the error intolerance was very low.
-</p>
-
-<p>
-The client was special as they are in a typically no-AI field, and the trust bonding between them and their customers is very important.
-Therefore, the design goal was not really to prove "AI works." It was to surface what could go wrong before it actually goes wrong.
-</p>
-
-<p>
-Solo prototyper, some rule-based logic from client interviews, 2 days to finish, 1 hour to test, but many interesting findings:
-</p>
-
-<blockquote>
-Sometimes the experience of recovering from an error matters more than preventing it.
-</blockquote>
-
-<Sidebar label="The prototype, with ChatGPT audio mode as my tool">
-  <Tabs items={[
-    {
-      label: 'Transparency',
-      content: (
-        <div>
-          <Vimeo id="1050190072" title="Transparency, feature demo" />
-          <div style={{
-            marginTop: 18,
-            paddingTop: 14,
-            borderTop: '1px solid var(--line)',
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: 'var(--ink-2)',
-          }}>
-            <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: 'var(--ink-3)',
-              marginBottom: 10,
-            }}>
-              Transcript
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>AI:</strong> Hello! You've reached the Mentoring Partnership. I'm Michelle, an AI from TMP, and I'm here to assist you with any questions you might have.
-            </div>
-            <div>
-              Before we start, could you please let me know which language you prefer to communicate in? We support English, German, and Español.
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      label: 'Personalize',
-      content: (
-        <div>
-          <Vimeo id="1050190024" title="Personalize, feature demo" />
-          <div style={{
-            marginTop: 18,
-            paddingTop: 14,
-            borderTop: '1px solid var(--line)',
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: 'var(--ink-2)',
-          }}>
-            <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: 'var(--ink-3)',
-              marginBottom: 10,
-            }}>
-              Transcript
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>AI:</strong> Could you please provide your name and the name of your organization?
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>User:</strong> This is Qiyu from the Magic Pals.
-            </div>
-            <div>
-              <strong>AI:</strong> Ah, Qiyu from the Magic Pals, welcome back. If I recall correctly, during our previous conversation, we discussed resources for mentoring training. How did the echo for you?
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      label: 'Proactive',
-      content: (
-        <div>
-          <Vimeo id="1050189874" title="Proactive, feature demo" />
-          <div style={{
-            marginTop: 18,
-            paddingTop: 14,
-            borderTop: '1px solid var(--line)',
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: 'var(--ink-2)',
-          }}>
-            <div style={{
-              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.4,
-              textTransform: 'uppercase', color: 'var(--ink-3)',
-              marginBottom: 10,
-            }}>
-              Transcript
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>User:</strong> Mentoring 101 was good. I also wonder if there's any resource for the mentee. We have lots of young people from diverse backgrounds, so any resource for them would be helpful too.
-            </div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>AI:</strong> So I understand Mentoring 101 was helpful for your mentors. For your mentees from diverse backgrounds, we have a resource: "Making the Most of Mentoring." It's designed to assist youth in building networks and setting goals effectively.
-            </div>
-            <div style={{ marginBottom: 8, color: 'var(--ink-3)', fontStyle: 'italic' }}>
-              […]
-            </div>
-            <div>
-              <strong>AI:</strong> Additionally, I noticed your emphasis on diversity. Have you heard about our cultural workshop? It's crafted to empower mentors in diverse mentoring relationships, which would be perfect for the Magic Pals. Would you like more details about this workshop or to schedule one?
-            </div>
-          </div>
-        </div>
-      ),
-    },
-  ]} />
-</Sidebar>
-
-<Figure src={testingSession} alt="Testing the phone agent prototype with the team — sticky notes on the wall as we surface what could go wrong." caption="Testing session — surfacing what could go wrong." />
-
-<HMWTable rows={[
-  {
-    error: 'Voice recognition breaks in noisy environments, the agent mishears the user.',
-    hmw: 'HMW help the user recover gracefully when the agent mishears?',
-    solutions: [
-      'Confirm-and-rephrase ("did you mean X?")',
-      'Retry on low confidence with simpler prompts',
-      'Fall back to keypad or text input',
-    ],
-  },
-  {
-    error: 'Users change their mind mid-flow, and the script has no path back.',
-    hmw: 'HMW let users change direction without losing context?',
-    solutions: [
-      'Persistent "go back" or "update my answer"',
-      "Preserve state so a redirect doesn't restart the flow",
-      'Offer a "want to revise?" prompt at natural pauses',
-    ],
-  },
-  {
-    error: 'Some users reject AI entirely, "let me talk to a human."',
-    hmw: 'HMW make the handoff to a human feel like a feature, not a failure?',
-    solutions: [
-      'Set the agent\'s scope upfront ("I can help with X, Y, Z")',
-      'Always-visible path to a human',
-      "Pass context to the human agent so users don't repeat themselves",
-    ],
-  },
-]} />
-
-This prototype turned our design exploration less about "accuracy" and more about recovery, handoff, and expectation-setting. We use AI to solve real user problems and want it to really be used.
-
-<hr/>
-
 
 <h2 id="relationship">§2 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has hard inferences)</span></h2>
 <h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
@@ -400,75 +212,25 @@ In eldercare, the trickiest part is when the older adult's health declines — t
 This is a tricky question even for humans, and when we design it, we map out all the variables in the scenarios:
 
 
-<div style={{ margin: '24px 0 12px', overflowX: 'auto' }}>
-  <table style={{
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontFamily: 'var(--mono)',
-    fontSize: 12,
-    lineHeight: 1.75,
-  }}>
-    <thead>
-      <tr style={{ background: 'var(--surface)' }}>
-        <th style={{
-          textAlign: 'left',
-          padding: '8px 20px',
-          color: 'var(--ink-3)',
-          fontWeight: 400,
-          letterSpacing: 0.6,
-          textTransform: 'uppercase',
-          fontSize: 10,
-          borderBottom: '1px solid var(--line)',
-        }}>variable</th>
-        <th style={{
-          textAlign: 'left',
-          padding: '8px 20px',
-          color: 'var(--ink-3)',
-          fontWeight: 400,
-          letterSpacing: 0.6,
-          textTransform: 'uppercase',
-          fontSize: 10,
-          borderBottom: '1px solid var(--line)',
-        }}>possible values</th>
-      </tr>
-    </thead>
-    <tbody>
-      {[
-        { name: 'affiliation',  values: ['kid', 'caregiver', 'elder', 'neutral'] },
-        { name: 'present',      values: ['kid', 'caregiver', 'elder'] },
-        { name: 'health',       values: ['healthy', 'MCI'] },
-        { name: 'recurrence',   values: ['never', 'a few times', 'a lot'] },
-        { name: 'fraud-aware',  values: ['yes', 'no', 'not sure'] },
-        { name: 'finances',     values: ['cares about money', 'low-income'] },
-        { name: 'bot tenure',   values: ['short', 'long'] },
-        { name: 'elder goal',   values: ['stay at home', 'appear capable', 'financial freedom', 'avoid embarrassment', "for the son's best interest"] },
-        { name: 'hide reason',  values: ['family conflict', 'privacy'] },
-      ].map((row, i) => (
-        <tr key={row.name} style={{ background: i % 2 === 0 ? 'var(--surface)' : 'transparent' }}>
-          <td style={{
-            padding: '10px 20px',
-            color: 'var(--article-tint, var(--ink-2))',
-            whiteSpace: 'nowrap',
-            verticalAlign: 'top',
-            borderBottom: '1px solid var(--line)',
-          }}>{row.name}</td>
-          <td style={{
-            padding: '10px 20px',
-            color: 'var(--ink-2)',
-            borderBottom: '1px solid var(--line)',
-          }}>
-            {row.values.map((v, j) => (
-              <span key={v}>
-                {j > 0 && <span style={{ color: 'var(--ink-3)', margin: '0 6px' }}>·</span>}
-                {v}
-              </span>
-            ))}
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+<table data-tint-col>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Possible values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>affiliation</td><td>kid · caregiver · elder · neutral</td></tr>
+    <tr><td>present</td><td>kid · caregiver · elder</td></tr>
+    <tr><td>health</td><td>healthy · MCI</td></tr>
+    <tr><td>recurrence</td><td>never · a few times · a lot</td></tr>
+    <tr><td>fraud-aware</td><td>yes · no · not sure</td></tr>
+    <tr><td>finances</td><td>cares about money · low-income</td></tr>
+    <tr><td>bot tenure</td><td>short · long</td></tr>
+    <tr><td>elder goal</td><td>stay at home · appear capable · financial freedom · avoid embarrassment · for the son's best interest</td></tr>
+    <tr><td>hide reason</td><td>family conflict · privacy</td></tr>
+  </tbody>
+</table>
 
 <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--ink-3)', margin: '0 0 32px' }}>
   Variables the bot would need to weigh to make the call alone. The combinatorial space is the point — no fixed script covers all paths.
@@ -703,6 +465,48 @@ Is AI leading? Waiting? Watching? Interrupting? Quietly supporting?
 <p>
 Result of this project was that I prototyped each option for A/B testing, as in startups we "research through launching." But the goal was that "the writer shouldn't think about the AI. They should just feel supported and write better."
 </p>
+
+
+
+<h2 id="pitfalls">§3 · Where to NOT use AI</h2>
+
+<p>
+May 5 is an interesting day I want to mark, as we are now discussing AI fatigue and where not to use AI. I think it might mean a turning point for something.
+</p>
+
+<Figure fig="01" src={aiFatigue} alt="A two-column table titled ‘I feel… / When AI is used for…’ pairing feelings (Bypassed, Reluctant to decide, Distanced, Not human, Don’t want AI here, Drained) with quoted reasons people gave for each." caption="AI fatigue, by feeling — collected from people I’ve been talking with." />
+
+<p>
+If you’ve tried the prompt from the beginning of this article, you probably know what I mean.
+</p>
+
+<p>
+The loop can go on forever:
+</p>
+
+<ul>
+  <li>critique</li>
+  <li>suggest</li>
+  <li>critique the suggestion</li>
+  <li>suggest again</li>
+</ul>
+
+<p>
+Endlessly.
+</p>
+
+<p>
+Someone still has to decide what is enough — and that part still feels deeply human to me.
+</p>
+
+<p>
+Technology is changing, and humans are adapting. But inherently we are not changed that much. We see this in human evolution — many human natures are still “human natures”:
+</p>
+
+<p>
+Like, curiosity. Be curiosity-driven. And embrace human–human connection!
+</p>
+
 
 <p>
 Ties back to this rule of thumb:

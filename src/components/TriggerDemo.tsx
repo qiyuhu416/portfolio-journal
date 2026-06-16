@@ -301,16 +301,6 @@ export function TriggerDemo({ mode, kicker, title, description, dialogue, mechan
         borderTop: '1px solid var(--line)',
       }}
     >
-      {/* Kicker — section identifier, stays at top so the tab and the cell
-          agree on which trigger you're looking at. */}
-      <div style={{
-        fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: 1.6,
-        textTransform: 'uppercase', color: 'var(--article-tint, var(--ink-3))',
-        marginBottom: 14,
-      }}>
-        {kicker}
-      </div>
-
       {/* Trigger title + description — context for what the demo enacts. */}
       <div style={{
         marginBottom: 14,

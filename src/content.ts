@@ -105,6 +105,8 @@ export type QuadrantItem = {
   previews?: PreviewChip[];
   /** Groups items into named sections in multi-section table layouts (e.g. CreateScatter). */
   section?: string;
+  /** Path to a prototype video or image shown in a modal when the row is clicked. */
+  video?: string;
   /** When true, render the link with target=_blank — for CTA items pointing off-site. */
   external?: boolean;
   /** When true, clicking the scatter dot expands the previews inline on the page

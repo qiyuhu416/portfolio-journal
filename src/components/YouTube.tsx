@@ -51,6 +51,7 @@ export function YouTube({
         borderRadius: 8,
         overflow: 'hidden',
         background: 'var(--surface)',
+        boxShadow: '0 8px 24px rgba(31, 30, 27, 0.12)',
       }}>
         <iframe
           src={src}

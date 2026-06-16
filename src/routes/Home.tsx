@@ -20,10 +20,10 @@ function smootherstep(t: number) { return t * t * t * (t * (t * 6 - 15) + 10); }
 //   Sections (HEADER_END → SECTIONS_END):  four section pages
 const CONVERGE_END = 0.08;  // floating → cluster (first half of scroll intro)
 const EXPAND_END   = 0.20;  // cluster → crosshair
-const OVERVIEW_END = 0.22;  // crosshair overview beat ends
-const CLUSTER_END  = 0.32;  // dots re-cluster → directly to Reflect
-const HEADER_END   = 0.32;  // nav icon in header (same as CLUSTER_END, no separate phase)
-const SECTIONS_END = 0.83;
+const OVERVIEW_END = 0.34;  // crosshair overview beat ends — extended for breathing room
+const CLUSTER_END  = 0.40;  // dots re-cluster → directly to Reflect
+const HEADER_END   = 0.40;  // nav icon in header (same as CLUSTER_END, no separate phase)
+const SECTIONS_END = 0.88;
 
 // Header strip height — the nav icon lives here during sections.
 const HEADER_H = 72; // px
@@ -35,8 +35,8 @@ type SectionId = 'reflect' | 'experiment' | 'hear' | 'collaborate';
 // Used in: section headers, quadrant overview labels, and box dot-hover text.
 const SECTION_ACTIVITIES: Record<SectionId, string> = {
   reflect:     'connecting the dots...',
-  experiment:  'how might I...',
-  hear:        'noticing some unknown-unknowns...',
+  experiment:  'what if...',
+  hear:        'learning through hearing...',
   collaborate: 'collaborating to innovate...',
 };
 
@@ -62,10 +62,10 @@ const SECTION_BY_ID: Record<SectionId, typeof SECTIONS[number]> = Object.fromEnt
 
 // Section ranges within the 0–1 scroll progress space.
 const SECTION_RANGES: Record<SectionId, [number, number]> = {
-  reflect:     [HEADER_END, 0.50],
-  experiment:  [0.50, 0.62],
-  collaborate: [0.62, 0.73],
-  hear:        [0.73, SECTIONS_END],
+  reflect:     [HEADER_END, 0.56],
+  experiment:  [0.56, 0.67],
+  collaborate: [0.67, 0.78],
+  hear:        [0.78, SECTIONS_END],
 };
 
 function activeSectionFromProgress(p: number): SectionId {
@@ -512,10 +512,10 @@ export function Home({ onNav }: Props) {
           }}>
             <line x1={dotPositions[0].x} y1={dotPositions[0].y}
                   x2={dotPositions[2].x} y2={dotPositions[2].y}
-              stroke="#c0c0bc" strokeWidth={1} />
+              stroke="#c0c0bc" strokeWidth={1} strokeDasharray="4 6" />
             <line x1={dotPositions[3].x} y1={dotPositions[3].y}
                   x2={dotPositions[1].x} y2={dotPositions[1].y}
-              stroke="#c0c0bc" strokeWidth={1} />
+              stroke="#c0c0bc" strokeWidth={1} strokeDasharray="4 6" />
           </svg>
         )}
 
@@ -1066,22 +1066,31 @@ function ReflectionView({ q, onNav, onHoverSlug }: { q: Quadrant; onNav: NavFn; 
 // (x=56), bottom edge sits on the make horizontal (y=vh-56), so item coords
 // (x: 0=left/1=right, y: 0=top/1=bottom) read against the axis directly.
 function CreateScatter({
-  q, onNav, onSectionJump,
+  q,
 }: {
   q: Quadrant;
-  onNav: NavFn;
-  onSectionJump: (id: SectionId) => void;
+  onNav?: NavFn;
+  onSectionJump?: (id: SectionId) => void;
 }) {
-  const handleClick = (href: string) => (e: React.MouseEvent) => {
-    if (href.startsWith('#section:')) {
-      e.preventDefault();
-      onSectionJump(href.slice(9) as SectionId);
-      return;
-    }
-    clickHandler(href, onNav)(e);
-  };
+  const [modalMedia, setModalMedia] = useState<{ src: string; title: string; dek: string } | null>(null);
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
 
-  const inset = { top: 0, right: 80, bottom: 80, left: 80 };
+  const inset = { top: 72, right: 80, bottom: 80, left: 80 };
+  const PREVIEW_W = 260;
+  const PREVIEW_OFFSET = 12; // gap below cursor
+
+  const rows = q.items.filter(it => it.dek && it.title);
+  const hoveredItem = rows.find(it => `${it.section ?? ''}-${it.dek}` === hoveredKey) ?? null;
+
+  // Clamp preview so it stays within the viewport
+  const previewLeft = cursor
+    ? Math.min(cursor.x, window.innerWidth - PREVIEW_W - 16)
+    : 0;
+  const previewTop = cursor
+    ? Math.min(cursor.y + PREVIEW_OFFSET, window.innerHeight - 280)
+    : 0;
 
   return (
     <div style={{
@@ -1090,17 +1099,18 @@ function CreateScatter({
     }}>
 
       {/* Multi-section table: What if… / How might I… */}
-      <div style={{
-        position: 'absolute',
-        top: '50%', left: 0, right: 0,
-        transform: 'translateY(-50%)',
-        zIndex: 1,
-        maxHeight: '80vh',
-        overflowY: 'auto',
-      }}>
+      <div
+        ref={tableRef}
+        style={{
+          position: 'absolute',
+          top: '50%', left: 0, right: 0,
+          transform: 'translateY(-50%)',
+          zIndex: 1,
+          maxHeight: '80vh',
+          overflowY: 'auto',
+        }}>
         {/* Group rows by section — section header doubles as 2-col label row */}
         {(() => {
-          const rows = q.items.filter(it => it.dek && it.title);
           const sections: string[] = [];
           rows.forEach(it => {
             const s = it.section ?? '';
@@ -1111,9 +1121,8 @@ function CreateScatter({
               {/* Section header: col 1 = section name, col 2 = "Prototype" label */}
               <div style={{
                 display: 'grid', gridTemplateColumns: '1fr 1fr',
-                columnGap: SPACE.xxxl,
+                columnGap: SPACE.xl,
                 padding: `${si === 0 ? 0 : SPACE.xl}px 0 ${SPACE.sm}px`,
-                borderBottom: '2px solid var(--line)',
               }}>
                 <div style={{
                   fontFamily: 'var(--sans)', fontSize: TYPE.kicker.size,
@@ -1126,45 +1135,184 @@ function CreateScatter({
                   textTransform: 'uppercase', color: 'var(--ink-4)',
                 }}>Prototype</div>
               </div>
-              {rows.filter(it => (it.section ?? '') === sec).map((it, i) => (
-                <div key={i} style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr',
-                  columnGap: SPACE.xxxl,
-                  padding: `${SPACE.md}px 0`,
-                  borderBottom: '1px solid var(--line)',
-                  alignItems: 'baseline',
-                }}>
-                  <div style={{
-                    fontFamily: 'var(--serif)', fontStyle: 'italic',
-                    fontSize: 'clamp(14px, 1.15vw, 17px)',
-                    lineHeight: 1.45, color: 'var(--ink-2)',
-                  }}>
-                    {it.dek}
-                  </div>
-                  <a
-                    href={it.href ?? '#'}
-                    onClick={handleClick(it.href ?? '#')}
+              {rows.filter(it => (it.section ?? '') === sec).map((it, i) => {
+                const key = `${it.section ?? ''}-${it.dek}`;
+                const isHovered = hoveredKey === key;
+                return (
+                  <div
+                    key={i}
+                    onClick={it.video ? () => setModalMedia({ src: it.video!, title: it.title, dek: it.dek ?? '' }) : undefined}
+                    onMouseEnter={(e) => {
+                      if (!it.video) return;
+                      setHoveredKey(key);
+                      setCursor({ x: e.clientX, y: e.clientY });
+                    }}
+                    onMouseMove={(e) => {
+                      if (!it.video) return;
+                      setCursor({ x: e.clientX, y: e.clientY });
+                    }}
+                    onMouseLeave={() => { setHoveredKey(null); setCursor(null); }}
                     style={{
+                      display: 'grid', gridTemplateColumns: '1fr 1fr',
+                      columnGap: SPACE.xl,
+                      padding: `${SPACE.lg}px 0`,
+                      borderBottom: '1px solid var(--line)',
+                      alignItems: 'baseline',
+                      cursor: it.video ? 'pointer' : 'default',
+                      transition: 'opacity .15s',
+                      opacity: hoveredKey && !isHovered ? 0.45 : 1,
+                    }}
+                  >
+                    <div style={{
+                      fontFamily: 'var(--serif)', fontStyle: 'italic',
+                      fontSize: 'clamp(14px, 1.15vw, 17px)',
+                      lineHeight: 1.45, color: 'var(--ink-2)',
+                    }}>
+                      {it.dek}
+                    </div>
+                    <div style={{
                       fontFamily: 'var(--sans)',
                       fontSize: 'clamp(13px, 1vw, 15px)',
-                      fontWeight: 500, color: 'var(--ink)',
-                      textDecoration: 'none', lineHeight: 1.45,
-                      transition: 'color .15s ease',
+                      fontWeight: 500, color: isHovered ? 'var(--tint-tr)' : 'var(--ink)',
+                      lineHeight: 1.45,
                       display: 'flex', alignItems: 'baseline',
                       justifyContent: 'space-between', gap: SPACE.sm,
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--tint-tr)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink)')}
-                  >
-                    <span>{it.title}</span>
-                    <span style={{ opacity: 0.4, fontSize: '0.85em', flexShrink: 0 }}>↗</span>
-                  </a>
-                </div>
-              ))}
+                      transition: 'color .15s',
+                    }}>
+                      <span>{it.title}</span>
+                      <svg aria-hidden="true" width="11" height="11" viewBox="0 0 16 16" fill="none"
+                        stroke="var(--ink-4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ flexShrink: 0 }}>
+                        <path d="M3 13L13 3M13 3H6M13 3V10" />
+                      </svg>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ));
         })()}
       </div>
+
+      {/* Hover preview — fixed, follows cursor, always on top */}
+      {hoveredItem?.video && cursor && (
+        <div
+          style={{
+            position: 'fixed',
+            left: previewLeft,
+            top: previewTop,
+            width: PREVIEW_W,
+            background: 'var(--bg)',
+            border: '1px solid var(--line)',
+            borderRadius: 10,
+            overflow: 'hidden',
+            boxShadow: '0 12px 40px rgba(31,30,27,0.18)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}
+        >
+          {hoveredItem.video.endsWith('.png') || hoveredItem.video.endsWith('.jpg') ? (
+            <img
+              src={hoveredItem.video}
+              alt={hoveredItem.title}
+              style={{ display: 'block', width: '100%', height: 'auto', maxHeight: 180, objectFit: 'cover' }}
+            />
+          ) : (
+            <video
+              src={hoveredItem.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ display: 'block', width: '100%', maxHeight: 180, objectFit: 'cover' }}
+            />
+          )}
+          <div style={{ padding: '10px 14px' }}>
+            <div style={{
+              fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 500,
+              color: 'var(--ink-3)', marginBottom: 3,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+            }}>Prototype</div>
+            <div style={{
+              fontFamily: 'var(--sans)', fontSize: 13,
+              color: 'var(--ink)', lineHeight: 1.4,
+            }}>{hoveredItem.title}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Prototype modal — centered overlay matching article modal style */}
+      {modalMedia && (
+        <div onClick={() => setModalMedia(null)} style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'rgba(31,30,27,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '40px 24px',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--bg)',
+            borderRadius: 16,
+            width: '100%', maxWidth: 800,
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 32px 96px rgba(31,30,27,0.28)',
+          }}>
+            {/* Top bar */}
+            <div style={{
+              position: 'sticky', top: 0, zIndex: 5,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 20px',
+              background: 'rgba(250,248,243,0.92)',
+              backdropFilter: 'blur(10px)',
+              borderBottom: '1px solid var(--line)',
+              borderRadius: '16px 16px 0 0',
+            }}>
+              <button onClick={() => setModalMedia(null)} style={{
+                width: 28, height: 28,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                fontSize: 20, lineHeight: 1, color: 'var(--ink-2)',
+                padding: 0, borderRadius: 14,
+              }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(31,30,27,0.06)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >×</button>
+              <div style={{
+                fontFamily: 'var(--sans)', fontSize: 11,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-3)',
+              }}>Prototype</div>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '40px 48px 56px' }}>
+              <div style={{
+                fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 500,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: 'var(--tint-tr)', marginBottom: 16,
+              }}>What if…</div>
+              <h2 style={{
+                fontFamily: 'var(--font-primary)', fontWeight: 400,
+                fontSize: 'clamp(28px, 3.2vw, 42px)', lineHeight: 1.04,
+                margin: '0 0 12px', letterSpacing: '-0.01em',
+              }}>{modalMedia.title}</h2>
+              <p style={{
+                fontFamily: 'var(--font-primary)', fontStyle: 'italic',
+                fontSize: 17, color: 'var(--ink-3)', margin: '0 0 32px',
+              }}>{modalMedia.dek}</p>
+
+              {modalMedia.src.endsWith('.png') || modalMedia.src.endsWith('.jpg') ? (
+                <img src={modalMedia.src} alt={modalMedia.title}
+                  style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8, objectFit: 'contain', background: 'var(--surface)' }}
+                />
+              ) : (
+                <video src={modalMedia.src} controls autoPlay playsInline
+                  style={{ display: 'block', width: '100%', borderRadius: 8, background: '#000' }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1185,6 +1333,7 @@ type LearnValue = {
   label: string;
   pos: { x: number; y: number };
   href?: string;
+  cardPreview?: { platform?: string; title: string; body: string };
 };
 type LearnQuote = {
   quote: string;
@@ -1197,7 +1346,14 @@ type LearnQuote = {
 };
 const LEARN_VALUES: LearnValue[] = [
   { id: 'initiating', label: 'Initiating Events @Apple',       pos: { x: 0.38, y: 0.27 }, href: '#article:vibe-coding-meetup-at-apple-park' },
-  { id: 'strangers',  label: 'Meeting Strangers from Anywhere', pos: { x: 0.54, y: 0.52 }, href: 'https://www.linkedin.com/posts/qiyu-hu_title-doesnt-matter-qiyu-activity-7404207024164683776-rEWv' },
+  { id: 'strangers',  label: 'Meeting Strangers from Anywhere', pos: { x: 0.54, y: 0.52 },
+    href: 'https://www.linkedin.com/feed/update/urn:li:activity:7404207024164683776/',
+    cardPreview: {
+      platform: 'LinkedIn',
+      title: 'Title doesn\'t matter — Qiyu',
+      body: 'Hi all, I\'m running a small experiment. I\'d love to see what happens if I open an opportunity for anyone to book a time with me to meet in person. Literally anyone (any age, any background), as long as you\'re in the Bay Area.',
+    },
+  },
   { id: 'passion',    label: 'Passion',                         pos: { x: 0.22, y: 0.44 } },
   { id: 'mindset',    label: 'Mindset',                         pos: { x: 0.82, y: 0.40 } },
 ];
@@ -1224,12 +1380,6 @@ const LEARN_QUOTES: LearnQuote[] = [
     who: 'Jessica H.', value: 'mindset', pos: { x: 0.82, y: 0.72 },
     articleSlug: 'how-i-use-ai-to-create', sectionId: 'pitfalls' },
 ];
-function HearDots({ onNav }: { q?: Quadrant; onNav: NavFn }) {
-  // Integrate the 2 attention items as clickable nodes in LearnQuotes
-  // by adding them to LEARN_VALUES and wiring click handlers via LearnQuotes rendering
-  return <LearnQuotes onNav={onNav} />;
-}
-
 function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // Mutable position state — keyed by node id (`q:${i}` or `v:${id}`).
   // Initialized from LEARN_*.pos; drag updates these in place.
@@ -1334,9 +1484,10 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
   // suppressed for the dragged node (cursor stays planted) and for the
   // hub-of-the-dragged-quote case (so connected lines don't visibly jitter
   // around the cursor anchor).
-  const t = floatTick * 0.016;
+  const t = floatTick * 0.004;
   const driftFor = (id: string, idx: number) => {
     if (draggedId === id) return { dx: 0, dy: 0 };
+    if (hoveredId === id) return { dx: 0, dy: 0 };
     return {
       dx: Math.sin(t + idx * 1.3) * 0.018,
       dy: Math.cos(t * 0.85 + idx * 1.7) * 0.014,
@@ -1481,7 +1632,7 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
               {/* Dot + hit target — anchored exactly at (p.x, p.y). */}
               <span
                 onPointerDown={startDrag(id)}
-                onClick={v.href ? (e) => clickHandler(v.href!, onNav)(e) : undefined}
+                onClick={v.href ? () => window.open(v.href!, '_blank', 'noopener,noreferrer') : undefined}
                 onMouseEnter={() => setHoveredId(id)}
                 onMouseLeave={() => setHoveredId(null)}
                 style={{
@@ -1514,6 +1665,38 @@ function LearnQuotes({ onNav }: { onNav: NavFn }) {
               }}>
                 {v.label}
               </span>
+              {/* Hover card preview — only for hubs with cardPreview */}
+              {v.cardPreview && hoveredId === id && (
+                <div style={{
+                  position: 'absolute',
+                  left: '50%', top: HUB_DOT / 2 + 52,
+                  transform: 'translateX(-50%)',
+                  width: 240,
+                  background: 'var(--bg)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 10,
+                  boxShadow: '0 8px 32px rgba(31,30,27,0.14)',
+                  padding: '12px 14px',
+                  zIndex: 10,
+                  pointerEvents: 'none',
+                }}>
+                  {v.cardPreview.platform && (
+                    <div style={{
+                      fontFamily: 'var(--sans)', fontSize: 10, fontWeight: 500,
+                      letterSpacing: '0.08em', textTransform: 'uppercase',
+                      color: 'var(--tint-bl)', marginBottom: 6,
+                    }}>{v.cardPreview.platform}</div>
+                  )}
+                  <div style={{
+                    fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500,
+                    color: 'var(--ink)', marginBottom: 6, lineHeight: 1.3,
+                  }}>{v.cardPreview.title}</div>
+                  <div style={{
+                    fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-3)',
+                    lineHeight: 1.5,
+                  }}>{v.cardPreview.body}</div>
+                </div>
+              )}
             </div>
           );
         })}
@@ -1683,21 +1866,24 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      overflow: 'auto',
+      overflow: 'hidden',
       boxSizing: 'border-box',
-      paddingTop: 32,
-      paddingBottom: 32,
+      padding: '24px 0',
       pointerEvents: 'auto',
+      display: 'flex',
+      alignItems: 'center',
     }}>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        columnGap: SPACE.xxl,
-        rowGap: SPACE.xxl,
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+        columnGap: SPACE.lg,
+        rowGap: SPACE.lg,
         maxWidth: 960,
+        width: '100%',
+        height: '100%',
         margin: '0 auto',
         pointerEvents: 'auto',
-        alignItems: 'start',
       }}>
         {GALLERY_ITEMS.map((item, i) => {
           const hovered = hoverIdx === i;
@@ -1716,8 +1902,8 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                 transition: 'opacity .2s ease',
               }}
             >
-              {/* Image + logo overlay */}
-              <div style={{ aspectRatio: '4/3', overflow: 'hidden', borderRadius: 4, position: 'relative', background: 'var(--surface)' }}>
+              {/* Image + logo overlay — fills available height, caption is fixed below */}
+              <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', borderRadius: 4, position: 'relative', background: 'var(--surface)' }}>
                 <img
                   src={item.image}
                   alt={item.meta}

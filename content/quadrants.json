@@ -60,51 +60,56 @@
     "items": [
       {
         "section": "What if…",
-        "tag": "Lazy AI",
-        "title": "Just learn through watching AI agents talk",
-        "dek": "I can be super lazy",
+        "tag": "fill out",
+        "title": "Select-and-fill prompts for chatbots",
+        "dek": "I don't need to type the full sentence",
         "meta": "",
-        "href": "#"
+        "href": "#",
+        "video": "/ideas/select-n-fill-prompt.mov"
       },
       {
         "section": "What if…",
-        "tag": "No prompt",
-        "title": "Voice, gesture, or ambient sensing — anything but text",
-        "dek": "You never had to type a prompt",
+        "tag": "Play",
+        "title": "Voice & gesture — anything but text-based prompt",
+        "dek": "I am too lazy to type",
         "meta": "",
-        "href": "#"
+        "href": "#",
+        "video": "/ideas/contextual-ask.mov"
+      },
+      {
+        "section": "What if…",
+        "tag": "Lazy AI",
+        "title": "Doing nothing but just watching AI-AI interaction",
+        "dek": "... even lazier",
+        "meta": "",
+        "href": "#",
+        "video": "/ideas/ai-ai-inetraction.mov"
       },
       {
         "section": "What if…",
         "tag": "Future self",
         "title": "Leave a message to your future self — AI delivers it at the right moment",
-        "dek": "AI knew your future self better than today-you",
+        "dek": "There is no boundary of time",
         "meta": "",
         "href": "#"
       },
       {
         "section": "What if…",
         "tag": "Thought graph",
-        "title": "Render your chain of thought as a live knowledge graph",
+        "title": "The chain of thought for users",
         "dek": "Thinking out loud had a shape",
         "meta": "",
-        "href": "#"
+        "href": "#",
+        "video": "/ideas/visualize-knowledge-graph.mov"
       },
       {
         "section": "What if…",
         "tag": "Opinionated AI",
-        "title": "Opinionated responses — AI that pushes back, disagrees, and advocates for you",
+        "title": "AI can pushes back, complete, or advocates for you",
         "dek": "AI had a point of view",
         "meta": "",
-        "href": "#"
-      },
-      {
-        "section": "What if…",
-        "tag": "Play",
-        "title": "Making work driven by passion, not FOMO",
-        "dek": "Work could be passion-driven, not FOMO-driven",
-        "meta": "06 · 5 min",
-        "href": "#article:making-design-fun"
+        "href": "#",
+        "video": "/ideas/ai-push-back.png"
       }
     ]
   },

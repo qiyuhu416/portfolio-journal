@@ -18,8 +18,7 @@ export function Sidebar({ label, children }: Props) {
       data-sidebar
       style={{
         margin: '28px auto',
-        padding: '20px 24px 20px 28px',
-        borderLeft: '3px solid #C13D2F',
+        padding: '20px 24px',
         borderRadius: 8,
         background: 'var(--surface)',
         font: 'var(--text-callout)',
@@ -27,9 +26,9 @@ export function Sidebar({ label, children }: Props) {
       }}
     >
       <div style={{
-        font: 'var(--text-caption-2)',
+        font: 'var(--text-kicker)',
         letterSpacing: 1.4,
-        textTransform: 'uppercase', color: '#C13D2F',
+        textTransform: 'uppercase', color: 'var(--nav-accent)',
         marginBottom: 14,
       }}>
         {label}
