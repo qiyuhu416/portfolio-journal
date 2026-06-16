@@ -963,19 +963,6 @@ function SectionView({
   }
 }
 
-function _clickHandler(href: string, onNav: NavFn) {
-  return (e: React.MouseEvent) => {
-    if (href.startsWith('#article:')) {
-      e.preventDefault();
-      onNav('article:' + href.slice(9));
-    } else if (href === '#signals' || href === '#loops') {
-      e.preventDefault();
-      onNav(href.slice(1));
-    } else if (href === '#') {
-      e.preventDefault();
-    }
-  };
-}
 
 // ——— Experience timeline ———
 const EXPERIENCES = [
