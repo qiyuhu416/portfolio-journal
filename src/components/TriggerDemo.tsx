@@ -255,7 +255,7 @@ function totalDuration(dialogue: DialogueStep[]): number {
   return dialogue.reduce((sum, s) => sum + stepDuration(s), 0);
 }
 
-export function TriggerDemo({ mode, kicker, title, description, dialogue, mechanism, economics }: Props) {
+export function TriggerDemo({ mode, title, description, dialogue, mechanism, economics }: Props) {
   const total = totalDuration(dialogue);
   const startOffset = useRef(mode === 'tick' ? 0 : mode === 'pause' ? 600 : 1200);
 

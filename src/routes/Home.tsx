@@ -963,7 +963,7 @@ function SectionView({
   }
 }
 
-function clickHandler(href: string, onNav: NavFn) {
+function _clickHandler(href: string, onNav: NavFn) {
   return (e: React.MouseEvent) => {
     if (href.startsWith('#article:')) {
       e.preventDefault();
