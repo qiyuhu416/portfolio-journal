@@ -91,7 +91,8 @@
         "title": "Voice & gesture — anything but text-based prompt",
         "dek": "There is no boundary of time",
         "meta": "",
-        "href": "#article:making-design-fun"
+        "href": "#article:making-design-fun",
+        "previews": [{ "src": "/ideas/hand-gesture-thumb.jpg", "label": "gesture" }]
       },
       {
         "section": "What if…",
