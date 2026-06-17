@@ -1795,16 +1795,16 @@ const GALLERY_ITEMS = [
     tag: '0 → 1 pre PMF',
     impact: 'App launch with six business partners',
     meta: 'Meetfood · Founding Designer',
-    image: '/projects/meetfood-before.png',
+    image: '/projects/work-0-1.png',
     hoverImage: '/projects/meetfood-after.png',
     logo: '/logos/meetfood.png',
     href: 'https://www.key-you-who.com/projects/app-launch',
   },
   {
     tag: 'Conversational AI',
-    impact: 'Research-to-prototype in 4 months (SUS 86.3)',
+    impact: 'Research-to-prototype in 4 months (launched in 2025',
     meta: 'Google Cloud · UX Designer',
-    image: '/projects/google-cloud-product.png',
+    image: '/projects/work-google.png',
     hoverImage: '/projects/google-cloud-after.png',
     logo: '/logos/google-cloud.png',
     href: 'https://www.key-you-who.com/projects/google-cloud',
@@ -1813,16 +1813,16 @@ const GALLERY_ITEMS = [
     tag: 'Audio AI',
     impact: 'A working call agent built in a week of prompt engineering.',
     meta: 'The Mentoring Partnership · Prototyper',
-    image: '/projects/mentoring-product.png',
+    image: '/projects/work-audio-ai.png',
     hoverImage: '/projects/mentoring-after.png',
     logo: '/logos/mentoring.png',
     href: 'https://www.key-you-who.com/projects/prototyping-with-ai',
   },
   {
     tag: 'Service design',
-    impact: 'Hi-fi prototypes drove real-world adoption (SUS 90.3)',
+    impact: 'Research through design with physical prototyping',
     meta: 'Automotus · Service Designer',
-    image: '/projects/automotus-before.png',
+    image: '/projects/work-service-design.png',
     hoverImage: '/projects/automotus-after.png',
     logo: '/logos/automotus.png',
     href: 'https://www.key-you-who.com/projects/design-as-a-research-tool',
@@ -1831,7 +1831,7 @@ const GALLERY_ITEMS = [
     tag: 'Physical AI',
     impact: 'Embedding diagnostic AI into a clinical workflow',
     meta: 'Archetype AI × Roche · UX Designer',
-    image: '/projects/roche-before.png',
+    image: '/projects/work-roche.png',
     hoverImage: '/projects/roche-after.png',
     logo: '/logos/archetype-roche.png',
     href: 'https://www.linkedin.com/posts/tantara_its-a-wrap-for-the-inaugural-strange-design-ugcPost-7229713649941028865-kYh4/',
@@ -1889,15 +1889,15 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                 transition: 'opacity .2s ease',
               }}
             >
-              {/* Image + logo overlay — fills available height, caption is fixed below */}
-              <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', borderRadius: 4, position: 'relative', background: 'var(--surface)' }}>
+              {/* Image + logo overlay — fixed height so all cards are uniform */}
+              <div style={{ height: 180, flexShrink: 0, overflow: 'hidden', borderRadius: 4, position: 'relative', background: '#fff' }}>
                 <img
                   src={item.image}
                   alt={item.meta}
                   style={{
                     display: 'block', width: '100%', height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center top',
+                    objectFit: 'contain',
+                    objectPosition: 'center center',
                     transform: hovered && item.href ? 'scale(1.04)' : 'scale(1)',
                     transition: 'transform .4s cubic-bezier(.2,.7,.2,1)',
                   }}
@@ -1907,10 +1907,10 @@ function WorkGrid({ q: _q }: { q: Quadrant; onNav: NavFn }) {
                   alt=""
                   style={{
                     position: 'absolute', bottom: 8, left: 8,
-                    width: hovered ? '35%' : '30%', height: 'auto',
+                    width: hovered ? (item.tag === 'Physical AI' ? '60%' : '30%') : '30%', height: 'auto',
                     objectFit: 'contain',
                     opacity: hovered ? 1 : 0,
-                    transition: 'opacity .25s ease, width .3s cubic-bezier(.2,.7,.2,1)',
+                    transition: 'opacity .25s ease, width .4s cubic-bezier(.2,.7,.2,1)',
                   }}
                 />
               </div>

@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Editorial style guide</title>
+  <title>Design System — Apple HIG</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
+      /* ——— Graphite palette ———
+         Editorial monochrome on warm parchment. */
       --bg: #FFFFFF;
       --ink: #1A1814;
       --ink-2: #45403A;
@@ -16,510 +18,428 @@
       --ink-4: #B0AA9C;
       --line: #E5E5E2;
       --surface: #F1F1F1;
-      --article-tint: #7F9580;
-      --serif:   'Source Serif 4', 'Times', serif;
-      --sans:    'Inter', 'Helvetica', sans-serif;
-      --reading: 'Source Serif 4', 'Times', serif;
-      --mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+      /* Quadrant tints */
+      --tint-tl: #C66243;
+      --tint-tr: #DB9230;
+      --tint-bl: #5A75A0;
+      --tint-br: #80A07E;
+      --tint-plum: #9C7AB5;
+      --signal: #C13D2F;
+      --accent-glow: #F5D982;
+
+      /* Font families — SF Pro (Apple's system font) + JetBrains Mono */
+      --font-primary: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Arial', sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
     }
+
     html, body { margin: 0; padding: 0; background: var(--bg); }
     body {
-      font-family: var(--sans);
+      font-family: var(--font-primary);
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
     * { box-sizing: border-box; }
 
-    /* Page chrome — a sticky top strip with the title */
+    /* Page chrome */
     .page-header {
       position: sticky; top: 0; z-index: 10;
       padding: 14px 32px;
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--line);
-      font-family: var(--mono);
+      font-family: var(--font-mono);
       font-size: 11px; letter-spacing: 1.4px;
       text-transform: uppercase; color: var(--ink-3);
     }
     .page-header strong { color: var(--ink); font-weight: 500; }
 
-    /* Annotation labels — sit alongside each component example */
-    .annot {
-      max-width: 800px;
-      margin: 48px auto 8px;
+    /* Section headers */
+    .section-header {
+      max-width: 1000px;
+      margin: 64px auto 32px;
       padding: 0 32px;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--article-tint);
+      border-top: 1px solid var(--line);
+      padding-top: 32px;
     }
-    .annot .desc {
-      display: block;
-      margin-top: 6px;
-      font-family: var(--sans);
-      font-size: 13px;
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--ink-3);
-      line-height: 1.5;
-      max-width: 600px;
-    }
-
-    /* ============= Article body — mirror of JournalArticle.css ============= */
-    .article-body {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 32px;
-      font-family: var(--reading);
-      font-size: 19px;
-      line-height: 1.6;
-      color: var(--ink);
-    }
-    .article-body p {
-      margin: 0 0 1.4em;
-      text-wrap: pretty;
-    }
-    .article-body h2 {
-      font-family: var(--serif);
-      font-size: clamp(28px, 3vw, 36px);
-      line-height: 1.1;
-      letter-spacing: -0.6px;
-      font-weight: 400;
-      margin: 56px 0 24px;
-      color: var(--ink);
-    }
-    .article-body h3 {
-      font-family: var(--serif);
-      font-size: 21px;
-      line-height: 1.25;
-      margin: 36px 0 10px;
+    .section-header h2 {
+      margin: 0 0 8px;
+      font-family: var(--font-primary);
+      font-size: 24px;
       font-weight: 600;
+      color: var(--ink);
     }
-    .article-body strong { font-weight: 500; color: var(--ink); }
-    .article-body em { font-style: italic; }
-    .article-body ul, .article-body ol {
-      padding-left: 24px;
-      margin: 0 0 1.4em;
-    }
-    .article-body li { margin: 0 0 .5em; }
-    .article-body a {
-      color: var(--article-tint);
-      border-bottom: 1px solid currentColor;
-      padding-bottom: 1px;
-    }
-    .article-body blockquote {
-      margin: 32px 0;
-      padding: 0 0 0 22px;
-      border-left: 3px solid var(--article-tint);
-      font-family: var(--reading);
-      font-style: italic;
-      font-size: 19px;
-      line-height: 1.55;
-      color: var(--ink-2);
-    }
-    .article-body hr {
-      border: none;
-      border-top: 1px solid var(--line);
-      margin: 48px auto;
-      max-width: 120px;
-    }
-    .article-body code {
-      font-family: var(--mono);
+    .section-header p {
+      margin: 0;
       font-size: 15px;
-      background: var(--surface);
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-    /* Raw table */
-    .article-body table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin: 32px 0;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      overflow: hidden;
-      font-size: 16px;
+      color: var(--ink-3);
       line-height: 1.5;
     }
-    .article-body table th {
-      text-align: left;
-      padding: 14px 20px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--line);
-      font-weight: 500;
-      font-size: 14px;
-      color: var(--ink-2);
-    }
-    .article-body table th + th { border-left: 1px solid var(--line); }
-    .article-body table td {
-      padding: 18px 20px;
-      border-top: 1px solid var(--line);
-      vertical-align: top;
-      color: var(--ink);
-    }
-    .article-body table tbody tr:first-child td { border-top: none; }
-    .article-body table td + td {
-      border-left: 1px solid var(--line);
-      color: var(--ink-2);
-    }
-    .article-body table strong { color: var(--ink); }
 
-    /* Lede */
-    .lede {
-      font-family: var(--reading);
-      font-style: italic;
-      font-weight: 400;
-      font-size: 22px;
-      line-height: 1.4;
-      color: var(--ink);
-      max-width: 680px;
-      margin: 0 auto 40px;
+    /* Type spec card */
+    .type-card {
+      max-width: 1000px;
+      margin: 24px auto;
       padding: 0 32px;
     }
-
-    /* Aside */
-    .aside {
-      max-width: 680px;
-      margin: 28px auto;
-      padding-left: 28px;
-      padding-right: 32px;
-      font-family: var(--reading);
-      font-style: italic;
-      font-size: 17px;
-      line-height: 1.55;
-      color: var(--ink-3);
-    }
-    .aside-wrap { max-width: 680px; margin: 0 auto; padding: 0 32px; }
-
-    /* PullQuote — italic, larger, centered, no surface */
-    .pull-quote {
-      max-width: 680px;
-      margin: 40px auto;
-      padding: 0 32px;
-      font-family: var(--reading);
-      font-style: italic;
-      font-weight: 400;
-      font-size: 28px;
-      line-height: 1.35;
-      color: var(--ink);
-      text-align: left;
-      text-wrap: balance;
-    }
-    .pull-quote-attr {
-      display: block;
-      margin-top: 14px;
-      font-family: var(--mono);
-      font-style: normal;
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--ink-3);
-    }
-
-    /* Sidebar — neutral card with mono kicker */
-    .sidebar {
-      max-width: 680px;
-      margin: 36px auto;
-      padding: 24px 28px;
+    .type-example {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center;
+      padding: 32px;
       background: var(--surface);
       border-radius: 12px;
-      font-family: var(--reading);
-      font-size: 17px;
-      line-height: 1.55;
-      color: var(--ink-2);
-    }
-    .sidebar-kicker {
-      display: block;
-      margin-bottom: 14px;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--article-tint);
-    }
-    .sidebar ul {
-      margin: 0;
-      padding-left: 18px;
-      line-height: 1.55;
-    }
-
-    /* HMWTable */
-    .hmw-table {
-      max-width: 680px;
-      margin: 40px auto;
-      padding: 0 32px;
-    }
-    .hmw-inner {
-      border-radius: 10px;
       border: 1px solid var(--line);
-      overflow: hidden;
+      margin-bottom: 24px;
     }
-    .hmw-header, .hmw-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+    .type-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    .hmw-header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--line);
-    }
-    .hmw-row {
-      border-bottom: 1px solid var(--line);
-    }
-    .hmw-row:last-child { border-bottom: none; }
-    .hmw-cell {
-      padding: 14px 20px;
-      border-right: 1px solid var(--line);
-      font-size: 16px;
-      line-height: 1.5;
-      color: var(--ink);
-    }
-    .hmw-cell.soft { color: var(--ink-2); }
-    .hmw-cell:last-child { border-right: none; }
-    .hmw-header .hmw-cell {
-      font-size: 14px;
+    .type-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
       font-weight: 500;
-      color: var(--ink-2);
-    }
-    .hmw-cell ul {
-      margin: 0;
-      padding-left: 18px;
-      font-size: 14px;
-      line-height: 1.5;
       color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
     }
-
-    /* Figure */
-    .figure {
-      max-width: 680px;
-      margin: 40px auto;
-      padding: 0 32px;
-    }
-    .figure-img {
-      aspect-ratio: 16 / 9;
-      background: var(--surface);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--ink-4);
-      font-family: var(--mono);
+    .type-spec {
+      font-family: var(--font-mono);
       font-size: 12px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-    }
-    .figure-cap {
-      margin-top: 12px;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--ink-3);
+      color: var(--ink-4);
       line-height: 1.5;
     }
-    .figure-cap .num { color: var(--article-tint); margin-right: 8px; }
+    .type-right {
+      text-align: right;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .apple-hig {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-family: var(--font-primary);
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+    .apple-hig strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
 
-    /* InlineTOC — inline state */
-    .toc {
-      max-width: 680px;
-      margin: 40px auto;
+    /* Color swatches */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
       padding: 0 32px;
     }
-    .toc-intro {
-      font-family: var(--reading);
-      font-style: italic;
-      font-size: 19px;
-      line-height: 1.55;
-      color: var(--ink-2);
-      margin: 0 0 16px;
+    .color-swatch {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
     }
-    .toc-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      counter-reset: toc;
+    .color-sample {
+      height: 80px;
+      width: 100%;
     }
-    .toc-list li {
-      counter-increment: toc;
-      font-family: var(--reading);
-      font-size: 18px;
-      line-height: 1.5;
-      padding: 6px 0;
-      color: var(--ink);
+    .color-info {
+      padding: 12px;
+      background: var(--surface);
+      font-size: 13px;
     }
-    .toc-list li::before {
-      content: counter(toc, decimal-leading-zero);
-      font-family: var(--mono);
+    .color-name {
+      font-family: var(--font-mono);
       font-size: 11px;
-      letter-spacing: 1.4px;
+      font-weight: 500;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .color-value {
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
       color: var(--ink-4);
-      margin-right: 14px;
+    }
+
+    /* Spacing scale */
+    .spacing-table {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+    .spacing-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 60px;
+      gap: 24px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .spacing-row strong {
+      font-weight: 500;
+      color: var(--ink);
     }
   </style>
 </head>
 <body>
 
 <div class="page-header">
-  <strong>Editorial style guide</strong> &nbsp;·&nbsp; every treatment, named, with when-to-use notes
+  <strong>Design System</strong> &nbsp;·&nbsp; Apple Human Interface Guidelines
 </div>
 
-<!-- ============ BODY + INLINE ============ -->
-<div class="annot">Body paragraph <span class="desc">Default voice. Serif (Source Serif 4), 19px, line-height 1.6, ink. Most of your writing should be this.</span></div>
-<div class="article-body">
-  <p>This is a body paragraph. Most of your prose should look exactly like this — serif, 19px, line-height 1.6. If a sentence doesn't need to be set apart, it shouldn't be.</p>
+<!-- ============ OVERVIEW ============ -->
+<div class="section-header">
+  <h2>Overview</h2>
+  <p>This design system follows Apple's Human Interface Guidelines. Uses SF Pro (Apple's system typeface) for all text, with JetBrains Mono for code.</p>
 </div>
 
-<div class="annot">Inline emphasis <span class="desc">Strong (500 weight), em (italic), code (mono on surface), InlineLink (tint-colored with underline), ExternalLink (also tint, possibly with an icon).</span></div>
-<div class="article-body">
-  <p>Inline emphasis: <strong>strong (bold)</strong> for stress, <em>italic (em)</em> for terms or named things. Link to another article: <a href="#">InlineLink</a>. Link outbound: <a href="#">ExternalLink</a>. Literal token: <code>code</code>. File path: <code>src/components/Lede.tsx</code>.</p>
+<!-- ============ TYPOGRAPHY — Apple HIG ============ -->
+<div class="section-header">
+  <h2>Typography</h2>
+  <p>Eight official type styles from Apple Human Interface Guidelines. All use SF Pro with semantic naming.</p>
 </div>
 
-<!-- ============ H2 / H3 ============ -->
-<div class="annot">H2 — section heading <span class="desc">Serif, 28–36px, plain. Format: §N · Title. Used for every major section of an article.</span></div>
-<div class="article-body">
-  <h2>§1 · Section heading example</h2>
-  <p>Each major section of an article opens with one of these. Plain serif, no emoji (the thinking-outside-the-box exception aside).</p>
+<!-- Large Title -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Large Title</div>
+      <div class="type-spec">SF Pro · 400<br>34px / 1.206</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Used for main screen headers and primary titles. The largest standard type size for commanding visual hierarchy.</div>
+    </div>
+    <div class="type-right">Large</div>
+  </div>
 </div>
 
-<div class="annot">H3 — sub-heading <span class="desc">Serif 500, 26px. For numbered claims or sub-points inside a section. Replaced the older &lt;MicroHeading&gt; component.</span></div>
-<div class="article-body">
-  <h3>1. A numbered claim or sub-point</h3>
-  <p>H3 is for enumerable points within a section. The leading number is just a writing convention; visually it's a plain h3.</p>
+<!-- Title -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Title</div>
+      <div class="type-spec">SF Pro · 400<br>28px / 1.214</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Primary section headers. Used for important labeled sections within a screen or the titles of modal dialogs and alerts.</div>
+    </div>
+    <div class="type-right">Primary</div>
+  </div>
 </div>
 
-<!-- ============ ASIDE ============ -->
-<div class="annot">Aside <span class="desc">Italic indent, 17px, ink-3. For offhand commentary, parenthetical asides, "lol I once said…". No card, no border. Earns its set-apart voice through italic + softer color.</span></div>
-<div class="aside-wrap">
-  <aside class="aside">This is an Aside. It feels like a side-thought, not a structured callout. If your set-apart block needs a label, it's probably a Sidebar.</aside>
+<!-- Headline -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Headline</div>
+      <div class="type-spec">SF Pro · 600<br>17px / 1.294</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Tappable labels and section headers. The semi-bold weight (600) gives visual emphasis without increasing size. Use for control labels and important text.</div>
+    </div>
+    <div class="type-right">Emphasis</div>
+  </div>
 </div>
 
-<!-- ============ BLOCKQUOTE ============ -->
-<div class="annot">blockquote <span class="desc">Italic with a left-border in the article's tint. The single voice for set-apart speech — quoted text (a prompt, transcript, named source) OR your own thesis moments. PullQuote has been retired; blockquote covers both jobs now.</span></div>
-<div class="article-body">
-  <blockquote>This is a blockquote. The left border + italic says "this is something worth landing on." Use it for quoted text or your own punchy thesis line.</blockquote>
+<!-- Body -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Body</div>
+      <div class="type-spec">SF Pro · 400<br>17px / 1.294</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Primary body text in lists, paragraphs, and content areas. Default reading size. Most text should be this weight and size. Readable at arm's length without strain.</div>
+    </div>
+    <div class="type-right">Default</div>
+  </div>
 </div>
 
-<div class="annot">blockquote with attribution <span class="desc">Add the source as a line inside the blockquote at the end.</span></div>
-<div class="article-body">
-  <blockquote>
-    For attribution, just add a line inside the blockquote at the end.
-    <br /><br />
-    — a draft from March
-  </blockquote>
+<!-- Subheadline -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Subheadline</div>
+      <div class="type-spec">SF Pro · 400<br>15px / 1.333</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Secondary labels and supporting text. Smaller than body but still readable. Use for descriptive text below primary labels and in smaller containers.</div>
+    </div>
+    <div class="type-right">Secondary</div>
+  </div>
 </div>
 
-<!-- ============ SIDEBAR ============ -->
-<div class="annot">Sidebar <span class="desc">Neutral surface card with a mono uppercase kicker label. For structured content where the label is doing real editorial work (a definition, a procedure, a self-contained aside that earns its own title).</span></div>
-<div class="sidebar">
-  <span class="sidebar-kicker">When to use a Sidebar</span>
-  <ul>
-    <li>The block contains structured content (a list, a sub-flow, a diagram)</li>
-    <li>The block deserves its own title — the kicker label is editorial, not "Example"</li>
-    <li>You'd want the reader to be able to navigate to it as a unit</li>
-  </ul>
+<!-- Callout -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Callout</div>
+      <div class="type-spec">SF Pro · 400<br>16px / 1.313</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Emphasized body text in callout boxes, sidebars, and explanatory notes. Slightly smaller than body (16px vs 17px) but maintains excellent readability in bounded containers.</div>
+    </div>
+    <div class="type-right">Callout</div>
+  </div>
 </div>
 
-<!-- ============ UL / OL ============ -->
-<div class="annot">Unordered list <span class="desc">For short itemized lists where order doesn't matter. Plain bullets, indented under the body column.</span></div>
-<div class="article-body">
-  <ul>
-    <li>For short itemized lists where order doesn't matter</li>
-    <li>One bullet per item, indented under the body column</li>
-    <li>Avoid nesting more than one level deep</li>
-  </ul>
+<!-- Caption 1 -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Caption 1</div>
+      <div class="type-spec">SF Pro · 400<br>13px / 1.385</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Secondary supporting text. Used for image captions, timestamps, and descriptive text below primary content. Still readable at standard viewing distance.</div>
+    </div>
+    <div class="type-right">Small</div>
+  </div>
 </div>
 
-<div class="annot">Ordered list <span class="desc">For procedures or sequenced steps. Same rhythm as ul, just numbered. Use when the count itself is meaningful.</span></div>
-<div class="article-body">
-  <ol>
-    <li>For procedures or anything where order matters</li>
-    <li>Same visual rhythm as the unordered list, just numbered</li>
-    <li>Use this when the count itself is meaningful</li>
-  </ol>
+<!-- Caption 2 -->
+<div class="type-card">
+  <div class="type-example">
+    <div class="type-left">
+      <div class="type-name">Caption 2</div>
+      <div class="type-spec">SF Pro · 400<br>12px / 1.333</div>
+      <div class="apple-hig"><strong>Apple HIG:</strong> Tertiary text and tiny labels. Used for metadata, table headers, and secondary labels. The smallest standard type size that remains readable at normal distance.</div>
+    </div>
+    <div class="type-right">Tiny</div>
+  </div>
 </div>
 
-<!-- ============ TABLE ============ -->
-<div class="annot">Raw &lt;table&gt; <span class="desc">For 2–3 column comparison data. Bordered card, rounded corners, surface header row, hairline separators. First column reads at full ink, others at ink-2.</span></div>
-<div class="article-body">
-  <table>
-    <thead>
-      <tr>
-        <th>Treatment</th>
-        <th>When to use</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td><strong>Aside</strong></td><td>Short, italic, no label.</td></tr>
-      <tr><td><strong>blockquote</strong></td><td>Quoted text from a source.</td></tr>
-      <tr><td><strong>PullQuote</strong></td><td>Your own thesis statement.</td></tr>
-      <tr><td><strong>Sidebar</strong></td><td>Labeled structured content.</td></tr>
-    </tbody>
-  </table>
+<!-- ============ COLOR PALETTE ============ -->
+<div class="section-header">
+  <h2>Color Palette</h2>
+  <p>Graphite neutrals with chromatic quadrant tints. Color appears only on active states; the page is monochrome at rest.</p>
 </div>
 
-<!-- ============ HMW TABLE ============ -->
-<div class="annot">HMWTable <span class="desc">A typed 3-column "How Might We" grid (Error found / How might we / Potential solutions). Renders as a real &lt;table&gt;, so it inherits the same styling as the raw table above — same fonts, same borders, same width. Only the column structure is locked in.</span></div>
-<div class="article-body">
-  <table>
-    <thead>
-      <tr>
-        <th>Error found</th>
-        <th>How might we</th>
-        <th>Potential solutions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>The AI confidently makes things up</td>
-        <td>How might we surface uncertainty in-line?</td>
-        <td>
-          <ul style="margin: 0; padding-left: 18px;">
-            <li>Confidence pill next to each claim</li>
-            <li>Italic + grey for low-confidence spans</li>
-          </ul>
-        </td>
-      </tr>
-      <tr>
-        <td>Users can't tell what was AI vs human</td>
-        <td>How might we mark provenance?</td>
-        <td>
-          <ul style="margin: 0; padding-left: 18px;">
-            <li>Source attribution per paragraph</li>
-            <li>Edit log accessible from any AI-touched block</li>
-          </ul>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="color-grid">
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #FFFFFF; border-bottom: 1px solid var(--line);"></div>
+    <div class="color-info">
+      <div class="color-name">Bg (White)</div>
+      <div class="color-value">#FFFFFF</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #1A1814;"></div>
+    <div class="color-info">
+      <div class="color-name">Ink (Walnut)</div>
+      <div class="color-value">#1A1814</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #45403A;"></div>
+    <div class="color-info">
+      <div class="color-name">Ink-2</div>
+      <div class="color-value">#45403A</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #807A6E;"></div>
+    <div class="color-info">
+      <div class="color-name">Ink-3</div>
+      <div class="color-value">#807A6E</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #B0AA9C;"></div>
+    <div class="color-info">
+      <div class="color-name">Ink-4</div>
+      <div class="color-value">#B0AA9C</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #F1F1F1;"></div>
+    <div class="color-info">
+      <div class="color-name">Surface</div>
+      <div class="color-value">#F1F1F1</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #E5E5E2;"></div>
+    <div class="color-info">
+      <div class="color-name">Line</div>
+      <div class="color-value">#E5E5E2</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #C66243;"></div>
+    <div class="color-info">
+      <div class="color-name">Tint TL</div>
+      <div class="color-value">#C66243</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #DB9230;"></div>
+    <div class="color-info">
+      <div class="color-name">Tint TR</div>
+      <div class="color-value">#DB9230</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #5A75A0;"></div>
+    <div class="color-info">
+      <div class="color-name">Tint BL</div>
+      <div class="color-value">#5A75A0</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #80A07E;"></div>
+    <div class="color-info">
+      <div class="color-name">Tint BR</div>
+      <div class="color-value">#80A07E</div>
+    </div>
+  </div>
+  <div class="color-swatch">
+    <div class="color-sample" style="background: #C13D2F;"></div>
+    <div class="color-info">
+      <div class="color-name">Signal</div>
+      <div class="color-value">#C13D2F</div>
+    </div>
+  </div>
 </div>
 
-<!-- ============ FIGURE ============ -->
-<div class="annot">Figure <span class="desc">A single image + numbered caption. The most common media block. Caption uses mono uppercase, ink-3, with a tinted figure number.</span></div>
-<div class="figure">
-  <div class="figure-img">[ image goes here ]</div>
-  <div class="figure-cap"><span class="num">Fig 01</span>A single image with a numbered caption. Use for the most common case.</div>
+<!-- ============ SPACING ============ -->
+<div class="section-header">
+  <h2>Spacing Scale</h2>
+  <p>8px base unit. Apple HIG recommends using consistent spacing multiples for visual rhythm.</p>
 </div>
 
-<!-- ============ TOC ============ -->
-<div class="annot">InlineTOC — inline state <span class="desc">Numbered serif list with optional intro sentence (tocIntro from frontmatter). Once the reader scrolls past it, it pins to the right margin as the navigation rail.</span></div>
-<div class="toc">
-  <p class="toc-intro">So, here are the angles I'll work through:</p>
-  <ol class="toc-list">
-    <li>Text hierarchy</li>
-    <li>Set-apart prose</li>
-    <li>Lists and data</li>
-    <li>Media</li>
-    <li>Misc</li>
-  </ol>
+<div class="spacing-table">
+  <div class="spacing-row" style="border-top: 1px solid var(--line);">
+    <strong>Token</strong>
+    <strong>Use</strong>
+    <strong>Size</strong>
+  </div>
+  <div class="spacing-row">
+    <div>--xs</div> <div>Micro-padding, tight spacing</div> <div>4px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--sm</div> <div>Inline element spacing</div> <div>8px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--md</div> <div>Standard vertical spacing</div> <div>16px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--lg</div> <div>Component gutters</div> <div>24px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--xl</div> <div>Section spacing</div> <div>32px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--xxl</div> <div>Major block spacing</div> <div>48px</div>
+  </div>
+  <div class="spacing-row">
+    <div>--xxxl</div> <div>Page-level spacing</div> <div>64px</div>
+  </div>
 </div>
 
-<!-- ============ HR ============ -->
-<div class="annot">Horizontal rule <span class="desc">A small centered rule. Use sparingly for breaks within a section, not as a section separator (h2 does that job).</span></div>
-<div class="article-body">
-  <hr />
+<!-- ============ FOOTER ============ -->
+<div style="max-width: 1000px; margin: 80px auto 32px; padding: 32px; text-align: center; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3);">
+  <p><strong>Design System Reference</strong></p>
+  <p>Built on Apple Human Interface Guidelines. SF Pro typeface + JetBrains Mono for code. Updated June 2026.</p>
 </div>
-
-<div class="annot" style="margin-bottom: 80px;">End of the system <span class="desc">That's everything. Tell me which treatments to drop, fold, or rename — and I'll roll changes across every article.</span></div>
 
 </body>
 </html>

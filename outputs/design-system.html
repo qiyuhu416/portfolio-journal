@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.fontshare.net">
-  <link href="https://api.fontshare.net/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     /* ── Tokens ──────────────────────────────────────────── */
     :root {
@@ -27,10 +25,10 @@
       --tint-plum: #9C7AB5;
       --signal: #C13D2F;
 
-      --serif:   'Switzer', 'Times New Roman', serif;
-      --sans:    'Inter', 'Helvetica', sans-serif;
-      --reading: 'Switzer', 'Times New Roman', serif;
-      --mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+      --serif:   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      --sans:    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      --reading: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      --mono:    'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
     }
 
     /* ── Reset ───────────────────────────────────────────── */
@@ -413,7 +411,7 @@
     <div class="label"><code>Large Title</code><br>SF Pro · 400<br>34px / 1.206</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:34px;font-weight:400;line-height:1.206;color:var(--ink);">Thinking outside the box</div>
-      <p class="note">Main screen headers. Largest type size. Used sparingly for maximum impact.</p>
+      <p class="note"><strong>Apple HIG:</strong> Used for main screen headers and primary titles. The command-level type size. Appears as app names or the primary title when entering a new screen. Used sparingly for maximum impact.</p>
     </div>
   </div>
 
@@ -421,7 +419,7 @@
     <div class="label"><code>Title</code><br>SF Pro · 400<br>28px / 1.214</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:28px;font-weight:400;line-height:1.214;color:var(--ink);">See the box</div>
-      <p class="note">Primary section headers. Article titles, section openers.</p>
+      <p class="note"><strong>Apple HIG:</strong> Primary section headers. Used for important labeled sections within a screen, modal dialog titles, and alert titles. Article titles and section openers.</p>
     </div>
   </div>
 
@@ -429,7 +427,7 @@
     <div class="label"><code>Headline</code><br>SF Pro · 600<br>17px / 1.294</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:17px;font-weight:600;line-height:1.294;color:var(--ink);">Emphasized label or accent</div>
-      <p class="note">Section labels, emphasis. Semibold draws attention at body size.</p>
+      <p class="note"><strong>Apple HIG:</strong> Tappable labels and section headers. Semibold weight (600) gives visual emphasis without increasing size. Used for control labels, bold section accents, and important text within body copy.</p>
     </div>
   </div>
 
@@ -437,7 +435,7 @@
     <div class="label"><code>Subheadline</code><br>SF Pro · 400<br>15px / 1.333</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:15px;font-weight:400;line-height:1.333;color:var(--ink);">Secondary label or reduced emphasis</div>
-      <p class="note">Secondary labels, reduced prominence. Regular weight for de-emphasis.</p>
+      <p class="note"><strong>Apple HIG:</strong> Secondary labels and supporting text. Smaller than body (15px vs 17px) but still readable. Used for descriptive text below primary labels and content areas.</p>
     </div>
   </div>
 
@@ -445,7 +443,7 @@
     <div class="label"><code>Body</code><br>SF Pro · 400<br>17px / 1.294</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:17px;font-weight:400;line-height:1.294;color:var(--ink);">You can't question the box if you can't see it. A "box" is usually just an assumption, the association we didn't notice we made.</div>
-      <p class="note">Main body text, prose. Default reading voice with Apple HIG line spacing.</p>
+      <p class="note"><strong>Apple HIG:</strong> Primary body text in lists, paragraphs, and content areas. Default reading size. Optimal line height (1.294) for sustained reading. Most text should be this size and weight.</p>
     </div>
   </div>
 
@@ -453,7 +451,7 @@
     <div class="label"><code>Callout</code><br>SF Pro · 400<br>16px / 1.313</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:16px;font-weight:400;line-height:1.313;color:var(--ink);">Important note, sidebar, or emphasized callout content.</div>
-      <p class="note">Emphasized body text. Used for sidebars, important notes, set-apart content.</p>
+      <p class="note"><strong>Apple HIG:</strong> Emphasized body text in callout boxes and sidebars. Slightly smaller than body (16px vs 17px) while remaining readable in bounded containers. Used for important notes and set-apart content.</p>
     </div>
   </div>
 
@@ -461,7 +459,7 @@
     <div class="label"><code>Caption 1</code><br>SF Pro · 400<br>13px / 1.385</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:13px;font-weight:400;line-height:1.385;color:var(--ink-3);">Secondary label, small caption, or supplementary text</div>
-      <p class="note">Secondary supporting text. Used for captions, secondary info, small text.</p>
+      <p class="note"><strong>Apple HIG:</strong> Secondary supporting text. Used for image captions, timestamps, and descriptive text below primary content. Still readable at standard viewing distance.</p>
     </div>
   </div>
 
@@ -469,7 +467,7 @@
     <div class="label"><code>Caption 2</code><br>SF Pro · 400<br>12px / 1.333</div>
     <div>
       <div style="font-family:var(--font-primary);font-size:12px;font-weight:400;line-height:1.333;color:var(--ink-3);">Kicker, meta label, UI chrome</div>
-      <p class="note">Tertiary text, labels, attribution. UI labels, nav items, kicker tags, figure captions.</p>
+      <p class="note"><strong>Apple HIG:</strong> Tertiary text and tiny labels. Used for metadata, table headers, and secondary UI labels. The smallest standard type size that remains readable at normal distance.</p>
     </div>
   </div>
 
@@ -480,11 +478,11 @@
     <div style="display:flex;flex-direction:column;gap:20px;">
       <div>
         <div style="font-family:var(--font-primary);font-size:28px;font-weight:400;color:var(--ink);margin-bottom:6px;">Primary — SF Pro</div>
-        <div class="note" style="margin-top:0;">Apple's native typeface. Used across iOS, macOS, watchOS, and tvOS. System font stack uses -apple-system to load SF Pro on Apple devices, with Inter as a fallback. 8 official Apple HIG semantic type styles: Large Title, Title, Headline, Subheadline, Body, Callout, Caption 1, Caption 2.</div>
+        <div class="note" style="margin-top:0;"><strong>Apple's system typeface.</strong> Used across iOS, macOS, watchOS, and tvOS. The system font stack (-apple-system, BlinkMacSystemFont) automatically loads SF Pro on Apple devices, with fallbacks to Helvetica Neue and generic sans-serif. All text uses this family: 8 official Apple HIG semantic type styles (Large Title, Title, Headline, Subheadline, Body, Callout, Caption 1, Caption 2).</div>
       </div>
       <div>
         <div style="font-family:var(--font-mono);font-size:18px;color:var(--ink);margin-bottom:6px;">Mono — JetBrains Mono</div>
-        <div class="note" style="margin-top:0;">Code only. Terminal, inline code, code blocks.</div>
+        <div class="note" style="margin-top:0;"><strong>Code only.</strong> Used for inline code, code blocks, and terminal samples. Never used for body text or labels.</div>
       </div>
     </div>
   </div>
@@ -624,7 +622,7 @@
         <span class="constraint-tag">Sidebar</span>
       </div>
       <div class="constraint">
-        Serif (Switzer) for all editorial text. Sans (Inter) for labels, nav, meta only.
+        SF Pro (Apple's system font) for all text. JetBrains Mono for code only.
         <span class="constraint-tag">Type</span>
       </div>
       <div class="constraint">
