@@ -253,6 +253,7 @@ export function JournalArticle({ slug, initialSectionId, onClose, onNav }: Props
     const el = scrollRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
+      e.stopPropagation();
       if (closingRef.current) return;
       const atTop = el.scrollTop <= 0;
       const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
