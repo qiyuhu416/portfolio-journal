@@ -89,10 +89,10 @@
         "section": "What if…",
         "tag": "The input is not texts",
         "title": "Voice & gesture — anything but text-based prompt",
-        "dek": "There is no boundary of time",
+        "dek": "The input is not texts",
         "meta": "",
         "href": "#article:making-design-fun",
-        "previews": [{ "src": "/ideas/hand-gesture-thumb.jpg", "label": "gesture" }]
+        "video": "/ideas/hand-gesture.mov"
       },
       {
         "section": "What if…",
