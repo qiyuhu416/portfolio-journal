@@ -12,6 +12,7 @@ surface: "#F6E8D3"
 sections:
   - { id: relationship, label: "Designing the relationship",  sub: "elder care Bot (research @AI CARING)" }
   - { id: feeling,      label: "Designing the feeling",       sub: "Human–AI co-writing tool" }
+  - { id: pitfalls,     label: "Where to NOT use AI" }
 experiences:
   - { name: "Apple",                    href: "https://www.apple.com", role: "GenAI Prototyper",             period: "May 2025 – present" }
   - { name: "The Mentoring Partnership", href: "#",                    role: "Conversational AI",            period: "Feb 2024 – Aug 2024" }
@@ -40,26 +41,32 @@ import aiFatigue from './images/ai-fatigue.png'
     But once AI entered the room, we started seeing ourselves from the outside.
 </p>
 
+
+<blockquote>
+Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
+</blockquote>
+
 Designing AI is not always about making the AI smarter, it's always about mapping the UX to the current tech capability. Here are some reflections from my work in academia and industry:
+
 
 <InlineTOC />
 
 
-<h2 id="relationship">§1 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has hard inferences)</span></h2>
+<h2 id="relationship">§1 · Designing the relationship  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(when AI has hard inferences)</span></h2>
 <h3 id="hard-inference">Case study: elder care Bot (research @AI CARING)</h3>
 
 
 <p>
-If the above example was AI–individual reaction, this one will be AI–group interaction. AI steps into an already-existing human web and learns to deal with relationships.
+Instead of AI–individual reaction, this project was about AI–group interaction: AI steps into an already-existing human web and learns to deal with relationships.
 </p>
 
 <p>
 If we look at the evolution of HCI, it has always been about relationships.
 </p>
 
-<p>
+<Aside>
 humans adapt to machines (terminal) → machines adapt to humans (GUI) → humans & machines work together (AI agents)
-</p>
+</Aside>
 
 <Aside>
 Interestingly we're now back to terminal again (hello, Claude Code)
@@ -292,12 +299,21 @@ lol it was fun to explore this soft problem with a logical lens
 
 <hr/>
 
-<h2 id="feeling">§2 · Designing the feeling</h2>
+<h2 id="feeling">§2 · Designing the feeling <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(when AI has easy inferences)</span></h2>
 <h3 id="co-writing">Case study: Human–AI co-writing tool (vibe-coder @startup)</h3>
+<p>
+I was vibe-coding this tool to provide real-time support for users when they are writing a requirement, so that the contents follow a certain criteria. This was an easy-inference problem because the criteria were explicit and the quality of the AI's suggestions could be evaluated immediately.
+</p>
 
+<blockquote>
+The goal is not to have users feel the AI. The goal is to have them feel they are supported during writing.
+</blockquote>
 
 <p>
-My fav book, The Little Prince, says "What matters is the unseen." But feeling is human, contextual, and weirdly hard to describe.
+So how might we design the feeling?
+</p>
+<p>
+To answer that question, let's first explore what feeling is. My fav book, The Little Prince, says "What matters is the unseen." But feeling is human, contextual, and weirdly hard to describe.
 </p>
 
 <p>
@@ -305,7 +321,7 @@ As a user of Claude Code, did you notice that it waits patiently and quietly on 
 </p>
 
 <p>
-Step back from a design perspective, and you can see that those feelings can be designed through micro-level features.
+From a design perspective, Those feelings can be designed through micro-level features.
 </p>
 
 <p>
@@ -513,8 +529,6 @@ Ties back to this rule of thumb:
 
 <blockquote>
 Most successful AI products are either easy inferences with great performance, or hard inferences with fair performance.
-
-— Prof. John Zimmerman
 </blockquote>
 
 

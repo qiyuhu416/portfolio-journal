@@ -9,8 +9,8 @@ readtime: 5
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
-  - { id: errors,    label: "Built to elicit errors" }
   - { id: prototype, label: "Prototype = Research Mindset" }
+  - { id: errors,    label: "Built to elicit errors" }
   - { id: thinking,  label: "Don't let AI bypass your thinking" }
 
 experiences:
@@ -35,7 +35,96 @@ import testingSession from './images/testing-session.png'
 <InlineTOC />
 
 
-<h2 id="errors">§1 · Built to elicit errors</h2>
+<h2 id="prototype">§1 · Prototype = Research Mindset</h2>
+<blockquote>
+Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.
+</blockquote>
+<p>
+The word "prototype"  <InlineLink to="thinking-outside-the-box"> might have been automatically associated with </InlineLink> a digital phone frame where people can click around. But we could actually expand the scope here: **As creation itself becomes easier, prototypes can be any form of experiments used to test “what to create.”**
+</p>
+
+<p>
+But prototyping = research. It is essentially a mindset to test what to design. Prototypes can be anything that serves those goals:
+</p>
+
+<ul>
+  <li>explore more directions</li>
+  <li>test more interactions</li>
+  <li>simulate more edge cases</li>
+  <li>communicate ideas that used to be too expensive to build</li>
+  <li>much more</li>
+</ul>
+
+<p>
+A lot of workflows exist simply because we inherited them. Let's use the model thinking to pull ourselves out of the box  
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>What we’ve been doing</th>
+      <th>Underlying goal</th>
+      <th>Given the current tech, is there a better solution?</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Slides</td>
+      <td>Communicate ideas</td>
+      <td>Interactive HTML experiences</td>
+    </tr>
+
+    <tr>
+      <td>Meetings</td>
+      <td>Share context & alignment</td>
+      <td>Agents that help distribute context</td>
+    </tr>
+
+    <tr>
+      <td>Searching across the web</td>
+      <td>Learn & satisfy curiosity</td>
+      <td>A “teach me what you just did” AI workflow</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Not all prototypes need to be coded</h3>
+
+<p>
+Don't forget "paper prototyping" and "role play"! I remember I was testing a new human-AI interaction concept. It was more of a service design rather than product design, and product was only part of the experience. I was paired with a PM and an engineer, and during brainstorming I just drew some screen mockups on paper and invited them to role play:
+</p>
+
+<ul style={{ margin: '0 0 20px', paddingLeft: 24, lineHeight: 1.6 }}>
+  <li>Engineer → LLM</li>
+  <li>Me → Product</li>
+  <li>PM → User</li>
+</ul>
+
+<p>
+When we pitched it to the manager, we invited him to be the user. It quickly helped us navigate the intersection between UX and technology by putting ourselves in users' shoes and immersively analyzing the tech capability. And most importantly... it was so MUCH FUN!!
+</p>
+
+
+
+<h3>
+So where NOT to prototype?
+</h3>
+
+<p>
+Prototypes are not production. Sometimes I saw people using prototypes to 100% duplicate a screen you’ve already made somewhere else, or to use a vibe-coding tool to fine-tune visual details. That might be mixing up the method and goal.
+</p>
+
+<p>
+Prototypes are expected to be built and dumped away, as it is created to elicit our known-unknowns.
+
+This prototype turned our design exploration less about "accuracy" and more about recovery, handoff, and expectation-setting. We use AI to solve real user problems and want it to really be used.
+
+</p>
+
+
+
+<h2 id="errors">§2 · Built to elicit errors</h2>
 <h3 id="easy-inference">Case study: phone call agent prototype</h3>
 
 <p>AI is never perfect (yet). Please.</p>
@@ -67,20 +156,14 @@ Therefore, an important part in designing AI products/ experiences should be des
 
 <p>
 I was exploring this solution for a non-profit to address their "too many repetitive questions but not enough staff" pain point.
-It is an easy-inference case as there is already a pre-existing script to follow (even closer to a rule-based AI than actual AI). The special part was that the error intolerance was very low. The client was special as they are in a typically no-AI field, and the trust bonding between them and their customers is very important.
+It is an easy-inference case as there is already a pre-existing script to follow (closer to be rule-based).
 </p>
 
 <p>
+ The special part was that the error intolerance was very low. The client was in a typically no-AI field, and the trust bonding between them and their customers is very important.
 Therefore, the design goal was not really to prove "AI works." It was to surface what could go wrong before it actually goes wrong.
 </p>
 
-<p>
-I was a solo prototyper for this phone-call agent (we divided and conquer to test multiple solutions). It took me 2 days to finish the prototype, 1.5 hour to test, but got many interesting findings:
-</p>
-
-<blockquote>
-Sometimes the experience of recovering from an error matters more than preventing it.
-</blockquote>
 
 <Sidebar label="The prototype, with ChatGPT audio mode as my tool">
   <Tabs items={[
@@ -186,6 +269,14 @@ Sometimes the experience of recovering from an error matters more than preventin
   ]} />
 </Sidebar>
 
+<p>
+I was a solo prototyper for this phone-call agent (we divided and conquer to test multiple solutions). It took me 2 days to finish the prototype, 1.5 hour to test, but got many interesting findings:
+</p>
+
+<blockquote>
+Sometimes the experience of recovering from an error matters more than preventing it.
+</blockquote>
+
 <Figure src={testingSession} alt="Testing the phone agent prototype with the team — sticky notes on the wall as we surface what could go wrong." caption="Testing session — surfacing what could go wrong." />
 
 <HMWTable rows={[
@@ -219,98 +310,15 @@ Sometimes the experience of recovering from an error matters more than preventin
 ]} />
 
 
-<p>
-So where NOT to prototype?
-</p>
-
-<p>
-Sometimes I saw people using prototypes to 100% duplicate a screen you’ve already made somewhere else, or to use a vibe-coding tool to fine-tune visual details. That might be mixing up the method and goal.
-</p>
-
-<p>
-Prototypes are not production. Prototypes are expected to be built and dumped away, as it is created to elicit our known-unknowns.
-
-This prototype turned our design exploration less about "accuracy" and more about recovery, handoff, and expectation-setting. We use AI to solve real user problems and want it to really be used.
-
-</p>
-<hr/>
-
-
-
-<h2 id="prototype">§2 · Prototype = Research Mindset</h2>
-<blockquote>
-Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.
-</blockquote>
-<p>
-The word "prototype"  <InlineLink to="thinking-outside-the-box"> might have been automatically associated with </InlineLink> a digital phone frame where people can click around. But we could actually expand the scope here: **As creation itself becomes easier, prototypes can be any form of experiments used to test “what to create.”**
-</p>
-
-<p>
-But prototyping = research. It is essentially a mindset to test what to design. And also because of this, not all prototypes need to be coded. Prototypes can be anything that serves those goals:
-</p>
-
-<ul>
-  <li>explore more directions</li>
-  <li>test more interactions</li>
-  <li>simulate more edge cases</li>
-  <li>communicate ideas that used to be too expensive to build</li>
-  <li>much more</li>
-</ul>
-
-<p>
-A lot of workflows exist simply because we inherited them. Let's use the model thinking to pull ourselves out of the box  
-</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>What we’ve been doing</th>
-      <th>Underlying goal</th>
-      <th>Given the current tech, is there a better solution?</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>Slides</td>
-      <td>Communicate ideas</td>
-      <td>Interactive HTML experiences</td>
-    </tr>
-
-    <tr>
-      <td>Meetings</td>
-      <td>Share context & alignment</td>
-      <td>Agents that help distribute context</td>
-    </tr>
-
-    <tr>
-      <td>Searching across the web</td>
-      <td>Learn & satisfy curiosity</td>
-      <td>A “teach me what you just did” AI workflow</td>
-    </tr>
-  </tbody>
-</table>
-
-
-
-<hr />
-
-
 <h2 id="thinking">§3 · Don’t let AI bypass your thinking</h2>
 
 <p>
 A lot of things about AI are unteachable lessons — just go and try it out. And you may find it addictive.
 </p>
 
-<Aside>
-In May 2025, I was hired as an “AI prototyper” for Apple. At the time, other teams thought this sounded very unique. But in just one year (May 2026 now), not using AI enough doesn’t seem to be an issue for most people anymore.
-</Aside>
 
 <p>
 The real problem seems to be how to face our FOMO, and find the space where AI leaves room.
-</p>
-
-<p>
 So sharing two things I’ve said in sharing sessions:
 </p>
 
