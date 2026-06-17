@@ -70,7 +70,7 @@
       {
         "section": "What if…",
         "tag": "Play",
-        "title": "Voice & gesture — anything but text-based prompt",
+        "title": "Hover to select and ask on the go",
         "dek": "I am too lazy to type",
         "meta": "",
         "href": "#",
@@ -87,11 +87,11 @@
       },
       {
         "section": "What if…",
-        "tag": "Future self",
-        "title": "Leave a message to your future self — AI delivers it at the right moment",
+        "tag": "The input is not texts",
+        "title": "Voice & gesture — anything but text-based prompt",
         "dek": "There is no boundary of time",
         "meta": "",
-        "href": "#"
+        "href": "#article:making-design-fun"
       },
       {
         "section": "What if…",
