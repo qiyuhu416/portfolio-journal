@@ -214,16 +214,19 @@
     const titles = ['q-tl','q-tr','q-bl','q-br'].map(id => document.getElementById(id));
     const edges  = ['e-qiyu','e-others','e-notice','e-make'].map(id => document.getElementById(id));
 
-    // ——— Hover: dot's data-status replaces the QIYU pill text
+    // ——— Hover: dot's data-status replaces the QIYU pill text + freeze animation
     let hoverStatus = null;
+    let hoveredDot = null;
     DOTS.forEach(d => {
       d.el.addEventListener('mouseenter', () => {
         hoverStatus = d.status;
+        hoveredDot = d;
         status.style.opacity = 0;
         setTimeout(() => { status.textContent = hoverStatus; status.style.opacity = 1; }, 100);
       });
       d.el.addEventListener('mouseleave', () => {
         hoverStatus = null;
+        hoveredDot = null;
         status.style.opacity = 0;
         setTimeout(() => { status.textContent = 'Thinking…'; status.style.opacity = 1; }, 100);
       });
@@ -236,6 +239,9 @@
     function applyDots(t){
       // t: 0 → landing positions; 1 → axis positions
       DOTS.forEach(d => {
+        // Skip animation if this dot is being hovered (freeze it)
+        if (hoveredDot === d) return;
+
         const x = lerp(d.landing.x, d.axis.x, smooth(t));
         const y = lerp(d.landing.y, d.axis.y, smooth(t));
         d.el.style.left = x + '%';
@@ -265,7 +271,7 @@
       const progress = clamp(smoothScroll / docH, 0, 1);
 
       // —— Beats
-      const beatA = clamp(progress / 0.30, 0, 1);          // dots travel to axis positions; tagline fades
+      const beatA = clamp(progress / 0.50, 0, 1);          // dots travel to axis positions (slower); tagline fades
       const beatB = clamp((progress - 0.25) / 0.35, 0, 1); // axis cross is drawn (h then v)
       const beatC = clamp((progress - 0.55) / 0.45, 0, 1); // titles rise from axis line
 

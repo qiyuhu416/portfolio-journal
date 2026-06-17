@@ -156,7 +156,7 @@
           <h2
             onClick={onOpen}
             style={{
-              fontFamily: 'var(--serif)', fontWeight: 400,
+              fontFamily: 'var(--serif)', fontWeight: 600,
               fontSize: variant === 'large' ? 'clamp(40px, 5.6vw, 82px)' : 'clamp(28px, 3.4vw, 46px)',
               lineHeight: 1.02, letterSpacing: -1.8,
               margin: 0, color: 'var(--ink)', cursor: 'pointer',
@@ -208,8 +208,11 @@
               {entry.dek}
             </p>
           )}
-          <button onClick={onOpen} style={{ marginTop: variant === 'large' ? 20 : 14, border: 'none', background: 'transparent', fontSize: 13, color: 'var(--ink-2)', cursor: 'pointer', borderBottom: '1px solid var(--ink-3)', paddingBottom: 2 }}>
-            Read the essay →
+          <button onClick={onOpen} style={{ marginTop: variant === 'large' ? 20 : 14, border: 'none', background: 'transparent', fontSize: 13, color: 'var(--ink-2)', cursor: 'pointer', borderBottom: '1px solid var(--ink-3)', paddingBottom: 2, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <span>Read the essay</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
           </button>
         </div>
       );
@@ -312,7 +315,9 @@
               fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase',
               color: 'var(--ink-2)', cursor: 'pointer',
             }}>
-            <span style={{ fontSize: 14, lineHeight: 1 }}>←</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
             <span>Back home</span>
           </button>
 
@@ -461,13 +466,19 @@
                   const next = JOURNAL_ENTRIES[(i + 1) % JOURNAL_ENTRIES.length];
                   onNav('article:' + next.slug);
                 }}
-                style={{ fontFamily: 'var(--serif)', fontSize: 32, lineHeight: 1.1, letterSpacing: -0.8, marginTop: 8, color: 'var(--ink)', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, textAlign: 'left' }}>
-                {JOURNAL_ENTRIES[(JOURNAL_ENTRIES.findIndex(e => e.slug === slug) + 1) % JOURNAL_ENTRIES.length].title} →
+                style={{ fontFamily: 'var(--serif)', fontSize: 32, lineHeight: 1.1, letterSpacing: -0.8, marginTop: 8, color: 'var(--ink)', cursor: 'pointer', border: 'none', background: 'transparent', padding: 0, textAlign: 'left', display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+                <span>{JOURNAL_ENTRIES[(JOURNAL_ENTRIES.findIndex(e => e.slug === slug) + 1) % JOURNAL_ENTRIES.length].title}</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                </svg>
               </button>
             </div>
             <button onClick={() => onNav('journal')}
-              style={{ padding: '12px 18px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line)', borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
-              ← All entries
+              style={{ padding: '12px 18px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line)', borderRadius: 6, fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
+              </svg>
+              <span>All entries</span>
             </button>
           </div>
         </div>
@@ -1014,7 +1025,9 @@
                     <div style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-3)', marginTop: 2 }}>{it.dek}</div>
                     <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 0.4, color: 'var(--ink-4)', marginTop: 6, textTransform: 'uppercase' }}>{it.meta}</div>
                   </div>
-                  <div style={{ fontFamily: 'var(--mono)', fontSize: 14, color: 'var(--ink-3)' }}>{"\u2192"}</div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--ink-3)' }}>
+                    <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                  </svg>
                 </a>
               ))}
             </div>

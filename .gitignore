@@ -7,3 +7,4 @@ dist
 # Large video files — too big for GitHub (>100MB)
 content/articles/making-design-fun/videos/*.mov
 content/articles/making-design-fun/videos/*.mp4
+.vercel
