@@ -1108,7 +1108,7 @@ function CreateScatter({
               {/* Section header: col 1 = section name, col 2 = "Prototype" label */}
               <div style={{
                 display: 'grid', gridTemplateColumns: '1fr 1fr',
-                columnGap: SPACE.xl,
+                columnGap: SPACE.xxl,
                 padding: `${si === 0 ? 0 : SPACE.xl}px 0 ${SPACE.sm}px`,
               }}>
                 <div style={{
@@ -1141,7 +1141,7 @@ function CreateScatter({
                     onMouseLeave={() => { setHoveredKey(null); setCursor(null); }}
                     style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr',
-                      columnGap: SPACE.xl,
+                      columnGap: SPACE.xxl,
                       padding: `${SPACE.lg}px 0`,
                       borderBottom: '1px solid var(--line)',
                       alignItems: 'baseline',
