@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDrawer } from '@/routes/DrawerContext';
 import { ArticleProvider } from '@/routes/ArticleContext';
 import { ExperienceChip } from '@/components/ExperienceChip';
@@ -6,6 +6,8 @@ import { bySlug, findQuadrantBySlug } from '@/content';
 
 export function ArticleDrawer() {
   const { openSlug, close } = useDrawer();
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     if (!openSlug) return;
@@ -15,6 +17,16 @@ export function ArticleDrawer() {
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
   }, [openSlug, close]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const drawer = e.currentTarget;
+    const currentScrollY = drawer.scrollTop;
+    // Close if scrolled up past top (scrollY is 0 or negative delta)
+    if (currentScrollY < lastScrollYRef.current && currentScrollY <= 0) {
+      close();
+    }
+    lastScrollYRef.current = currentScrollY;
+  };
 
   if (!openSlug) return null;
   const target = bySlug[openSlug];
@@ -45,6 +57,8 @@ export function ArticleDrawer() {
         }}
       />
       <div
+        ref={drawerRef}
+        onScroll={handleScroll}
         style={{
           position: 'fixed', top: 0, right: 0, bottom: 0,
           width: 'min(560px, 92vw)',
