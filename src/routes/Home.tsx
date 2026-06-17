@@ -1141,7 +1141,7 @@ function CreateScatter({
                     onMouseLeave={() => { setHoveredKey(null); setCursor(null); }}
                     style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr',
-                      columnGap: SPACE.xl,
+                      columnGap: SPACE.xxl,
                       padding: `${SPACE.lg}px 0`,
                       borderBottom: '1px solid var(--line)',
                       alignItems: 'baseline',
