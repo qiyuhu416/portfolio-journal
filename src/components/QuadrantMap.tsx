@@ -481,10 +481,8 @@ function GalleryLayout({ q, onNav, itemsOpacity }: LayoutProps) {
             <div
               style={{
                 position: 'relative',
-                width: '100%',
-                maxWidth: 140,
+                width: 140,
                 height: 140,
-                aspectRatio: '1 / 1',
                 borderRadius: '50%',
                 overflow: 'hidden',
                 border: '1px solid var(--line)',
