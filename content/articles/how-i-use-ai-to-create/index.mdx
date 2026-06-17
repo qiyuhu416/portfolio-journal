@@ -9,8 +9,8 @@ readtime: 5
 tint: "#C18A3D"
 surface: "#F6E8D3"
 sections:
+  - { id: errors,    label: "Built to elicit errors" }
   - { id: prototype, label: "Prototype = Research Mindset" }
-  - { id: pitfalls,  label: "Where to NOT use AI" }
   - { id: thinking,  label: "Don't let AI bypass your thinking" }
 
 experiences:
@@ -24,15 +24,19 @@ import { Aside } from '@/components/Aside'
 import { InlineTOC } from '@/components/InlineTOC'
 import { InlineLink } from '@/components/InlineLink'
 import { Sidebar } from '@/components/Sidebar'
+import { Tabs } from '@/components/Tabs'
+import { Vimeo } from '@/components/Vimeo'
+import { HMWTable } from '@/components/HMWTable'
 import aiFatigue from './images/ai-fatigue.png'
+import testingSession from './images/testing-session.png'
 
 <p>Honestly, this article is also a prototype. A way for me to think through a question in public.</p>
 
 <InlineTOC />
 
 
-<h2 id="errors">§1 · Built to elicit errors  <span style={{ color: 'var(--ink-3)', fontWeight: 400 }}>(if AI has easy inferences)</span></h2>
-<h3 id="easy-inference">Case study: phone call agent prototype to elicit errors</h3>
+<h2 id="errors">§1 · Built to elicit errors</h2>
+<h3 id="easy-inference">Case study: phone call agent prototype</h3>
 
 <p>AI is never perfect (yet). Please.</p>
 
@@ -233,16 +237,16 @@ This prototype turned our design exploration less about "accuracy" and more abou
 
 
 
-<h2 id="prototype">§2 · Prototype doesn't have to be coded</h2>
+<h2 id="prototype">§2 · Prototype = Research Mindset</h2>
 <blockquote>
 Sometimes we keep using a solution not because it is the best one, but because we’ve used it for a long time.
 </blockquote>
 <p>
-The word "prototype"  <InlineLink to="think-outside-the-box"> might have been automatically associated with </InlineLink> a digital phone frame where people can click around. But we could actually expand the scope here: **As creation itself becomes easier, prototypes can be any form of experiments used to test “what to create.”**
+The word "prototype"  <InlineLink to="thinking-outside-the-box"> might have been automatically associated with </InlineLink> a digital phone frame where people can click around. But we could actually expand the scope here: **As creation itself becomes easier, prototypes can be any form of experiments used to test “what to create.”**
 </p>
 
 <p>
-But prototyping = research It is essentially a mindset to test what to design. And also because of this, not all prototypes need to be coded. Prototypes can be anything that serves those goals:
+But prototyping = research. It is essentially a mindset to test what to design. And also because of this, not all prototypes need to be coded. Prototypes can be anything that serves those goals:
 </p>
 
 <ul>
@@ -254,7 +258,7 @@ But prototyping = research It is essentially a mindset to test what to design. A
 </ul>
 
 <p>
-A lot of workflows exist simply because we inherited them. Let's use the modal thinking to pull ourselves out of the box  
+A lot of workflows exist simply because we inherited them. Let's use the model thinking to pull ourselves out of the box  
 </p>
 
 <table>
@@ -292,7 +296,7 @@ A lot of workflows exist simply because we inherited them. Let's use the modal t
 <hr />
 
 
-<h2 id="thinking">§1 · Don’t let AI bypass your thinking</h2>
+<h2 id="thinking">§3 · Don’t let AI bypass your thinking</h2>
 
 <p>
 A lot of things about AI are unteachable lessons — just go and try it out. And you may find it addictive.

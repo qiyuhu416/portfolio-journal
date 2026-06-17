@@ -29,6 +29,7 @@ import { ExternalLink } from '@/components/ExternalLink'
 import { TabbedFigure } from '@/components/TabbedFigure'
 import { Carousel } from '@/components/Carousel'
 import { InlineTOC } from '@/components/InlineTOC'
+import { WhatIfTable } from './diagrams/WhatIfTable'
 import { BridgeAbstract } from './diagrams/BridgeAbstract'
 import { ServiceBlueprintAbstract } from './diagrams/ServiceBlueprintAbstract'
 import bridgeStartup from './images/bridge-startup.png'
@@ -77,6 +78,27 @@ I am still practicing this mindset, but it tends to come back to three 👌 step
 
 <p>Here are the questions I keep coming back to — bold bets on where human–AI interaction could go next:</p>
 
+<WhatIfTable sections={[
+  {
+    heading: 'What if…',
+    rows: [
+      { question: 'We could be super lazy', answer: 'Just watch agents talk with each other' },
+      { question: 'You never had to type a prompt', answer: 'Voice, gesture, or form — anything but text' },
+      { question: 'AI knew your future self better than today-you', answer: 'Leave a message to your future self — AI delivers it' },
+      { question: 'All your apps shared the same understanding of you', answer: 'One personalization hub — zero re-explaining yourself' },
+      { question: 'Thinking out loud had a shape', answer: 'Render your chain of thought as a knowledge graph' },
+      { question: 'AI had a point of view', answer: 'Opinionated responses — AI that pushes back, disagrees, and advocates for you' },
+    ],
+  },
+  {
+    heading: 'How might I…',
+    rows: [
+      { question: 'Make work driven by passion, not FOMO', answer: 'Design the workflow around what excites me, not what\'s trending' },
+      { question: 'Turn my observations into stronger thinking', answer: 'Use model thinking — bridge, blueprint, induction' },
+      { question: 'Move from individual thinking to group work', answer: 'Start small, make it fun, let the box bend before it breaks' },
+    ],
+  },
+]} />
 
 <InlineTOC />
 
